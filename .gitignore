@@ -31,7 +31,8 @@ appsettings.*.Local.json
 
 # Node tooling, if used by a department frontend
 node_modules/
-dist/
+/node_modules/**/dist/
+# Not a blanket "dist/": bootstrap and jQuery live in wwwroot/lib/**/dist and must be committed.
 
 # OS files
 .DS_Store
