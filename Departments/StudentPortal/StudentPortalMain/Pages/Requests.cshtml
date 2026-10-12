@@ -1,0 +1,142 @@
+@page
+@model StudentPortalMain.Pages.RequestsModel
+@{
+    ViewData["Title"] = "Guidance & Counseling Support";
+    ViewData["ActivePage"] = "Requests";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Student Wellbeing &amp; Advisory Services
+        </div>
+        <h1 class="portal-page-title">Guidance &amp; Counseling Requests</h1>
+        <p class="portal-page-subtitle">
+            Book an appointment with an NU Lipa Registered Guidance Counselor or submit confidential concerns.
+        </p>
+    </div>
+</div>
+
+<div class="row" style="display:flex; flex-wrap:wrap; gap:24px; margin:0 -12px;">
+    <!-- ─── Request Form ──────────────────────────────────────────────────── -->
+    <div style="flex: 1 1 450px; min-width:320px;">
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>🧭</span> Submit Confidential Guidance Request
+                </h3>
+            </div>
+            <div class="portal-card-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label class="form-label">Consultation Subject / Topic:</label>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Academic stress, Career coaching, Personal advising" required />
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+                        <div class="form-group">
+                            <label class="form-label">Advisory Category:</label>
+                            <select name="category" class="form-select">
+                                <option value="Academic Counseling">Academic Counseling</option>
+                                <option value="Career & Industry Guidance">Career &amp; Industry Guidance</option>
+                                <option value="Personal / Mental Health">Personal / Mental Wellbeing</option>
+                                <option value="Shifting / Transfer Advice">Shifting / Transfer Advice</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Urgency Level:</label>
+                            <select name="urgency" class="form-select">
+                                <option value="Normal">Normal</option>
+                                <option value="Priority">Priority</option>
+                                <option value="Urgent">Urgent Consultation</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Details / How Can We Assist You:</label>
+                        <textarea name="details" class="form-control" rows="5" placeholder="Share any relevant context or preferred consultation schedule..." required></textarea>
+                    </div>
+
+                    <div style="background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--nu-text-muted);">
+                        🔒 <strong>Confidentiality Notice:</strong> Consultations are strictly confidential under RA 10029 (Philippine Psychology Act) &amp; RA 9258 (Guidance and Counseling Act).
+                    </div>
+
+                    <button type="submit" class="btn-nu btn-nu-primary" style="width:100%; font-size:14px; padding:10px;">
+                        Submit Request to Guidance Office
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── My Appointments & Ticket History ──────────────────────────────── -->
+    <div style="flex: 1 1 450px; min-width:320px;">
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📋</span> My Guidance Requests &amp; Records
+                </h3>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                @if (Model.MyTickets.Any())
+                {
+                    <div class="portal-table-responsive">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject &amp; Category</th>
+                                    <th>Urgency</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in Model.MyTickets)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:700; color:var(--nu-blue-dark);">@t.Title</div>
+                                            <div style="font-size:11.5px; color:var(--nu-text-muted);">@t.Category</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge-status @(t.Urgency == "Urgent" ? "badge-danger" : (t.Urgency == "Priority" ? "badge-warning" : "badge-info"))">
+                                                @t.Urgency
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge-status @(t.Status == "Resolved" ? "badge-success" : "badge-warning")">
+                                                @t.Status
+                                            </span>
+                                        </td>
+                                        <td style="font-size:12px;">@t.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding:32px; text-align:center; color:var(--nu-text-muted);">
+                        No guidance requests recorded.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>💡</span> Guidance Office Information
+                </h3>
+            </div>
+            <div class="portal-card-body" style="font-size:12.5px; line-height:1.6;">
+                <div><strong>Location:</strong> 2nd Floor, Main Academic Building, National University Lipa</div>
+                <div><strong>Office Hours:</strong> Monday &ndash; Friday, 8:00 AM &ndash; 5:00 PM</div>
+                <div><strong>Email:</strong> guidance@lipa.nu.edu.ph</div>
+                <div><strong>Emergency Hotline:</strong> (043) 740-0000 loc. 204</div>
+            </div>
+        </div>
+    </div>
+</div>

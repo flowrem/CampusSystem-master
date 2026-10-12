@@ -1,0 +1,112 @@
+@page
+@model FacultyPortalMain.Pages.AttendanceModel
+@{
+    ViewData["Title"] = "Attendance";
+    ViewData["ActivePage"] = "Attendance";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div class="portal-eyebrow">Class sessions</div>
+        <h1 class="portal-page-title">Attendance</h1>
+        <p class="portal-page-subtitle">Mark attendance for one class session. Saving a date again replaces the earlier marks.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="portal-card" style="margin-bottom:16px;border-left:4px solid @(Model.IsError ? "#dc2626" : "#15803d");">
+        <div class="portal-card-body" style="padding:12px 16px;font-weight:600;color:@(Model.IsError ? "#b91c1c" : "#15803d");">@Model.Message</div>
+    </div>
+}
+
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title"><span>✅</span> Attendance sheet</h3>
+    </div>
+
+    <form method="get" class="toolbar">
+        <select name="sectionId" class="form-select" aria-label="Section" onchange="this.form.submit()">
+            @foreach (var sec in Model.Sections)
+            {
+                <option value="@sec.Id" selected="@(sec.Id == Model.SectionId)">@sec.SectionCode — @sec.SubjectCode @sec.SubjectName</option>
+            }
+        </select>
+        <input type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" class="form-control" aria-label="Session date" onchange="this.form.submit()" />
+    </form>
+
+    @if (Model.SectionId == 0)
+    {
+        <div class="portal-card-body muted">You have no sections this term.</div>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Save">
+            <input type="hidden" name="sectionId" value="@Model.SectionId" />
+            <input type="hidden" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+            <div class="toolbar">
+                <input type="text" name="topic" value="@Model.Sheet.Topic" class="form-control" placeholder="Topic covered" aria-label="Topic" maxlength="200" />
+                @if (Model.Sheet.Rows.Count > 0)
+                {
+                    <button type="submit" class="btn-nu btn-nu-gold">💾 Save attendance</button>
+                }
+            </div>
+            <div class="portal-table-responsive">
+                <table class="portal-table">
+                    <thead><tr><th>Student</th><th>ID</th><th class="col-status">Status</th></tr></thead>
+                    <tbody>
+                        @foreach (var row in Model.Sheet.Rows)
+                        {
+                            <tr>
+                                <td class="cell-title">@row.Name</td>
+                                <td class="muted">@row.Number</td>
+                                <td>
+                                    <select name="status_@row.StudentId" class="form-select" aria-label="Status for @row.Name">
+                                        @foreach (var status in FacultyPortalMain.Services.CourseworkStore.AttendanceStatuses)
+                                        {
+                                            <option value="@status" selected="@((row.Status ?? "Present") == status)">@status</option>
+                                        }
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                        @if (Model.Sheet.Rows.Count == 0)
+                        {
+                            <tr><td colspan="3" class="muted" style="text-align:center;padding:28px;">No students are enrolled in this section.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    }
+</div>
+
+@if (Model.Summary.Count > 0)
+{
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3 class="portal-card-title"><span>📊</span> Attendance so far</h3>
+        </div>
+        <div class="portal-table-responsive">
+            <table class="portal-table">
+                <thead>
+                    <tr><th>Student</th><th class="num">Present</th><th class="num">Late</th><th class="num">Absent</th><th class="num">Excused</th><th class="num">Sessions</th><th class="num">Attended</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Summary)
+                    {
+                        <tr>
+                            <td class="cell-title">@row.Name</td>
+                            <td class="num">@row.Present</td>
+                            <td class="num">@row.Late</td>
+                            <td class="num">@row.Absent</td>
+                            <td class="num">@row.Excused</td>
+                            <td class="num">@row.Sessions</td>
+                            <td class="num">@(row.Sessions == 0 ? "—" : row.Rate + "%")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Triage Queue - National University Lipa Guidance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">GUIDANCE SYSTEM</div>
+        <div class="brand-sub">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE GUIDANCE MODULES</div>
+      <a href="/index.html">
+        <span class="ic">🏠</span> Overview
+      </a>
+      <a href="/dashboard.html">
+        <span class="ic">📊</span> Counselor Dashboard
+      </a>
+      <a href="/students.html">
+        <span class="ic">🗂️</span> Student Records
+      </a>
+      <a href="/triage.html" class="active">
+        <span class="ic">⚖️</span> Triage Queue
+      </a>
+      <a href="/appointments.html">
+        <span class="ic">📅</span> Appointments
+      </a>
+      <a href="/case-notes.html">
+        <span class="ic">🔒</span> Case Notes
+      </a>
+      <a href="/monitoring.html">
+        <span class="ic">👁️</span> Student Monitoring
+      </a>
+
+      <div class="nav-section-title">STUDENT SERVICES</div>
+      <a href="/request.html">
+        <span class="ic">📝</span> Submit Request
+      </a>
+      <a href="/resources.html">
+        <span class="ic">📚</span> Support Resources
+      </a>
+
+      <div class="nav-section-title">ADMINISTRATION</div>
+      <a href="/admin.html">
+        <span class="ic">⚙️</span> Department Settings
+      </a>
+      <a href="/openapi/v1.json" target="_blank">
+        <span class="ic">🔌</span> API Documentation
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">MC</div>
+        <div class="user-info">
+          <div class="user-name">Ms. Maya Chen</div>
+          <div class="user-role">Guidance Counselor</div>
+        </div>
+      </div>
+      <a class="guidance-logout" href="/Logout">Log out</a>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY 2026-2027 · 1st Semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/openapi/v1.json" target="_blank" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> Maya Chen (Counselor)</span>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-heading-row">
+        <div>
+          <h1 class="dash-heading">Counselor Intake &amp; Triage Queue</h1>
+          <p class="dash-subheading">Manage student counseling requests across stages from initial submission to resolution</p>
+        </div>
+        <a href="/request.html" class="btn-primary"><span class="ic">+</span> New Intake Request</a>
+      </div>
+
+      <div class="board">
+        <div class="lane">
+          <h2><span>New Requests</span> <span>0</span></h2>
+          <div class="empty-card">No new requests in queue.</div>
+        </div>
+
+        <div class="lane">
+          <h2><span>In Progress</span> <span>0</span></h2>
+          <div class="empty-card">No active counseling cases.</div>
+        </div>
+
+        <div class="lane">
+          <h2><span>Resolved</span> <span>0</span></h2>
+          <div class="empty-card">No resolved cases.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/guidance-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+@page
+@{ ViewData["Title"] = "Registration"; }
+<div class="registrar-page" data-page="registration">
+<section class="page-heading"><div><span class="eyebrow">Enrollment planning</span><h1>Schedule builder</h1><p class="page-intro">Add a course to your plan, then keep an eye on the semester load.</p></div><span class="term-badge">2026 Fall</span></section>
+<section class="registration-layout">
+	<div class="surface course-picker"><div class="panel-heading"><div><span class="eyebrow">Course catalog</span><h2>Available courses</h2></div><span class="result-count" id="registration-course-count"></span></div><div id="registration-courses" class="stack-list"><div class="loading-state">Loading courses<span class="loading-dots">...</span></div></div></div>
+	<div class="surface schedule-panel"><div class="panel-heading"><div><span class="eyebrow">My plan</span><h2>2026 Fall schedule</h2></div><span class="schedule-total" id="schedule-total">0 courses</span></div><div id="my-schedule" class="stack-list"><div class="empty-state">Your schedule is clear. Add a course to begin.</div></div></div>
+</section>
+<div class="alert alert-danger d-none" data-error role="alert"></div><div class="alert alert-success d-none" data-success role="status"></div>
+</div>

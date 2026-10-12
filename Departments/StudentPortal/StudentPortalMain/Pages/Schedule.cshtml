@@ -1,0 +1,217 @@
+@page
+@model StudentPortalMain.Pages.ScheduleModel
+@{
+    ViewData["Title"] = "My Class Schedule";
+    ViewData["ActivePage"] = "Schedule";
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+    var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Academic Year Schedule
+        </div>
+        <h1 class="portal-page-title">My Class Schedule &amp; Study Load</h1>
+        <p class="portal-page-subtitle">
+            AY <strong>@Model.SchoolYear</strong> &bull; <strong>@Model.Semester</strong> &bull;
+            @Model.Profile.Program (@Model.Profile.YearLevel)
+        </p>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;" class="no-print">
+        <form method="get" style="margin:0; display:flex; gap:8px;">
+            <select name="termKey" class="form-select" style="font-size:12.5px; padding:6px 12px;" onchange="var parts = this.value.split('|'); window.location.href = '/Schedule?sy=' + encodeURIComponent(parts[0]) + '&sem=' + encodeURIComponent(parts[1]);">
+                @foreach (var t in Model.AvailableTerms)
+                {
+                    var parts = t.Split('|');
+                    var isSelected = parts[0] == Model.SchoolYear && parts[1] == Model.Semester;
+                    <option value="@t" selected="@(isSelected ? "selected" : null)">
+                        AY @parts[0] - @parts[1]
+                    </option>
+                }
+            </select>
+        </form>
+        <button type="button" onclick="window.print()" class="btn-nu btn-nu-gold btn-print">
+            🖨️ Print Study Load
+        </button>
+    </div>
+</div>
+
+<!-- Print-Only Official Header -->
+<div class="d-none" style="display:none;" id="printHeader">
+    <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid #344495; padding-bottom:12px;">
+        <h2 style="margin:0; color:#344495; font-size:18px; font-weight:800;">NATIONAL UNIVERSITY LIPA</h2>
+        <div style="font-size:12px; color:#555;">Office of the University Registrar &bull; Official Student Study Load</div>
+        <div style="font-size:13px; font-weight:700; margin-top:4px;">AY @Model.SchoolYear &bull; @Model.Semester</div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:12px; margin-bottom:16px;">
+        <div><strong>Student Name:</strong> @studentName</div>
+        <div><strong>Student ID Number:</strong> @studentIdNum</div>
+        <div><strong>Program:</strong> @Model.Profile.Program</div>
+        <div><strong>Year Level:</strong> @Model.Profile.YearLevel</div>
+    </div>
+</div>
+
+<style>
+@@media print {
+    #printHeader { display: block !important; }
+}
+</style>
+
+<!-- Stat summary bar -->
+<div class="stat-grid no-print">
+    <div class="stat-card">
+        <div class="stat-label">Enrolled Subjects</div>
+        <div class="stat-value">@Model.Classes.Count</div>
+        <div class="stat-subtext">Registered courses</div>
+    </div>
+    <div class="stat-card gold-border">
+        <div class="stat-label">Total Units</div>
+        <div class="stat-value">@Model.TotalUnits</div>
+        <div class="stat-subtext">Academic credit weight</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Lecture Hours</div>
+        <div class="stat-value">@Model.TotalLecHours <span style="font-size:14px; font-weight:500;">hrs/wk</span></div>
+        <div class="stat-subtext">Classroom lecture sessions</div>
+    </div>
+    <div class="stat-card info-border">
+        <div class="stat-label">Laboratory Hours</div>
+        <div class="stat-value">@Model.TotalLabHours <span style="font-size:14px; font-weight:500;">hrs/wk</span></div>
+        <div class="stat-subtext">Hands-on laboratory sessions</div>
+    </div>
+</div>
+
+<!-- Detailed Table of Classes -->
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>📋</span> Official Enrolled Subjects — AY @Model.SchoolYear (@Model.Semester)
+        </h3>
+        <span class="badge-status badge-success">
+            Verified by Registrar
+        </span>
+    </div>
+    <div class="portal-card-body" style="padding:0;">
+        @if (Model.Classes.Any())
+        {
+            <div class="portal-table-responsive">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Description</th>
+                            <th>Sec</th>
+                            <th>Units</th>
+                            <th>Lec / Lab</th>
+                            <th>Days</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                            <th>Instructor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Classes)
+                        {
+                            var startTimeStr = DateTime.Today.Add(c.StartTime).ToString("hh:mm tt");
+                            var endTimeStr = DateTime.Today.Add(c.EndTime).ToString("hh:mm tt");
+
+                            <tr>
+                                <td><strong style="color:var(--nu-blue-dark);">@c.SubjectCode</strong></td>
+                                <td>@c.SubjectName</td>
+                                <td><span class="badge-status badge-secondary">@c.SectionCode</span></td>
+                                <td><strong>@c.Units</strong></td>
+                                <td style="font-size:12px; color:var(--nu-text-muted);">@(c.LecHours)h / @(c.LabHours)h</td>
+                                <td><strong style="color:var(--nu-blue);">@c.DaysOfWeek</strong></td>
+                                <td style="white-space:nowrap; font-size:12.5px;">@startTimeStr - @endTimeStr</td>
+                                <td><span class="badge-status badge-info">@c.Room</span></td>
+                                <td style="font-size:12.5px;">@c.InstructorName</td>
+                                <td><span class="badge-status badge-success">Enrolled</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#f8fafc; font-weight:700;">
+                            <td colspan="3" style="text-align:right;">TOTAL ENROLLED CREDITS:</td>
+                            <td><span style="color:var(--nu-blue); font-size:15px;">@Model.TotalUnits units</span></td>
+                            <td colspan="6" style="font-size:12px; color:var(--nu-text-muted);">
+                                Regular Full-Time Academic Load
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div style="padding:48px 24px; text-align:center; color:var(--nu-text-muted);">
+                <div style="font-size:32px; margin-bottom:8px;">📅</div>
+                <h4>No Enrolled Classes Found</h4>
+                <p>There are no enrolled subjects registered under your account for @Model.SchoolYear @Model.Semester.</p>
+                <a href="/Enrollment" class="btn-nu btn-nu-primary btn-sm" style="margin-top:10px;">Check Enrollment Status</a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Weekly Day-by-Day Grid Matrix -->
+<div class="portal-card no-print">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>🗓️</span> Weekly Schedule Grid
+        </h3>
+        <span style="font-size:12px; color:var(--nu-text-muted);">Organized by day of the week</span>
+    </div>
+    <div class="portal-card-body">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
+            @foreach (var day in days)
+            {
+                // check which classes occur on this day
+                // DaysOfWeek can be "MWF", "TTH", "SAT", "Monday", "Tuesday", etc.
+                var dayClasses = Model.Classes.Where(c =>
+                {
+                    var d = c.DaysOfWeek.ToUpperInvariant();
+                    if (day == "Monday" && (d.Contains("MON") || d.Contains("MWF") || d.Contains("M"))) return true;
+                    if (day == "Tuesday" && (d.Contains("TUE") || d.Contains("TTH") || d.Contains("T"))) return true;
+                    if (day == "Wednesday" && (d.Contains("WED") || d.Contains("MWF") || d.Contains("W"))) return true;
+                    if (day == "Thursday" && (d.Contains("THU") || d.Contains("TTH") || d.Contains("TH"))) return true;
+                    if (day == "Friday" && (d.Contains("FRI") || d.Contains("MWF") || d.Contains("F"))) return true;
+                    if (day == "Saturday" && (d.Contains("SAT") || d.Contains("S"))) return true;
+                    return false;
+                }).OrderBy(c => c.StartTime).ToList();
+
+                <div style="background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); overflow:hidden;">
+                    <div style="background:var(--nu-blue); color:#ffffff; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.8px; padding:8px 12px; text-align:center;">
+                        @day
+                    </div>
+                    <div style="padding:10px; display:flex; flex-direction:column; gap:8px; min-height:120px;">
+                        @if (dayClasses.Any())
+                        {
+                            @foreach (var dc in dayClasses)
+                            {
+                                var sTime = DateTime.Today.Add(dc.StartTime).ToString("hh:mm tt");
+                                var eTime = DateTime.Today.Add(dc.EndTime).ToString("hh:mm tt");
+                                <div style="background:#ffffff; border:1px solid var(--nu-border); border-left:3px solid var(--nu-gold); border-radius:4px; padding:8px 10px;">
+                                    <div style="font-weight:700; font-size:12.5px; color:var(--nu-blue-dark);">@dc.SubjectCode</div>
+                                    <div style="font-size:11px; color:var(--nu-text-muted); margin-top:2px;">@sTime - @eTime</div>
+                                    <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10.5px;">
+                                        <span class="badge-status badge-info" style="padding:1px 6px;">@dc.Room</span>
+                                        <span style="color:var(--nu-text-muted);">@dc.SectionCode</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div style="text-align:center; color:var(--nu-text-light); font-size:11.5px; margin:auto 0; padding:12px 0;">
+                                No classes
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

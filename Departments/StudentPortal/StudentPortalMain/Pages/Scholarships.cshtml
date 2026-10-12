@@ -1,0 +1,101 @@
+@page
+@model StudentPortalMain.Pages.ScholarshipsModel
+@{
+    ViewData["Title"] = "Scholarships & Financial Grants";
+    ViewData["ActivePage"] = "Scholarships";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Student Financial Assistance
+        </div>
+        <h1 class="portal-page-title">University Scholarships &amp; Grants</h1>
+        <p class="portal-page-subtitle">
+            Apply for academic merit discounts, athletic waivers, and government educational subsidies.
+        </p>
+    </div>
+</div>
+
+<div class="row" style="display:flex; flex-wrap:wrap; gap:24px; margin:0 -12px;">
+    <!-- Available Scholarships List -->
+    <div style="flex: 2 1 500px; min-width:320px;">
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>🎓</span> Available Institutional Grants (AY @Model.SchoolYear)
+                </h3>
+            </div>
+            <div class="portal-card-body" style="display:flex; flex-direction:column; gap:16px;">
+                @foreach (var s in Model.AvailableScholarships)
+                {
+                    <div style="background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h4 style="margin:0 0 4px; font-size:15px; color:var(--nu-blue-dark); font-weight:700;">@s.Name</h4>
+                            <div style="font-size:12.5px; color:var(--nu-text-muted);">@s.Description</div>
+                            <div style="font-size:11px; color:#15803d; font-weight:600; margin-top:4px;">
+                                Slots Available: @s.SlotsAvailable slots open
+                            </div>
+                        </div>
+                        <form method="post" asp-page-handler="Apply" style="margin:0;">
+                            <input type="hidden" name="scholarshipName" value="@s.Name" />
+                            <button type="submit" class="btn-nu btn-nu-gold btn-sm">
+                                Apply for Grant
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- My Applications Status -->
+    <div style="flex: 1 1 360px; min-width:300px;">
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📋</span> My Scholarship Applications
+                </h3>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                @if (Model.Applications.Any())
+                {
+                    <div class="portal-table-responsive">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Grant Name</th>
+                                    <th>Status</th>
+                                    <th>Applied</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in Model.Applications)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong style="color:var(--nu-blue-dark); font-size:13px;">@app.ScholarshipName</strong>
+                                            <div style="font-size:11px; color:var(--nu-text-muted);">@app.SchoolYear &bull; @app.Semester</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge-status @(app.Status == "approved" ? "badge-success" : (app.Status == "rejected" ? "badge-danger" : "badge-warning"))">
+                                                @app.Status.ToUpper()
+                                            </span>
+                                        </td>
+                                        <td style="font-size:11.5px;">@app.RequestedAt.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding:32px; text-align:center; color:var(--nu-text-muted); font-size:12.5px;">
+                        No applications submitted yet.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

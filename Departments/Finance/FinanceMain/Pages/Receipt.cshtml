@@ -1,0 +1,255 @@
+@page "{paymentNumber?}"
+@model FinanceMain.Pages.ReceiptModel
+@{
+    ViewData["Title"] = Model.Payment != null ? $"Official Receipt — {Model.Payment.PaymentNumber}" : "Official Receipt";
+    Layout = null; // Standalone printable receipt
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - National University Lipa</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #f1f5f9;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #0f172a;
+            margin: 0;
+            padding: 24px;
+        }
+        .receipt-card {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 36px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        .receipt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #0d1b3d;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+        .receipt-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0d1b3d;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .receipt-mono {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 700;
+        }
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin: 16px 0;
+        }
+        .receipt-table th {
+            background: #f8fafc;
+            padding: 8px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .receipt-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .receipt-total-row {
+            font-size: 15px;
+            font-weight: 800;
+            background: #f8fafc;
+            border-top: 2px solid #0d1b3d;
+        }
+        .receipt-watermark {
+            display: inline-block;
+            padding: 4px 14px;
+            background: #dcfce7;
+            color: #15803d;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .receipt-toolbar {
+            max-width: 680px;
+            margin: 0 auto 16px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .receipt-sig-block {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px dashed #cbd5e1;
+            font-size: 11.5px;
+        }
+        .receipt-sig-line {
+            width: 200px;
+            border-top: 1px solid #0f172a;
+            margin-top: 36px;
+            padding-top: 4px;
+            text-align: center;
+            font-weight: 600;
+        }
+        @@media print {
+            body { background: #fff; padding: 0; }
+            .receipt-card { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+            .receipt-toolbar { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    @if (Model.NotFound || Model.Payment == null)
+    {
+        <div class="receipt-toolbar">
+            <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary">&larr; Return</a>
+        </div>
+        <div class="receipt-card text-center py-5">
+            <h4 class="text-danger">Official Receipt Not Found</h4>
+            <p class="text-muted">No payment transaction was located for the given reference.</p>
+            <a href="/Payments" class="btn btn-primary btn-sm mt-3">View All Payments</a>
+        </div>
+    }
+    else
+    {
+        var p = Model.Payment;
+        var a = Model.Assessment;
+
+        <div class="receipt-toolbar">
+            <div class="d-flex align-items-center gap-2">
+                <a href="/Payments" class="btn btn-sm btn-outline-secondary">&larr; Payments Log</a>
+                <a href="/StudentAccount" class="btn btn-sm btn-outline-secondary">My Account</a>
+                <a href="/Billing" class="btn btn-sm btn-outline-secondary">Billing</a>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" onclick="window.print()" class="btn btn-sm btn-primary fw-bold">🖨️ Print Official Receipt</button>
+            </div>
+        </div>
+
+        <div class="receipt-card">
+            <!-- Header -->
+            <div class="receipt-header">
+                <div class="d-flex align-items-center gap-3">
+                    <svg width="40" height="40" viewBox="0 0 34 34" fill="none">
+                        <path d="M17 2 L30 7 V16 C30 24 24 30 17 32 C10 30 4 24 4 16 V7 Z" fill="#eab308" stroke="#0d1b3d" stroke-width="1.5" />
+                        <text x="17" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="#0d1b3d">NU</text>
+                    </svg>
+                    <div>
+                        <div class="fw-bold" style="color:#0d1b3d; font-size:13px; letter-spacing:0.04em;">NATIONAL UNIVERSITY LIPA</div>
+                        <div style="font-size:10.5px; color:#64748b;">Office of the University Bursar &middot; Accounting &amp; Finance</div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="receipt-title">OFFICIAL RECEIPT</div>
+                    <div class="receipt-mono" style="color:var(--fin-navy); font-size:13px;">@p.PaymentNumber</div>
+                    <div class="mt-1">
+                        <span class="receipt-watermark">&#10003; PAYMENT CONFIRMED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Details -->
+            <div class="row g-2 mb-3 small">
+                <div class="col-7">
+                    <div class="text-muted" style="font-size:11px;">RECEIVED FROM:</div>
+                    <div class="fw-bold text-dark" style="font-size:14px;">@p.StudentDisplayName</div>
+                    <div class="text-muted">@p.Program</div>
+                    @if (a != null)
+                    {
+                        <div class="receipt-mono text-muted">ID: @a.StudentNumber</div>
+                    }
+                </div>
+                <div class="col-5 text-end">
+                    <div class="text-muted" style="font-size:11px;">DATE &amp; TIME:</div>
+                    <div class="fw-semibold">@p.PaymentDate.ToString("MMMM dd, yyyy · hh:mm tt")</div>
+                    <div class="text-muted mt-1" style="font-size:11px;">PAYMENT METHOD:</div>
+                    <div class="fw-semibold text-primary">@p.PaymentMethod</div>
+                    <div class="text-muted" style="font-size:11px;">REF NO: <span class="receipt-mono">@(p.ReferenceNumber ?? "N/A")</span></div>
+                </div>
+            </div>
+
+            <!-- Items Settled Table -->
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th>Particulars / Description</th>
+                        <th>Assessment Ref</th>
+                        <th class="text-end">Amount Paid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>Tuition &amp; Matriculation Settlement</strong>
+                            <div class="text-muted" style="font-size:11px;">AY 2026-2027 &middot; 1st Semester matriculation installment</div>
+                        </td>
+                        <td class="receipt-mono small">
+                            <a href="/Invoice/@p.FeeAssessmentId" style="color:#0d1b3d; text-decoration:none;">@p.AssessmentNumber</a>
+                        </td>
+                        <td class="text-end fw-bold text-success" style="font-size:14px;">
+                            @p.AmountPaid.ToString("₱#,##0.00")
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="receipt-total-row">
+                        <td colspan="2">TOTAL AMOUNT RECEIVED</td>
+                        <td class="text-end text-success">@p.AmountPaid.ToString("₱#,##0.00")</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            @if (a != null)
+            {
+                <div class="p-2 mb-3 rounded" style="background:#f8fafc; border:1px solid #e2e8f0; font-size:11.5px;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Assessment Total:</span>
+                        <span class="fw-semibold">@a.TotalAmount.ToString("₱#,##0.00")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Total Payments Recorded:</span>
+                        <span class="text-success fw-semibold">@a.TotalPaid.ToString("₱#,##0.00")</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold pt-1 border-top">
+                        <span>Remaining Balance Due:</span>
+                        <span class="@(a.Balance > 0 ? "text-danger" : "text-success")">@a.Balance.ToString("₱#,##0.00")</span>
+                    </div>
+                </div>
+            }
+
+            <div style="font-size:10px; color:#64748b; line-height:1.4;">
+                This system-generated receipt is electronically verified and recognized across National University Lipa departments including Registrar for enrollment validation and semestral clearance.
+            </div>
+
+            <!-- Signatures -->
+            <div class="receipt-sig-block">
+                <div>
+                    <div class="receipt-sig-line">Ms. Carmela Ilagan</div>
+                    <div class="text-muted text-center" style="font-size:10px;">Authorized Cashier / Finance Officer</div>
+                </div>
+                <div>
+                    <div class="receipt-sig-line">@p.StudentDisplayName</div>
+                    <div class="text-muted text-center" style="font-size:10px;">Payor Signature</div>
+                </div>
+            </div>
+        </div>
+    }
+</body>
+</html>

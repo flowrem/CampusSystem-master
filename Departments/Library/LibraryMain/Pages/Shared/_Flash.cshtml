@@ -1,0 +1,5 @@
+@model LibraryMain.Services.LibraryPageModel
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="alert @(Model.IsError ? "alert-danger" : "alert-success") mt-3" role="alert">@Model.Message</div>
+}

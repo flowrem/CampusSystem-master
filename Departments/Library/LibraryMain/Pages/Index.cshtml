@@ -1,0 +1,57 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Library Services";
+}
+
+<section class="page-heading">
+    <div>
+        <div class="eyebrow">Campus Services</div>
+        <h1>Library Services</h1>
+    </div>
+</section>
+
+<partial name="_Flash" model="Model" />
+
+<div class="surface p-4 p-md-5">
+    @if (Model.IsStudent)
+    {
+        <p class="lead mb-4">Welcome, @User.Identity?.Name. You have <strong>@Model.MyOpenLoans</strong> book(s) on loan@(Model.MyOutstanding > 0 ? $" and ₱{Model.MyOutstanding:N2} in unpaid fines" : "").</p>
+    }
+    else
+    {
+        <p class="lead mb-4">Circulation desk for @User.Identity?.Name.</p>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Titles</div><h2 class="mb-0">@Model.Stats.Titles</h2></div></div>
+        <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Copies on shelf</div><h2 class="mb-0">@Model.Stats.CopiesOnShelf</h2></div></div>
+        <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Books on loan</div><h2 class="mb-0">@Model.Stats.OpenLoans</h2></div></div>
+        <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Overdue</div><h2 class="mb-0">@Model.Stats.OverdueLoans</h2></div></div>
+        @if (Model.IsStaff)
+        {
+            <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Unpaid fines</div><h2 class="mb-0">₱@Model.Stats.PendingFines.ToString("N2")</h2></div></div>
+            <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Active reservations</div><h2 class="mb-0">@Model.Stats.ActiveReservations</h2></div></div>
+        }
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="surface p-3 h-100">
+                <h2>Quick access</h2>
+                <ul class="mb-0">
+                    <li><a asp-page="/Catalog">Search the catalog</a></li>
+                    <li><a asp-page="/History">@(Model.IsStudent ? "My loans" : "All loans and check-in")</a></li>
+                    <li><a asp-page="/Fines">Fines and fees</a></li>
+                    <li><a asp-page="/Reservations">Reservations</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="surface p-3 h-100">
+                <h2>Lending rules</h2>
+                <p class="mb-0">Loans are 7 days by default. Overdue books cost a daily fine, and damaged or lost books carry a fixed fee. Fines must be paid before the next book is borrowed. Reserve a title only when no copy is on the shelf.</p>
+            </div>
+        </div>
+    </div>
+</div>

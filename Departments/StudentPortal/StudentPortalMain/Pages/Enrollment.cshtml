@@ -1,0 +1,377 @@
+@page
+@model StudentPortalMain.Pages.EnrollmentModel
+@{
+    ViewData["Title"] = "Enrollment & Certificate of Registration";
+    ViewData["ActivePage"] = "Enrollment";
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+    var en = Model.Enrollment;
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Registration &amp; Load Management
+        </div>
+        <h1 class="portal-page-title">Enrollment &amp; Demo Certificate of Registration</h1>
+        <p class="portal-page-subtitle">
+            AY <strong>@Model.SchoolYear</strong> &bull; <strong>@Model.Semester</strong> &bull;
+            Validation Status:
+            <span class="badge-status @(en?.Status == "registered" || en?.Status == "enrolled" ? "badge-success" : "badge-warning")">
+                @(en?.Status?.ToUpper() ?? "PENDING")
+            </span>
+        </p>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;" class="no-print">
+        <button type="button" onclick="window.print()" class="btn-nu btn-nu-gold btn-print">
+            🖨️ Print Official COR
+        </button>
+    </div>
+</div>
+
+<!-- ─── Official Certificate of Registration (COR) Card ──────────────────── -->
+<div class="portal-card" id="officialCorCard">
+    <div style="padding:24px 28px; border-bottom:2px solid var(--nu-blue);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <img src="~/img/logo3.png" alt="National University Logo" style="width:60px; height:60px; object-fit:contain;" />
+                <div>
+                    <h2 style="margin:0; font-size:19px; font-weight:800; color:var(--nu-blue-deep); letter-spacing:0.5px;">NATIONAL UNIVERSITY LIPA</h2>
+                    <div style="font-size:12px; color:var(--nu-text-muted); font-weight:600;">Office of the University Registrar &bull; Official Registration Form</div>
+                    <div style="font-size:12px; color:var(--nu-blue); font-weight:700; margin-top:2px;">AY @Model.SchoolYear &bull; @Model.Semester</div>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="display:inline-block; border:2px dashed #15803d; background:#dcfce7; padding:6px 14px; border-radius:6px; text-align:center;">
+                    <div style="font-size:10px; font-weight:800; letter-spacing:1px; color:#166534; text-transform:uppercase;">Registrar Status</div>
+                    <div style="font-size:14px; font-weight:800; color:#15803d;">@(en?.Status == "registered" || en?.Status == "enrolled" ? "✓ DEMO COR VALIDATED" : "NOT YET VALIDATED")</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-top:20px; padding:14px 18px; background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); font-size:12.5px;">
+            <div>
+                <span style="color:var(--nu-text-muted); font-size:11px; text-transform:uppercase; font-weight:700; display:block;">Student Name</span>
+                <strong style="color:var(--nu-blue-dark); font-size:13.5px;">@studentName</strong>
+            </div>
+            <div>
+                <span style="color:var(--nu-text-muted); font-size:11px; text-transform:uppercase; font-weight:700; display:block;">Student ID Number</span>
+                <strong>@studentIdNum</strong>
+            </div>
+            <div>
+                <span style="color:var(--nu-text-muted); font-size:11px; text-transform:uppercase; font-weight:700; display:block;">Degree Program</span>
+                <strong>@Model.Profile.Program</strong>
+            </div>
+            <div>
+                <span style="color:var(--nu-text-muted); font-size:11px; text-transform:uppercase; font-weight:700; display:block;">Year Level &amp; Curriculum</span>
+                <strong>@Model.Profile.YearLevel &bull; @Model.Profile.CurriculumYear</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-card-body" style="padding:0;">
+        @if (en != null && en.Subjects.Any())
+        {
+            <div class="portal-table-responsive">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Descriptive Title</th>
+                            <th>Section</th>
+                            <th>Units</th>
+                            <th>Lec / Lab</th>
+                            <th>Schedule</th>
+                            <th>Room</th>
+                            <th>Instructor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in en.Subjects)
+                        {
+                            <tr>
+                                <td><strong style="color:var(--nu-blue-dark);">@s.SubjectCode</strong></td>
+                                <td>@s.SubjectName</td>
+                                <td><span class="badge-status badge-secondary">@s.SectionCode</span></td>
+                                <td><strong>@s.Units</strong></td>
+                                <td style="font-size:12px; color:var(--nu-text-muted);">@(s.LecHours)h / @(s.LabHours)h</td>
+                                <td style="font-size:12px; font-weight:600; color:var(--nu-blue);">@s.FormattedSchedule</td>
+                                <td><span class="badge-status badge-info">@s.Room</span></td>
+                                <td style="font-size:12px;">@s.InstructorName</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#f8fafc; font-weight:700; border-top:2px solid var(--nu-border);">
+                            <td colspan="3" style="text-align:right;">TOTAL ENROLLED CREDITS:</td>
+                            <td style="color:var(--nu-blue); font-size:15px;">@en.TotalUnits units</td>
+                            <td colspan="4" style="font-size:12px; color:var(--nu-text-muted);">
+                                Payment status: @(en?.Status == "registered" || en?.Status == "enrolled" ? "Paid" : "Pending") &bull; Demo document only
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div style="padding:18px 24px; font-size:11.5px; color:var(--nu-text-muted); border-top:1px solid var(--nu-border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <strong>Demo Registrar Note:</strong> This is a temporary demonstration document and is not official financial or legal documentation.
+                </div>
+                <div>
+                    Validated in Registrar System: <strong>AY @en?.SchoolYear - @en?.Semester</strong>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="padding:48px; text-align:center; color:var(--nu-text-muted);">
+                <h4>No Validated Demo COR Found</h4>
+                <p>Payment approval and Registrar registration are required before a COR can be issued.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- ─── Interactive Add / Drop & Overload Petitions ───────────────────────── -->
+<div class="portal-card no-print" style="margin-top:28px;">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>📝</span> Academic Load Petitions (Add / Drop &amp; Overload)
+        </h3>
+        <span style="font-size:12.5px; color:var(--nu-text-muted);">Directly submitted to Registrar for approval</span>
+    </div>
+    <div class="portal-card-body">
+        <div style="display:flex; flex-wrap:wrap; gap:24px;">
+            <!-- Form 1: Add/Drop Subject -->
+            <div style="flex:1 1 360px; background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); padding:20px;">
+                <h4 style="margin:0 0 14px; font-size:15px; color:var(--nu-blue-dark); font-weight:700;">
+                    ➕ Add / Drop Subject Petition
+                </h4>
+                <form method="post" asp-page-handler="AddDrop">
+                    <input type="hidden" name="enrollmentId" value="@(en?.Id ?? 1)" />
+
+                    <div class="form-group">
+                        <label class="form-label">Petition Type:</label>
+                        <select name="requestType" class="form-select" id="addDropType" onchange="toggleAddDropInputs(this.value)">
+                            <option value="drop">Drop an Enrolled Subject</option>
+                            <option value="add">Add a New Subject</option>
+                            <option value="change">Change Section / Schedule</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="groupDrop">
+                        <label class="form-label">Select Subject to Drop / Change:</label>
+                        <select name="classOfferingId" class="form-select">
+                            <option value="">-- Choose enrolled subject --</option>
+                            @if (en?.Subjects != null)
+                            {
+                                @foreach (var s in en.Subjects)
+                                {
+                                    <option value="@s.ClassOfferingId">@s.SubjectCode - @s.SubjectName (@s.SectionCode)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="groupAdd" style="display:none;">
+                        <label class="form-label">Select Target Class Offering to Add:</label>
+                        <select name="targetClassOfferingId" class="form-select">
+                            <option value="">-- Choose offering from catalog --</option>
+                            @foreach (var off in Model.AvailableOfferings)
+                            {
+                                <option value="@off.ClassOfferingId">@off.SubjectCode - @off.SubjectName (@off.SectionCode &bull; @off.Units u)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Justification / Reason:</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="State reason (e.g. conflict of schedule, prerequisite issue)..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-nu btn-nu-primary" style="width:100%;">
+                        Submit Petition to Registrar
+                    </button>
+                </form>
+            </div>
+
+            <!-- Form 2: Overload / Waiver -->
+            <div style="flex:1 1 360px; background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); padding:20px;">
+                <h4 style="margin:0 0 14px; font-size:15px; color:var(--nu-blue-dark); font-weight:700;">
+                    📈 Overload / Unit Waiver Petition
+                </h4>
+                <form method="post" asp-page-handler="Overload">
+                    <input type="hidden" name="schoolYear" value="@Model.SchoolYear" />
+                    <input type="hidden" name="semester" value="@Model.Semester" />
+
+                    <div class="form-group">
+                        <label class="form-label">Waiver Type:</label>
+                        <select name="requestType" class="form-select">
+                            <option value="overload">Graduating / Senior Overload</option>
+                            <option value="waiver">Prerequisite Waiver</option>
+                            <option value="cross_enrollment">Cross-Enrollment Permit</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Total Requested Credit Units (Max 30):</label>
+                        <input type="number" name="requestedUnits" min="1" max="30" value="24" class="form-control" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Academic Justification:</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Graduating student needing final units to complete degree..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-nu btn-nu-gold" style="width:100%;">
+                        File Overload Petition
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Submitted Petitions Table -->
+        <div style="margin-top:24px;">
+            <h4 style="font-size:14px; font-weight:700; color:var(--nu-blue-dark); margin-bottom:12px;">
+                📋 Filed Add/Drop &amp; Overload Petitions Status
+            </h4>
+            @if (Model.AddDropRequests.Any() || Model.OverloadRequests.Any())
+            {
+                <div class="portal-table-responsive">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Details</th>
+                                <th>Reason</th>
+                                <th>Filed Date</th>
+                                <th>Registrar Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ad in Model.AddDropRequests)
+                            {
+                                <tr>
+                                    <td><span class="badge-status badge-secondary">ADD/DROP (@ad.RequestType.ToUpper())</span></td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(ad.SubjectCode))
+                                        {
+                                            <div>Dropping: <strong>@ad.SubjectCode</strong> (@ad.SectionCode)</div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(ad.TargetSubjectCode))
+                                        {
+                                            <div>Adding: <strong>@ad.TargetSubjectCode</strong> (@ad.TargetSectionCode)</div>
+                                        }
+                                    </td>
+                                    <td style="font-size:12px; color:var(--nu-text-muted);">@ad.Reason</td>
+                                    <td style="font-size:12px;">@ad.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span class="badge-status @(ad.Status == "approved" ? "badge-success" : (ad.Status == "rejected" ? "badge-danger" : "badge-warning"))">
+                                            @ad.Status.ToUpper()
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var ov in Model.OverloadRequests)
+                            {
+                                <tr>
+                                    <td><span class="badge-status badge-info">OVERLOAD / WAIVER</span></td>
+                                    <td>
+                                        <strong>@ov.RequestedUnits units</strong> &bull; @ov.SchoolYear (@ov.Semester)
+                                    </td>
+                                    <td style="font-size:12px; color:var(--nu-text-muted);">@ov.Reason</td>
+                                    <td style="font-size:12px;">@ov.RequestedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span class="badge-status @(ov.Status == "approved" ? "badge-success" : (ov.Status == "rejected" ? "badge-danger" : "badge-warning"))">
+                                            @ov.Status.ToUpper()
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var sh in Model.ShiftingRequests)
+                            {
+                                <tr>
+                                    <td><span class="badge-status badge-warning">PROGRAM SHIFTING</span></td>
+                                    <td>
+                                        <strong>@sh.FromProgram &rarr; @sh.ToProgram</strong>
+                                    </td>
+                                    <td style="font-size:12px; color:var(--nu-text-muted);">@sh.Reason</td>
+                                    <td style="font-size:12px;">@sh.RequestedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <span class="badge-status @(sh.Status == "approved" ? "badge-success" : (sh.Status == "rejected" ? "badge-danger" : "badge-warning"))">
+                                            @sh.Status.ToUpper()
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div style="font-size:12.5px; color:var(--nu-text-muted); padding:10px 0;">
+                    No pending or past petitions filed.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ─── Course Shifting Form ─────────────────────────────────────────────── -->
+<div class="portal-card no-print" style="margin-top:24px;">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>🧭</span> Degree Program Shifting Petition (Registrar Curriculum Evaluation)
+        </h3>
+        <span style="font-size:12px; color:var(--nu-text-muted);">Subject to Dean &amp; Registrar Evaluator approval</span>
+    </div>
+    <div class="portal-card-body">
+        <form method="post" asp-page-handler="ShiftProgram">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+                <div class="form-group">
+                    <label class="form-label">Current Enrolled Program:</label>
+                    <input type="text" class="form-control" value="@Model.Profile.Program" readonly style="background:#f1f5f9;" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Desired Target Program to Shift Into:</label>
+                    <select name="toProgram" class="form-select" required>
+                        <option value="">-- Select Degree Program --</option>
+                        <option value="BS Information Technology">BS Information Technology (BSIT)</option>
+                        <option value="BS Computer Science">BS Computer Science (BSCS)</option>
+                        <option value="BS Business Administration">BS Business Administration (BSBA)</option>
+                        <option value="BS Accountancy">BS Accountancy (BSA)</option>
+                        <option value="BS Hospitality Management">BS Hospitality Management (BSHM)</option>
+                        <option value="BS Psychology">BS Psychology (BSP)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Reason &amp; Career Alignment for Program Shifting:</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="Explain your academic reason and motivation for shifting..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-nu btn-nu-primary">
+                Submit Shifting Petition to Registrar
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleAddDropInputs(val) {
+    var dropGrp = document.getElementById('groupDrop');
+    var addGrp = document.getElementById('groupAdd');
+    if (val === 'drop') {
+        dropGrp.style.display = 'block';
+        addGrp.style.display = 'none';
+    } else if (val === 'add') {
+        dropGrp.style.display = 'none';
+        addGrp.style.display = 'block';
+    } else {
+        dropGrp.style.display = 'block';
+        addGrp.style.display = 'block';
+    }
+}
+</script>

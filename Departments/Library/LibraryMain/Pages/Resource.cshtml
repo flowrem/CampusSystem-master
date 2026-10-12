@@ -1,0 +1,63 @@
+@page
+@model ResourceModel
+@{
+    var book = Model.Book!;
+    ViewData["Title"] = book.Title;
+}
+
+<div class="page-heading"><div><span class="eyebrow">@book.Category</span><h1>@book.Title</h1><p class="text-muted">@book.Author</p></div></div>
+
+<partial name="_Flash" model="Model" />
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="surface p-4">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">ISBN</dt><dd class="col-sm-8">@book.Isbn</dd>
+                <dt class="col-sm-4">Call number</dt><dd class="col-sm-8">@book.CallNumber</dd>
+                <dt class="col-sm-4">Shelf</dt><dd class="col-sm-8">@book.Shelf</dd>
+                <dt class="col-sm-4">Availability</dt>
+                <dd class="col-sm-8">
+                    @if (book.Available > 0) { <span class="badge text-bg-success">@book.Available of @book.Total copies available</span> }
+                    else { <span class="badge text-bg-secondary">All @book.Total copies are out</span> }
+                </dd>
+                <dt class="col-sm-4">Waiting</dt><dd class="col-sm-8">@book.Reservations active reservation(s)</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="col-md-5">
+        @if (Model.IsStudent)
+        {
+            <div class="surface p-4">
+                @if (book.Available > 0)
+                {
+                    <p class="mb-0">A copy is on the shelf. Borrow it at the circulation desk or from Student Portal.</p>
+                }
+                else
+                {
+                    <p>No copy is available. Reserve it and it is held for you for 7 days.</p>
+                    <form method="post" asp-page-handler="Reserve" asp-route-id="@book.Id"><button class="btn btn-dark w-100">Reserve this book</button></form>
+                }
+            </div>
+        }
+        else if (Model.IsStaff)
+        {
+            <div class="surface p-4">
+                <h2 class="h5">Check out</h2>
+                @if (book.Available > 0)
+                {
+                    <form method="post" asp-page-handler="Checkout" asp-route-id="@book.Id">
+                        <label class="form-label">Student ID number<input class="form-control" name="studentNumber" required placeholder="2023-01045" /></label>
+                        <label class="form-label">Loan days<input class="form-control" name="loanDays" type="number" min="1" max="30" value="7" /></label>
+                        <button class="btn btn-dark w-100">Check out</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="mb-0 text-muted">No copy is available to check out.</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+<p class="mt-3"><a asp-page="/Catalog">← Back to catalog</a></p>

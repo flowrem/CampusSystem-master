@@ -1,0 +1,373 @@
+@page
+@model StudentPortalMain.Pages.LibraryModel
+@{
+    ViewData["Title"] = "Library Resource Center & Book Management";
+    ViewData["ActivePage"] = "Library";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Learning Resource Center &bull; Library System
+        </div>
+        <h1 class="portal-page-title">University Library &amp; Book Circulation</h1>
+        <p class="portal-page-subtitle">
+            Search physical books, log borrowings, process returns, and manage student account fines.
+        </p>
+    </div>
+</div>
+
+@if (TempData["FlashMessage"] != null)
+{
+    var type = TempData["FlashType"]?.ToString() ?? "info";
+    <div class="alert alert-@type" style="padding:14px 18px; margin-bottom:20px; border-radius:8px; display:flex; align-items:center; gap:12px; background:@(type == "success" ? "#ecfdf5" : (type == "danger" ? "#fef2f2" : "#fffbeb")); color:@(type == "success" ? "#065f46" : (type == "danger" ? "#991b1b" : "#92400e")); border:1px solid @(type == "success" ? "#a7f3d0" : (type == "danger" ? "#fecaca" : "#fde68a"));">
+        <span style="font-size:18px;">@(type == "success" ? "✓" : (type == "danger" ? "⚠️" : "ℹ️"))</span>
+        <div>@TempData["FlashMessage"]</div>
+    </div>
+}
+
+<!-- Library Status Overview Metrics -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+    <div class="portal-card" style="padding:16px; margin-bottom:0;">
+        <div style="font-size:12px; font-weight:600; color:var(--nu-text-muted); text-transform:uppercase;">Account Standing</div>
+        <div style="font-size:20px; font-weight:700; margin-top:4px;">
+            @if (Model.OutstandingFines > 0)
+            {
+                <span style="color:#b91c1c;">⚠️ Deficient (Hold)</span>
+            }
+            else
+            {
+                <span style="color:#15803d;">✓ Active &amp; Cleared</span>
+            }
+        </div>
+        <div style="font-size:11.5px; color:var(--nu-text-muted); margin-top:4px;">
+            @(Model.OutstandingFines > 0 ? "Outstanding library fines require settlement" : "No pending sanctions or holds")
+        </div>
+    </div>
+
+    <div class="portal-card" style="padding:16px; margin-bottom:0;">
+        <div style="font-size:12px; font-weight:600; color:var(--nu-text-muted); text-transform:uppercase;">Active Borrowings</div>
+        <div style="font-size:20px; font-weight:700; color:var(--nu-blue-dark); margin-top:4px;">
+            @Model.BookLoans.Count(l => l.Status == "Borrowed" || l.Status == "Overdue") / 5 Books
+        </div>
+        <div style="font-size:11.5px; color:var(--nu-text-muted); margin-top:4px;">
+            Max quota: 5 concurrent titles
+        </div>
+    </div>
+
+    <div class="portal-card" style="padding:16px; margin-bottom:0;">
+        <div style="font-size:12px; font-weight:600; color:var(--nu-text-muted); text-transform:uppercase;">Outstanding Fines</div>
+        <div style="font-size:20px; font-weight:700; color:@(Model.OutstandingFines > 0 ? "#b91c1c" : "#15803d"); margin-top:4px;">
+            ₱@Model.OutstandingFines.ToString("N2")
+        </div>
+        <div style="font-size:11.5px; color:var(--nu-text-muted); margin-top:4px;">
+            @(Model.OutstandingFines > 0 ? "Appears in Student Financials ledger" : "Zero balance")
+        </div>
+    </div>
+
+    <div class="portal-card" style="padding:16px; margin-bottom:0;">
+        <div style="font-size:12px; font-weight:600; color:var(--nu-text-muted); text-transform:uppercase;">Circulation Desk</div>
+        <div style="font-size:16px; font-weight:700; color:var(--nu-blue-dark); margin-top:4px;">
+            3rd Floor LRC Main
+        </div>
+        <div style="font-size:11.5px; color:var(--nu-text-muted); margin-top:4px;">
+            Mon - Sat &bull; 8:00 AM - 6:00 PM
+        </div>
+    </div>
+</div>
+
+<!-- Outstanding Fines Notification Banner (if any) -->
+@if (Model.OutstandingFines > 0)
+{
+    <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:16px 20px; margin-bottom:24px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+        <div>
+            <div style="font-weight:700; color:#9f1239; font-size:15px; display:flex; align-items:center; gap:8px;">
+                <span>⚠️</span> Unpaid Library Fines on Account: ₱@Model.OutstandingFines.ToString("N2")
+            </div>
+            <div style="font-size:12.5px; color:#be123c; margin-top:4px;">
+                Your library clearance is currently marked <strong>Deficient</strong> due to unreturned or damaged books. Settle your fines to clear registration holds.
+            </div>
+        </div>
+        <div>
+            <a href="#fines-section" class="btn-nu btn-nu-gold" style="padding:8px 16px; font-size:13px; text-decoration:none;">
+                Settle Fine Now
+            </a>
+        </div>
+    </div>
+}
+
+<div class="row" style="display:flex; flex-wrap:wrap; gap:24px; margin:0 -12px;">
+    
+    <!-- Left Column: Catalog & Book Logging -->
+    <div style="flex:3 1 600px; min-width:320px;">
+        <div class="portal-card">
+            <div class="portal-card-header" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;">
+                <h3 class="portal-card-title">
+                    <span>📖</span> Library Catalog &amp; Book Logging
+                </h3>
+                <!-- Search and Filter Form -->
+                <form method="get" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input type="text" name="search" value="@Model.SearchQuery" placeholder="Search title, author, ISBN..." class="form-control" style="width:200px; font-size:12.5px; padding:6px 10px;" />
+                    <select name="category" class="form-control" style="width:160px; font-size:12.5px; padding:6px 10px;" onchange="this.form.submit()">
+                        <option value="All" selected="@(Model.SelectedCategory == "All")">All Categories</option>
+                        <option value="Software Engineering" selected="@(Model.SelectedCategory == "Software Engineering")">Software Engineering</option>
+                        <option value="Computer Science" selected="@(Model.SelectedCategory == "Computer Science")">Computer Science</option>
+                        <option value="Database Systems" selected="@(Model.SelectedCategory == "Database Systems")">Database Systems</option>
+                        <option value="Networking & Security" selected="@(Model.SelectedCategory == "Networking & Security")">Networking &amp; Security</option>
+                        <option value="Algorithms" selected="@(Model.SelectedCategory == "Algorithms")">Algorithms</option>
+                    </select>
+                    <button type="submit" class="btn-nu btn-nu-primary" style="padding:6px 12px; font-size:12.5px;">Filter</button>
+                </form>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                <div class="portal-table-responsive">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th>Call # / ISBN</th>
+                                <th>Book Title &amp; Author</th>
+                                <th>Category</th>
+                                <th>Availability</th>
+                                <th>Location</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var book in Model.Catalog)
+                            {
+                                <tr>
+                                    <td style="font-size:12px; font-family:monospace;">
+                                        <strong>@book.CallNumber</strong><br />
+                                        <span style="color:var(--nu-text-muted);">@book.Isbn</span>
+                                    </td>
+                                    <td>
+                                        <strong style="color:var(--nu-blue-dark); font-size:13.5px;">@book.Title</strong><br />
+                                        <span style="font-size:12px; color:var(--nu-text-muted);">by @book.Author</span>
+                                    </td>
+                                    <td>
+                                        <span style="background:var(--nu-surface-alt); padding:3px 8px; border-radius:4px; font-size:11.5px; font-weight:600;">
+                                            @book.Category
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (book.AvailableCopies > 0)
+                                        {
+                                            <span class="badge-status badge-success" style="font-size:11px;">
+                                                @book.AvailableCopies / @book.TotalCopies Available
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-status badge-danger" style="font-size:11px;">
+                                                Checked Out
+                                            </span>
+                                        }
+                                    </td>
+                                    <td style="font-size:12px; color:var(--nu-text-muted);">
+                                        @book.ShelfLocation
+                                    </td>
+                                    <td style="text-align:right;">
+                                        @if (book.AvailableCopies > 0)
+                                        {
+                                            <form method="post" asp-page-handler="Borrow" style="display:inline;">
+                                                <input type="hidden" name="bookId" value="@book.Id" />
+                                                <button type="submit" class="btn-nu btn-nu-gold" style="padding:4px 10px; font-size:12px;" @(Model.OutstandingFines > 0 ? "disabled title='Settle outstanding fines to borrow'" : "")>
+                                                    Borrow
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn-nu" style="padding:4px 10px; font-size:12px; background:#e2e8f0; color:#64748b;" disabled>
+                                                Unavailable
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Borrowed Books and Loan History -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📚</span> My Borrowed Books &amp; Loan History
+                </h3>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                @if (Model.BookLoans.Any())
+                {
+                    <div class="portal-table-responsive">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Book Title</th>
+                                    <th>Borrow Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Status</th>
+                                    <th>Fines / Charges</th>
+                                    <th style="text-align:right;">Return Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var loan in Model.BookLoans)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong style="color:var(--nu-blue-dark);">@loan.BookTitle</strong><br />
+                                            <span style="font-size:11.5px; color:var(--nu-text-muted);">@loan.BookAuthor</span>
+                                        </td>
+                                        <td style="font-size:12px;">@loan.BorrowDate.ToString("MMM dd, yyyy")</td>
+                                        <td style="font-size:12px;">
+                                            <strong style="color:@(loan.ReturnDate == null && loan.DueDate < DateTime.UtcNow ? "#b91c1c" : "inherit");">
+                                                @loan.DueDate.ToString("MMM dd, yyyy")
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            @if (loan.Status == "Borrowed")
+                                            {
+                                                <span class="badge-status badge-info">Borrowed (Active)</span>
+                                            }
+                                            else if (loan.Status == "Overdue")
+                                            {
+                                                <span class="badge-status badge-danger">⚠️ Overdue</span>
+                                            }
+                                            else if (loan.Status == "Returned")
+                                            {
+                                                <span class="badge-status badge-success">✓ Returned</span>
+                                            }
+                                            else if (loan.Status == "Damaged")
+                                            {
+                                                <span class="badge-status badge-warning">Damaged Material</span>
+                                            }
+                                            else if (loan.Status == "Lost")
+                                            {
+                                                <span class="badge-status badge-danger">Lost Book</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (loan.FineAmount > 0)
+                                            {
+                                                <strong style="color:@(loan.FineStatus == "Paid" ? "#15803d" : "#b91c1c"); font-size:12.5px;">
+                                                    ₱@loan.FineAmount.ToString("N2")
+                                                </strong>
+                                                <br />
+                                                <span style="font-size:11px; color:var(--nu-text-muted);">
+                                                    (@loan.FineStatus)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span style="color:#15803d; font-size:12px;">₱0.00</span>
+                                            }
+                                        </td>
+                                        <td style="text-align:right;">
+                                            @if (loan.Status == "Borrowed" || loan.Status == "Overdue")
+                                            {
+                                                <form method="post" asp-page-handler="Return" style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
+                                                    <input type="hidden" name="loanId" value="@loan.Id" />
+                                                    <select name="condition" class="form-control" style="padding:3px 6px; font-size:11.5px; width:125px;">
+                                                        <option value="Good">Good Condition</option>
+                                                        <option value="Damaged">Damaged (₱500 fine)</option>
+                                                        <option value="Lost">Lost (₱1200 replacement)</option>
+                                                    </select>
+                                                    <button type="submit" class="btn-nu btn-nu-primary" style="padding:4px 10px; font-size:11.5px;">
+                                                        Return
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span style="font-size:11.5px; color:var(--nu-text-muted);">Completed</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding:36px; text-align:center; color:var(--nu-text-muted);">
+                        No loan history recorded.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Fine Settlement & Library Policies -->
+    <div style="flex:1 1 320px; min-width:300px;">
+        
+        <!-- Settle Fine Card -->
+        <div class="portal-card" id="fines-section">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>💳</span> Settle Outstanding Fines
+                </h3>
+            </div>
+            <div class="portal-card-body">
+                @if (Model.OutstandingFines > 0)
+                {
+                    <p style="font-size:13px; color:var(--nu-text-muted); margin-bottom:16px;">
+                        The following fines have been charged to your student account due to unreturned, overdue, or damaged books:
+                    </p>
+
+                    @foreach (var loan in Model.BookLoans.Where(l => l.FineStatus == "Pending"))
+                    {
+                        <div style="background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:6px; padding:12px; margin-bottom:12px;">
+                            <div style="font-weight:700; color:var(--nu-blue-dark); font-size:13px;">@loan.BookTitle</div>
+                            <div style="font-size:12px; color:var(--nu-text-muted); margin-top:2px;">
+                                Assessment: @loan.Remarks
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                                <strong style="color:#b91c1c; font-size:14px;">₱@loan.FineAmount.ToString("N2")</strong>
+                                <form method="post" asp-page-handler="PayFine">
+                                    <input type="hidden" name="loanId" value="@loan.Id" />
+                                    <input type="hidden" name="paymentMethod" value="Maya" />
+                                    <button type="submit" class="btn-nu btn-nu-gold" style="padding:4px 10px; font-size:12px;">
+                                        Pay with Maya
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="text-align:center; padding:24px 0;">
+                        <span style="font-size:36px;">🎉</span>
+                        <h4 style="margin-top:8px; font-size:15px; color:#15803d;">All Clear!</h4>
+                        <p style="font-size:12.5px; color:var(--nu-text-muted); margin-top:4px;">
+                            You have no pending fines or penalties on your library account.
+                        </p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Library Policies Card -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📌</span> Library Rules &amp; Fine Policies
+                </h3>
+            </div>
+            <div class="portal-card-body" style="font-size:12.5px; line-height:1.6; color:var(--nu-text-muted);">
+                <ul style="padding-left:18px; margin:0;">
+                    <li style="margin-bottom:8px;"><strong>Standard Borrowing:</strong> Maximum 5 titles for up to 7 calendar days.</li>
+                    <li style="margin-bottom:8px;"><strong>Overdue Fines:</strong> ₱20.00 per day per book after due date.</li>
+                    <li style="margin-bottom:8px;"><strong>Damaged Material:</strong> ₱500.00 standard restoration fine.</li>
+                    <li style="margin-bottom:8px;"><strong>Lost Books:</strong> ₱1,200.00 book replacement fee.</li>
+                    <li><strong>Semestral Clearance:</strong> Unsettled fines automatically place a hold on registration and grade issuance.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>

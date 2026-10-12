@@ -1,0 +1,141 @@
+@page
+@model FinanceMain.Pages.BillingModel
+@{
+    ViewData["Title"] = "Billing";
+    Layout = "_FinanceAdminLayout";
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Student Accounts &amp; Billing</h1>
+        <p class="fin-subtitle">Official semestral receivables ledger &middot; Itemized matriculation tracking &middot; AY @FinanceMain.Pages.BillingModel.AcademicYear @FinanceMain.Pages.BillingModel.Semester</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button type="button" onclick="window.print()" class="btn-fin-outline">🖨️ Print Statements</button>
+        <a href="/Assessments" class="btn-fin-gold">+ Issue Assessment</a>
+    </div>
+</div>
+
+<!-- Financial Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-label">Total Amount Billed</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);font-size:22px;">@Model.TotalBilled.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">@Model.TotalAccounts student accounts enrolled</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-label">Total Collections</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);font-size:22px;">@Model.TotalCollected.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Verified payments &amp; deposits</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-red">
+            <div class="fin-stat-label">Outstanding Balance</div>
+            <div class="fin-stat-value" style="color:var(--fin-red);font-size:22px;">@Model.TotalOutstanding.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Pending student settlements</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-gold">
+            <div class="fin-stat-label">Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">
+                <a href="/Payments" class="btn-fin-link">💳 View All Payments &rarr;</a>
+                <a href="/Clearance" class="btn-fin-link">🛡️ Clearance Status &rarr;</a>
+                <a href="/Aid" class="btn-fin-link">🎓 Financial Aid &amp; Grants &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<form method="get" class="fin-filters">
+    <select name="status" class="fin-select" onchange="this.form.submit()">
+        <option value="">Status: All Billing Accounts</option>
+        <option value="Unpaid">Unpaid Only</option>
+        <option value="Partial">Partial Only</option>
+        <option value="Paid">Fully Paid Only</option>
+    </select>
+    <div class="flex-grow-1"></div>
+    <input type="search" name="search" class="fin-search" placeholder="Search student name, ID, or bill #..." />
+    <button type="submit" class="btn-fin-navy">Filter</button>
+</form>
+
+<!-- Billing Statements Table -->
+<div class="fin-card">
+    <div class="fin-card-head">
+        <span class="fin-card-head-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8v12l-2-1-2 1-2-1-2 1V2z"/><path d="M6 5h4M6 8h4"/></svg>
+            Student Accounts Ledger
+        </span>
+        <span class="fin-card-badge">@Model.Statements.Count Accounts Found</span>
+    </div>
+    <div class="table-responsive">
+        <table class="fin-table">
+            <thead>
+                <tr>
+                    <th>Billing / Assessment #</th>
+                    <th>Student Name &amp; ID</th>
+                    <th>Program</th>
+                    <th style="text-align:right;">Total Billed</th>
+                    <th style="text-align:right;">Paid / Credited</th>
+                    <th style="text-align:right;">Outstanding Balance</th>
+                    <th style="text-align:center;">Status</th>
+                    <th style="text-align:center;width:180px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Statements)
+                {
+                    <tr>
+                        <td class="fin-mono">
+                            <a href="/Invoice/@s.Id" class="fin-link" title="View Detailed Invoice">@s.AssessmentNumber</a>
+                        </td>
+                        <td>
+                            <div style="font-weight:700;">@s.StudentName</div>
+                            <div style="font-size:11px;color:var(--fin-muted);">@s.StudentNumber</div>
+                        </td>
+                        <td style="color:var(--fin-muted);font-size:12.5px;">@s.Program</td>
+                        <td style="text-align:right;font-weight:600;">@s.TotalBilled.ToString("₱#,##0.00")</td>
+                        <td style="text-align:right;font-weight:700;color:var(--fin-green);">@s.TotalPaid.ToString("₱#,##0.00")</td>
+                        <td style="text-align:right;" class="@(s.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                            @s.Balance.ToString("₱#,##0.00")
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="@FinanceMain.Pages.BillingModel.StatusBadge(s.Status)">@s.Status</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:inline-flex;gap:6px;align-items:center;">
+                                <a href="/OAO?id=@s.Id" target="_blank" class="btn-fin-outline" style="padding:4px 9px;font-size:11.5px;" title="Print Official Assessment Order">
+                                    🖨️ OAO
+                                </a>
+                                <a href="/Invoice/@s.Id" class="btn-fin-outline" style="padding:4px 9px;font-size:11.5px;" title="View Line-item Invoice">
+                                    Invoice
+                                </a>
+                                @if (s.Balance > 0)
+                                {
+                                    <a href="/Pay?assessmentId=@s.Id" class="btn-fin-gold" style="padding:4px 9px;font-size:11.5px;" title="Record Payment">
+                                        Pay
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-status-paid" style="font-size:10px;">Settled</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Statements.Any())
+                {
+                    <tr>
+                        <td colspan="8" style="text-align:center;color:var(--fin-muted);padding:36px;">No billing statements found matching the criteria.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

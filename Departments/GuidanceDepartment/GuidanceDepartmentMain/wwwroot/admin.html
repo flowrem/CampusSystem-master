@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Department Settings - National University Lipa Guidance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">GUIDANCE SYSTEM</div>
+        <div class="brand-sub">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE GUIDANCE MODULES</div>
+      <a href="/index.html">
+        <span class="ic">🏠</span> Overview
+      </a>
+      <a href="/dashboard.html">
+        <span class="ic">📊</span> Counselor Dashboard
+      </a>
+      <a href="/students.html">
+        <span class="ic">🗂️</span> Student Records
+      </a>
+      <a href="/triage.html">
+        <span class="ic">⚖️</span> Triage Queue
+      </a>
+      <a href="/appointments.html">
+        <span class="ic">📅</span> Appointments
+      </a>
+      <a href="/case-notes.html">
+        <span class="ic">🔒</span> Case Notes
+      </a>
+      <a href="/monitoring.html">
+        <span class="ic">👁️</span> Student Monitoring
+      </a>
+
+      <div class="nav-section-title">STUDENT SERVICES</div>
+      <a href="/request.html">
+        <span class="ic">📝</span> Submit Request
+      </a>
+      <a href="/resources.html">
+        <span class="ic">📚</span> Support Resources
+      </a>
+
+      <div class="nav-section-title">ADMINISTRATION</div>
+      <a href="/admin.html" class="active">
+        <span class="ic">⚙️</span> Department Settings
+      </a>
+      <a href="/openapi/v1.json" target="_blank">
+        <span class="ic">🔌</span> API Documentation
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">MC</div>
+        <div class="user-info">
+          <div class="user-name">Ms. Maya Chen</div>
+          <div class="user-role">Guidance Counselor</div>
+        </div>
+      </div>
+      <a class="guidance-logout" href="/Logout">Log out</a>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY 2026-2027 · 1st Semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/openapi/v1.json" target="_blank" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> Maya Chen (Counselor)</span>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-heading-row">
+        <div>
+          <h1 class="dash-heading">Department Configuration &amp; Routing</h1>
+          <p class="dash-subheading">Manage counselor dispatch rules, escalation thresholds, and inter-department referral pathways</p>
+        </div>
+      </div>
+
+      <div class="settings-layout">
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2><span class="ic">⚙️</span> Department Profile</h2>
+            <span class="badge badge-active">Active</span>
+          </div>
+
+          <form class="surface-form settings-form" data-settings-form style="border:none;padding:0;box-shadow:none;">
+            <div class="form-group">
+              <label class="form-label">Department Name</label>
+              <input class="form-control" value="Guidance & Counseling Department - NU Lipa">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Default Response Target</label>
+              <select class="form-select">
+                <option>Within 1 business day (Standard Intake)</option>
+                <option selected>Within 2 business days</option>
+                <option>Same day (Urgent Crisis)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Lead Escalation Contact</label>
+              <input class="form-control" value="guidance-lead@lipa.nu.edu.ph">
+            </div>
+
+            <div style="display:flex;align-items:center;gap:16px;margin-top:20px;">
+              <button class="btn-primary primary" type="submit"><span class="ic">💾</span> Save Department Settings</button>
+              <span class="muted" data-form-status style="margin:0;font-size:12px;color:var(--text-muted);">Preview mode. Saved for current session.</span>
+            </div>
+          </form>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2><span class="ic">🔄</span> Active Referral Destinations</h2>
+            <span class="section-count">3 Connected</span>
+          </div>
+
+          <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px;">
+            Authorized student referral handoffs across the National University Lipa ecosystem.
+          </p>
+
+          <ul class="settings-list">
+            <li>
+              <div>
+                <strong>Financial Aid &amp; Billing Office</strong>
+                <small>Tuition appeals, scholarships, and payment arrangement holds</small>
+              </div>
+              <button class="icon-button" type="button" aria-label="Edit Financial Aid">Configure</button>
+            </li>
+            <li>
+              <div>
+                <strong>University Health Services</strong>
+                <small>Physical wellness, medical clearances, and disability certifications</small>
+              </div>
+              <button class="icon-button" type="button" aria-label="Edit Health Services">Configure</button>
+            </li>
+            <li>
+              <div>
+                <strong>Office of the University Registrar</strong>
+                <small>Enrollment status, official transcripts, and scholastic leave of absence</small>
+              </div>
+              <button class="icon-button" type="button" aria-label="Edit Registrar">Configure</button>
+            </li>
+          </ul>
+
+          <button class="btn-secondary secondary-button" type="button"><span class="ic">+</span> Add Referral Destination</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/prototype.js"></script>
+</body>
+</html>

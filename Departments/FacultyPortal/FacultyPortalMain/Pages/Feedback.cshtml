@@ -1,0 +1,45 @@
+@page
+@model FacultyPortalMain.Pages.FeedbackModel
+@{
+    ViewData["Title"] = "Feedback";
+    ViewData["ActivePage"] = "Feedback";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div class="portal-eyebrow">Student communication</div>
+        <h1 class="portal-page-title">Feedback</h1>
+        <p class="portal-page-subtitle">Write comments on the latest student submissions. To give a score, open the assignment.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="portal-card" style="margin-bottom:16px;border-left:4px solid @(Model.IsError ? "#dc2626" : "#15803d");">
+        <div class="portal-card-body" style="padding:12px 16px;font-weight:600;color:@(Model.IsError ? "#b91c1c" : "#15803d");">@Model.Message</div>
+    </div>
+}
+
+@if (Model.Items.Count == 0)
+{
+    <div class="portal-card"><div class="portal-card-body muted" style="text-align:center;padding:36px;">No student has turned in work yet.</div></div>
+}
+
+@foreach (var (submission, title, sectionCode, assignmentId) in Model.Items)
+{
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3 class="portal-card-title"><span>💬</span> @submission.Name &middot; @title</h3>
+            <a href="/AssignmentDetail?id=@assignmentId" class="btn-nu btn-nu-outline btn-sm">Open assignment</a>
+        </div>
+        <div class="portal-card-body">
+            <div class="cell-sub" style="margin-bottom:6px;">@sectionCode · turned in @(submission.SubmittedAt is { } at ? at.ToString("MMM d, h:mm tt") : "—")@if (submission.IsLate) { <span> · late</span> }@if (submission.Score is { } score) { <span> · scored @score.ToString("0.##")</span> }</div>
+            <div style="white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:10px;">@submission.Text</div>
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="submissionId" value="@submission.Id" />
+                <textarea name="feedback" class="form-control" rows="3" maxlength="10000" placeholder="Write feedback for this submission" aria-label="Feedback for @submission.Name">@submission.Feedback</textarea>
+                <button type="submit" class="btn-nu btn-nu-gold btn-sm" style="margin-top:8px;">💾 Save feedback</button>
+            </form>
+        </div>
+    </div>
+}

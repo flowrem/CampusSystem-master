@@ -1,0 +1,400 @@
+@page
+@model RegistrarMain.Pages.StudentRecordsModel
+@{
+    ViewData["Title"] = "Student Academic Records (201 Vault)";
+    ViewData["ActivePage"] = "StudentRecords";
+}
+
+@if (Model.DemoMode)
+{
+  <div class="dash-heading-row"><div><h1 class="dash-heading">Student Records &amp; Registration</h1><p class="dash-subheading">Registrar demo workflow using the canonical JSON datastore.</p></div></div>
+  <div class="dash-panel" style="margin-bottom:20px;"><strong>Canonical datastore:</strong> @Model.CanonicalPath</div>
+  @if (Model.Message != null) { <div class="alert-banner alert-success">@Model.Message @if (Model.TemporaryPassword != null) { <strong>Temporary password: @Model.TemporaryPassword</strong> }</div> }
+  @if (Model.Error != null) { <div class="alert-banner alert-error">@Model.Error</div> }
+  <div class="dash-panel" style="margin-bottom:20px;"><h2>Create Applicant</h2><form method="post" asp-page-handler="Create" class="row g-3">
+    <div class="col-md-3"><label>Student ID (optional)</label><input name="studentIdNumber" class="form-control" /></div>
+    <div class="col-md-3"><label>Name</label><input name="name" required class="form-control" /></div>
+    <div class="col-md-3"><label>Email</label><input name="email" type="email" required class="form-control" /></div>
+    <div class="col-md-3"><label>Program</label><select name="program" required class="form-control"><option value="" selected disabled>Select program</option>@foreach (var program in RegistrarMain.Services.StudentInput.Programs) { <option value="@program">@program</option> }</select></div>
+    <div class="col-md-3"><label>Year level</label><select name="yearLevel" required class="form-control"><option value="" selected disabled>Select year level</option>@foreach (var yearLevel in RegistrarMain.Services.StudentInput.YearLevels) { <option value="@yearLevel">@yearLevel</option> }</select></div>
+    <div class="col-12"><button class="btn btn-primary">Create Pending Applicant</button></div>
+  </form></div>
+  <div class="dash-panel"><h2>Applicants</h2><div class="table-responsive"><table class="table-simple"><thead><tr><th>Student</th><th>State</th><th>Payment</th><th>Registration</th></tr></thead><tbody>
+  @foreach (var student in Model.DemoStudents) { <tr><td><strong>@student.StudentIdNumber</strong><br />@student.Name<br /><small>@student.Email</small></td><td>@student.Status / @student.AccountState</td><td><form method="post" asp-page-handler="RecordPayment"><input type="hidden" name="studentIdNumber" value="@student.StudentIdNumber" /><input type="hidden" name="amount" value="10000" /><button class="btn btn-secondary">Record ₱10,000 Payment</button></form></td><td><form method="post" asp-page-handler="Register"><input type="hidden" name="studentIdNumber" value="@student.StudentIdNumber" /><button class="btn btn-primary">Register &amp; Create COR</button></form></td></tr> }
+  </tbody></table></div></div>
+}
+else if (Model.ViewId == 0)
+{
+  <!-- LIST VIEW -->
+  <div class="dash-heading-row">
+    <div>
+      <h1 class="dash-heading">🗂️ Student Academic Records (201 Vault)</h1>
+      <p class="dash-subheading">Permanent records, academic standing, document credential tracking, and official clearances.</p>
+    </div>
+    <div>
+      <a href="/EnrollmentApplication" target="_blank" class="btn btn-secondary">🔗 Open Online Application Form</a>
+    </div>
+  </div>
+
+  <div class="dash-panel">
+    <form method="get" class="search-bar" style="flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <input type="text" name="q" placeholder="Search by name, ID number, or email..." value="@Model.Query" style="flex:1;min-width:250px;" class="form-control">
+      
+      <select name="program" style="width:auto;min-width:200px;" class="form-control">
+        <option value="">All Programs</option>
+        @foreach (var p in Model.ProgramsList)
+        {
+          <option value="@p" selected="@(Model.ProgramFilter == p)">@p</option>
+        }
+      </select>
+
+      <select name="status" style="width:auto;" class="form-control">
+        <option value="">All Statuses</option>
+        @foreach (var st in RegistrarMain.Pages.StudentRecordsModel.EnrollmentStatuses)
+        {
+          <option value="@st" selected="@(Model.StatusFilter == st)">@st</option>
+        }
+      </select>
+
+      <button type="submit" class="btn btn-secondary">Filter</button>
+      @if (!string.IsNullOrEmpty(Model.Query) || !string.IsNullOrEmpty(Model.ProgramFilter) || !string.IsNullOrEmpty(Model.StatusFilter))
+      {
+        <a href="/StudentRecords" class="btn btn-secondary">Clear</a>
+      }
+    </form>
+
+    @if (!Model.Students.Any())
+    {
+      <div style="text-align:center;padding:40px;color:#64748b;">
+        <p style="font-size:16px;margin:0;">No student records found matching the query.</p>
+      </div>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Full Name</th>
+              <th>Program &amp; Year</th>
+              <th>GWA</th>
+              <th>Enrollment</th>
+              <th>201 Vault</th>
+              <th>Academic Standing</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var s in Model.Students)
+            {
+              var vaultRatio = s.TotalDocs > 0 ? $"{s.VerifiedCount}/{s.TotalDocs}" : "0/0";
+              var isComplete = s.TotalDocs > 0 && s.VerifiedCount == s.TotalDocs;
+              var enrBadge = (s.EnrollmentStatus ?? "active").ToLower().Replace(" ", "_").Replace("-", "_");
+              var acadBadge = (s.AcademicStatus ?? "good_standing").ToLower().Replace(" ", "_");
+
+              <tr>
+                <td><strong style="color:var(--accent);">@(string.IsNullOrEmpty(s.StudentIdNumber) ? "NO-ID" : s.StudentIdNumber)</strong></td>
+                <td>
+                  <div style="font-weight:700;">@s.Name</div>
+                  <div style="font-size:11px;color:#64748b;">@s.Email</div>
+                </td>
+                <td>
+                  <div>@(s.Program ?? "Not set")</div>
+                  <div style="font-size:11px;color:#64748b;">@(s.YearLevel ?? "1st Year")</div>
+                </td>
+                <td><strong>@(s.AverageGrade.HasValue ? s.AverageGrade.Value.ToString("F2") : "—")</strong></td>
+                <td><span class="badge badge-@enrBadge">@(s.EnrollmentStatus ?? "Active")</span></td>
+                <td>
+                  <span class="badge @(isComplete ? "badge-verified" : "badge-pending")">
+                    @vaultRatio verified
+                  </span>
+                </td>
+                <td><span class="badge badge-@acadBadge">@(s.AcademicStatus ?? "Good Standing")</span></td>
+                <td>
+                  <a href="/StudentRecords?id=@s.Id" class="btn-small primary">View 201 File ›</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+@if (Model.Student != null)
+{
+  <!-- DETAIL VIEW -->
+  <div style="margin-bottom:16px;" class="no-print">
+    <a href="/StudentRecords" class="btn-small">‹ Back to Student Directory</a>
+  </div>
+
+  <!-- Student Profile Banner Header -->
+  <div class="dash-panel" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+      <div style="display:flex;gap:18px;align-items:center;">
+        <div style="width:64px;height:64px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;border:2px solid #bfdbfe;">
+          🎓
+        </div>
+        <div>
+          <h1 style="margin:0 0 4px;font-size:22px;color:var(--text-main);">@Model.Student.Name</h1>
+          <div style="font-size:13px;color:#64748b;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span><strong>Student ID:</strong> @(string.IsNullOrEmpty(Model.Student.StudentIdNumber) ? "N/A" : Model.Student.StudentIdNumber)</span>
+            <span>&middot;</span>
+            <span><strong>Program:</strong> @Model.Profile.Program (@Model.Profile.YearLevel)</span>
+            <span>&middot;</span>
+            <span><strong>Email:</strong> @Model.Student.Email</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;" class="no-print">
+        <button onclick="window.print()" class="btn btn-secondary">🖨️ Print Permanent Record</button>
+        <button onclick="document.getElementById('statusModal').style.display='block'" class="btn btn-primary">⚙️ Update Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Academic Metrics Row -->
+  <div class="stat-mini-row" style="margin-bottom:20px;">
+    <div class="stat-mini">
+      <div class="label">General Weighted Average (GWA)</div>
+      <div class="value" style="color:var(--accent);">@(Model.Profile.AverageGrade.HasValue ? Model.Profile.AverageGrade.Value.ToString("F2") : "1.25")</div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Curriculum Completed Units</div>
+      <div class="value">@Model.Profile.CompletedUnits <span style="font-size:12px;color:#64748b;">/ 144 units</span></div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Academic Standing</div>
+      <div class="value"><span class="badge badge-@(Model.Profile.AcademicStatus.ToLower().Replace(" ", "_"))">@Model.Profile.AcademicStatus</span></div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Enrollment Status</div>
+      <div class="value"><span class="badge badge-@(Model.Profile.EnrollmentStatus.ToLower().Replace(" ", "_").Replace("-", "_"))">@Model.Profile.EnrollmentStatus</span></div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Guidance Clearance</div>
+      <div class="value"><span class="badge badge-@(Model.Profile.GuidanceClearanceStatus.ToLower())">@Model.Profile.GuidanceClearanceStatus</span></div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Finance Clearance</div>
+      <div class="value"><span class="badge badge-@(Model.FinanceClearanceStatus.ToLower() == "cleared" ? "verified" : "pending")">@Model.FinanceClearanceStatus</span></div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Total Paid (Finance)</div>
+      <div class="value" style="color:var(--success);">₱@Model.TotalPaidAmount.ToString("N2")</div>
+    </div>
+  </div>
+
+  <!-- 201 Credentials Vault -->
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>🔐 201 Credentials Vault (Official Admission Requirements)</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">Official government documents required by CHED/DepEd for legal matriculation.</p>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Required Document</th>
+            <th>Status</th>
+            <th>Submitted At</th>
+            <th>Verified At</th>
+            <th>Remarks / Notes</th>
+            <th>Uploaded File</th>
+            <th class="no-print">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var doc in Model.Vault)
+          {
+            var isImage = !string.IsNullOrEmpty(doc.FilePath) &&
+              (doc.FilePath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+               doc.FilePath.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+               doc.FilePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
+            var isPdf = !string.IsNullOrEmpty(doc.FilePath) &&
+              doc.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
+            <tr>
+              <td><strong>@doc.DocumentType</strong></td>
+              <td><span class="badge badge-@doc.Status.ToLower()">@doc.Status</span></td>
+              <td>@(doc.SubmittedAt.HasValue ? doc.SubmittedAt.Value.ToString("MMM dd, yyyy") : "—")</td>
+              <td>@(doc.VerifiedAt.HasValue ? doc.VerifiedAt.Value.ToString("MMM dd, yyyy") : "—")</td>
+              <td style="font-size:12px;color:#475569;">@(string.IsNullOrEmpty(doc.Remarks) ? "No notes" : doc.Remarks)</td>
+              <td style="min-width:120px;">
+                @if (isImage)
+                {
+                  <!-- Image: show thumbnail that opens full-size in new tab -->
+                  <a href="/@doc.FilePath" target="_blank" title="Click to view full size">
+                    <img src="/@doc.FilePath" alt="@doc.DocumentType"
+                         style="max-width:90px;max-height:70px;border-radius:4px;border:1px solid #cbd5e1;cursor:pointer;object-fit:cover;">
+                  </a>
+                }
+                else if (isPdf)
+                {
+                  <!-- PDF: open in new tab -->
+                  <a href="/@doc.FilePath" target="_blank"
+                     style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#ef4444;color:#fff;border-radius:5px;font-size:12px;text-decoration:none;font-weight:600;">
+                    📄 View PDF
+                  </a>
+                }
+                else
+                {
+                  <span style="color:#94a3b8;font-size:12px;font-style:italic;">No file uploaded</span>
+                }
+              </td>
+              <td class="no-print">
+                <form method="post" asp-page-handler="UpdateDocument" style="display:flex;gap:6px;align-items:center;">
+                  <input type="hidden" name="student_id" value="@Model.Student.Id">
+                  <input type="hidden" name="doc_id" value="@doc.Id">
+                  <select name="doc_status" style="width:auto;padding:3px 6px;font-size:12px;" class="form-control">
+                    <option value="Missing" selected="@(doc.Status == "Missing")">Missing</option>
+                    <option value="Submitted" selected="@(doc.Status == "Submitted")">Submitted</option>
+                    <option value="Verified" selected="@(doc.Status == "Verified")">Verified</option>
+                  </select>
+                  <input type="text" name="remarks" placeholder="Add remark..." value="@doc.Remarks" style="width:140px;padding:3px 6px;font-size:12px;" class="form-control">
+                  <button type="submit" class="btn-small primary">Save</button>
+                </form>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Academic Grades Ledger -->
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>📜 Academic Grades Ledger &amp; Scholastic History</h2>
+    </div>
+    @if (!Model.StudentGrades.Any())
+    {
+      <p style="color:#64748b;font-size:13px;">No academic subjects evaluated yet for this student.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Term</th>
+              <th>Course Code</th>
+              <th>Descriptive Title</th>
+              <th>Units</th>
+              <th>Section</th>
+              <th>Final Grade</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var g in Model.StudentGrades)
+            {
+              var gradeStr = g.IsInc ? "INC" : (g.Grade.HasValue ? g.Grade.Value.ToString("F2") : "—");
+              var isPassed = g.Grade.HasValue && g.Grade.Value <= 3.00m;
+              var colorStyle = isPassed ? "var(--success)" : (g.IsInc ? "var(--purple)" : "var(--danger)");
+              <tr>
+                <td>@(g.SchoolYear + " " + g.Semester)</td>
+                <td><strong>@g.SubjectCode</strong></td>
+                <td>@g.SubjectName</td>
+                <td>@g.Units</td>
+                <td>@g.SectionCode</td>
+                <td>
+                  <strong style="color:@colorStyle;">
+                    @gradeStr
+                  </strong>
+                </td>
+                <td>@(string.IsNullOrEmpty(g.Remarks) ? "In Progress" : g.Remarks)</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Transferee Credited Subjects (if any) -->
+  @if (Model.CreditedSubjects.Any())
+  {
+    <div class="dash-panel">
+      <div class="dash-panel-header">
+        <h2>🔄 Transferee Accredited Subjects</h2>
+      </div>
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Previous School</th>
+            <th>Previous Course Code &amp; Title</th>
+            <th>Units</th>
+            <th>Grade</th>
+            <th>Institutional Accredited Subject</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var cs in Model.CreditedSubjects)
+          {
+            <tr>
+              <td>@cs.PrevSchool</td>
+              <td><strong>@cs.PrevSubjectCode</strong> - @cs.PrevSubjectTitle</td>
+              <td>@cs.PrevUnits</td>
+              <td>@cs.PrevGrade.ToString("F2")</td>
+              <td><strong style="color:var(--accent);">@cs.InstitutionalCode - @cs.InstitutionalName</strong></td>
+              <td><span class="badge badge-approved">@cs.Status</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
+
+<!-- Update Student Status Modal (for detail view) -->
+@if (Model.ViewId > 0 && Model.Student != null)
+{
+  <div id="statusModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+    <div style="max-width:480px;background:#fff;border-radius:12px;margin:80px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="margin:0;font-size:18px;">Update Student Official Status</h2>
+        <button onclick="document.getElementById('statusModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+      </div>
+      <form method="post" asp-page-handler="UpdateStudentStatus">
+        <input type="hidden" name="student_id" value="@Model.Student.Id">
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Enrollment Status</label>
+          <select name="enrollment_status" class="form-control">
+            @foreach (var st in RegistrarMain.Pages.StudentRecordsModel.EnrollmentStatuses)
+            {
+              <option value="@st" selected="@(Model.Profile.EnrollmentStatus == st)">@st</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Academic Standing</label>
+          <select name="academic_status" class="form-control">
+            @foreach (var ast in RegistrarMain.Pages.StudentRecordsModel.AcademicStatuses)
+            {
+              <option value="@ast" selected="@(Model.Profile.AcademicStatus == ast)">@ast</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:18px;">
+          <label>Guidance Clearance Tag</label>
+          <select name="guidance_clearance_status" class="form-control">
+            <option value="Cleared" selected="@(Model.Profile.GuidanceClearanceStatus == "Cleared")">Cleared</option>
+            <option value="Pending" selected="@(Model.Profile.GuidanceClearanceStatus == "Pending")">Pending</option>
+            <option value="Flagged" selected="@(Model.Profile.GuidanceClearanceStatus == "Flagged")">Flagged (Hold Status)</option>
+          </select>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('statusModal').style.display='none'">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

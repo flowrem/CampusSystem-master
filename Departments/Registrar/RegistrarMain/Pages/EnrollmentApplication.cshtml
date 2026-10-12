@@ -1,0 +1,430 @@
+@page
+@model RegistrarMain.Pages.EnrollmentApplicationModel
+@{
+    Layout = null; // Stand-alone public page — no registrar sidebar
+}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student Enrollment Application — National University Lipa</title>
+<style>
+  :root{
+    --nu-blue-dark:#0a1d4d;
+    --nu-blue:#0f2a6b;
+    --nu-blue-light:#1e4bb8;
+    --nu-gold:#f2b807;
+    --nu-gold-hover:#ffd23f;
+    --bg:#f3f5fb;
+    --card:#ffffff;
+    --border:#e1e6f0;
+    --text:#152040;
+    --muted:#5b6685;
+    --danger:#dc2626;
+    --danger-bg:#fef2f2;
+    --success:#15803d;
+    --success-bg:#f0fdf4;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .topband{
+    background:linear-gradient(90deg,var(--nu-blue-dark),var(--nu-blue));
+    color:#fff;padding:16px 24px;
+    display:flex;align-items:center;gap:16px;
+    border-bottom:5px solid var(--nu-gold);
+  }
+  .topband img{height:54px;width:auto;flex:none;}
+  .topband h1{margin:0;font-size:20px;letter-spacing:.3px;}
+  .topband p{margin:2px 0 0;font-size:13px;color:#cfd9f5;}
+  .wrap{max-width:980px;margin:28px auto 60px;padding:0 18px;}
+  .hero{
+    background:linear-gradient(120deg,var(--nu-blue),var(--nu-blue-light));
+    color:#fff;border-radius:var(--radius);
+    padding:22px 26px;margin-bottom:22px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  }
+  .hero h2{margin:0 0 6px;font-size:22px;}
+  .hero p{margin:0;color:#dce4fb;font-size:13.5px;max-width:560px;}
+  .hero .term-chip{
+    background:var(--nu-gold);color:var(--nu-blue-dark);
+    font-weight:800;font-size:13px;padding:8px 14px;border-radius:999px;white-space:nowrap;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:24px;margin-bottom:20px;
+    box-shadow:0 1px 3px rgba(20,30,70,0.05);
+  }
+  .card h3{margin:0 0 4px;font-size:15px;color:var(--nu-blue-dark);display:flex;align-items:center;gap:8px;}
+  .card .card-sub{margin:0 0 18px;font-size:12.5px;color:var(--muted);}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;}
+  .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:2px;}
+  .form-group.full{grid-column:1/-1;}
+  label{font-size:12.5px;font-weight:700;color:#334066;}
+  label .req{color:var(--danger);}
+  input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    font-size:13.5px;color:var(--text);background:#fbfcff;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  textarea{resize:vertical;min-height:64px;font-family:inherit;}
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--nu-blue-light);
+    box-shadow:0 0 0 3px rgba(30,75,184,0.15);
+  }
+  .type-toggle{display:flex;gap:10px;margin-bottom:4px;}
+  .type-toggle label{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    border:1.5px solid var(--border);border-radius:9px;padding:11px 10px;
+    cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);background:#fbfcff;
+  }
+  .type-toggle input{width:auto;accent-color:var(--nu-blue);}
+  .type-toggle label.checked{border-color:var(--nu-blue-light);color:var(--nu-blue-dark);background:#eef2ff;}
+  #transfereeBlock{display:none;margin-top:14px;}
+  .subj-year-note{font-size:12.5px;color:var(--muted);margin-bottom:10px;}
+  .subj-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .subj-table th{
+    text-align:left;background:#f4f6fc;color:#334066;font-size:11px;
+    text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--border);
+  }
+  .subj-table td{padding:9px 10px;border-bottom:1px solid #eef1f8;vertical-align:middle;}
+  .subj-table tr.full td{opacity:.55;}
+  .subj-table .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;}
+  .pill.open{background:#e6f6ec;color:var(--success);}
+  .pill.closed{background:var(--danger-bg);color:var(--danger);}
+  .units-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#eef2ff;border:1px dashed #c6d2f5;border-radius:9px;
+    padding:10px 14px;margin-top:12px;font-size:13px;font-weight:700;color:var(--nu-blue-dark);
+  }
+  .doc-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;}
+  .doc-list li{
+    font-size:12.5px;color:var(--muted);background:#fbfcff;border:1px solid var(--border);
+    border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;
+  }
+  .doc-list li::before{content:"📄";}
+  .submit-row{display:flex;justify-content:flex-end;}
+  .btn-submit{
+    background:linear-gradient(90deg,var(--nu-gold),var(--nu-gold-hover));
+    color:var(--nu-blue-dark);border:none;padding:14px 30px;border-radius:9px;
+    font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(242,184,7,0.35);
+  }
+  .btn-submit:hover{opacity:.94;}
+  .errors{
+    background:var(--danger-bg);border:1px solid #fecaca;color:var(--danger);
+    border-radius:9px;padding:13px 16px;margin-bottom:20px;font-size:13px;
+  }
+  .errors ul{margin:6px 0 0;padding-left:18px;}
+  .success-panel{
+    background:var(--success-bg);border:1px solid #bbf7d0;border-radius:var(--radius);
+    padding:26px;margin-bottom:20px;
+  }
+  .success-panel h2{margin:0 0 4px;color:var(--success);font-size:19px;}
+  .success-panel p.lead{margin:0 0 18px;color:#3f7856;font-size:13.5px;}
+  .receipt{background:#fff;border:1px dashed #bbf7d0;border-radius:10px;padding:18px 20px;}
+  .receipt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:6px;}
+  .receipt-grid .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+  .receipt-grid .v{font-size:14.5px;font-weight:800;color:var(--nu-blue-dark);margin-top:2px;}
+  .receipt hr{border:none;border-top:1px solid #eef1f8;margin:16px 0;}
+  .badge-pending{display:inline-block;background:#fff7e0;color:#92650a;font-weight:800;font-size:11.5px;padding:3px 10px;border-radius:999px;}
+  .footer-note{font-size:11.5px;color:var(--muted);text-align:center;margin-top:24px;}
+  @@media (max-width:640px){.topband{flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+
+<div class="topband">
+  <img src="/img/logo3.png" alt="NU Lipa Logo">
+  <div>
+    <h1>National University Lipa — Lipa Campus</h1>
+    <p>Office of the Registrar &middot; Blue &amp; Gold &middot; Home of the Bulldogs</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <h2>Student Enrollment Application</h2>
+      <p>Complete this form to apply for enrollment at NU Lipa. New freshmen and transferee applicants are processed here; your application is reviewed and validated by the Registrar's Office before it becomes official.</p>
+    </div>
+    <div class="term-chip">AY @Model.SchoolYear &middot; @Model.Semester</div>
+  </div>
+
+  @if (Model.Success != null)
+  {
+    var s = Model.Success;
+    <div class="success-panel">
+      <h2>✅ Application Submitted</h2>
+      <p class="lead">Thank you, your application has been recorded. It is now <strong>pending validation</strong> by the Registrar's Office — you'll be notified once it's approved and your Certificate of Matriculation is released.</p>
+      <div class="receipt">
+        <div class="receipt-grid">
+          <div><div class="k">Student ID Number</div><div class="v">@s.StudentIdNumber</div></div>
+          <div><div class="k">Status</div><div class="v"><span class="badge-pending">Pending Validation</span></div></div>
+          <div><div class="k">Program</div><div class="v">@s.Program</div></div>
+          <div><div class="k">Year Level</div><div class="v">@s.YearLevel</div></div>
+          <div><div class="k">Applicant Type</div><div class="v">@(char.ToUpper(s.EnrollmentType[0]) + s.EnrollmentType[1..])</div></div>
+          <div><div class="k">Term</div><div class="v">AY @s.SchoolYear, @s.Semester</div></div>
+        </div>
+        <hr>
+        <div class="receipt-grid">
+          <div><div class="k">Portal Login Email</div><div class="v" style="font-size:13px;">@s.PortalEmail</div></div>
+          <div><div class="k">Temporary Password</div><div class="v" style="font-size:13px;">@s.TempPassword</div></div>
+          <div><div class="k">Units Filed This Term</div><div class="v">@s.TotalUnits.ToString("0.0") units</div></div>
+        </div>
+        @if (s.Subjects.Count > 0)
+        {
+          <hr>
+          <div class="k" style="margin-bottom:6px;">Subjects Filed</div>
+          <div class="v" style="font-size:13px;font-weight:600;">@string.Join(", ", s.Subjects)</div>
+        }
+        else
+        {
+          <hr>
+          <p style="font-size:12.5px;color:var(--muted);margin:0;">No class sections were filed with this application — the Registrar's Office will finalize your subject load once your program's offerings for this term are confirmed.</p>
+        }
+      </div>
+      <p class="footer-note" style="margin-top:16px;">Please keep this reference and bring your original requirements to the Registrar's Office. Questions? <a href="mailto:registrar@lipa.nu.edu.ph">registrar@lipa.nu.edu.ph</a></p>
+    </div>
+  }
+  else
+  {
+    @if (Model.Errors.Count > 0)
+    {
+      <div class="errors">
+        <strong>Please review the following:</strong>
+        <ul>
+          @foreach (var err in Model.Errors) { <li>@err</li> }
+        </ul>
+      </div>
+    }
+
+    <form method="post" id="enrollForm" enctype="multipart/form-data">
+      @Html.AntiForgeryToken()
+
+      <!-- 1. Applicant Type -->
+      <div class="card">
+        <h3>1. Applicant Type</h3>
+        <p class="card-sub">This form is for new freshmen and transferee applicants only. Continuing students re-enroll through the Registrar's regular Add/Drop process.</p>
+        <div class="type-toggle" id="typeToggle">
+          <label class="checked">
+            <input type="radio" name="enrollment_type" value="new" checked> 🎓 New / Freshman
+          </label>
+          <label>
+            <input type="radio" name="enrollment_type" value="transferee"> 🔁 Transferee
+          </label>
+        </div>
+        <div id="transfereeBlock" class="form-group full">
+          <label>Previous School Attended <span class="req">*</span></label>
+          <input type="text" name="previous_school" placeholder="e.g. Batangas State University - Lipa Campus">
+        </div>
+      </div>
+
+      <!-- 2. Personal Information -->
+      <div class="card">
+        <h3>2. Personal Information</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" name="full_name" placeholder="Juan D. Dela Cruz" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" name="email" placeholder="you@@email.com" required>
+          </div>
+          <div class="form-group">
+            <label>Contact Number <span class="req">*</span></label>
+            <input type="tel" name="contact_number" placeholder="09XXXXXXXXX" required>
+          </div>
+          <div class="form-group">
+            <label>Gender <span class="req">*</span></label>
+            <select name="gender" required>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date of Birth <span class="req">*</span></label>
+            <input type="date" name="birth_date" required>
+          </div>
+          <div class="form-group full">
+            <label>Home Address <span class="req">*</span></label>
+            <textarea name="address" placeholder="Street, Barangay, City/Municipality, Province" required></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Academic Information -->
+      <div class="card">
+        <h3>3. Academic Information</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Degree Program <span class="req">*</span></label>
+            <select name="program" id="programSelect" required>
+              <option value="">— Select Program —</option>
+              @foreach (var prog in Model.Programs)
+              {
+                <option value="@prog">@prog</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Year Level <span class="req">*</span></label>
+            <select name="year_level" id="yearSelect" required>
+              @foreach (var yl in Model.YearLevels)
+              {
+                <option value="@yl">@yl</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Subject Load -->
+      <div class="card">
+        <h3>4. Subject Load — AY @Model.SchoolYear, @Model.Semester</h3>
+        <p class="subj-year-note" id="subjNote">Select your Degree Program and Year Level above to see open class sections for this term. Checking a full or closed section is not allowed.</p>
+        <div id="subjectPanel"></div>
+        <div class="units-bar">
+          <span>Total Units Filed</span>
+          <span id="unitsTotal">0.0 units</span>
+        </div>
+      </div>
+
+      <!-- 5. Document Requirements -->
+      <div class="card">
+        <h3>5. Admission Requirements — Upload Documents</h3>
+        <p class="card-sub">Please upload scanned copies or photos of your requirements below (PDF, JPG, PNG accepted). Original documents must also be physically submitted to the Registrar's Office for final validation.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Form 137 <span style="color:#9ca3af;font-size:11px;">(optional)</span></label>
+            <input type="file" name="doc_Form137" accept=".pdf,.jpg,.jpeg,.png" style="font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label>Form 138 <span style="color:#9ca3af;font-size:11px;">(optional)</span></label>
+            <input type="file" name="doc_Form138" accept=".pdf,.jpg,.jpeg,.png" style="font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label>PSA Birth Certificate <span style="color:#9ca3af;font-size:11px;">(optional)</span></label>
+            <input type="file" name="doc_BirthCertificate" accept=".pdf,.jpg,.jpeg,.png" style="font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label>Good Moral Certificate <span style="color:#9ca3af;font-size:11px;">(optional)</span></label>
+            <input type="file" name="doc_GoodMoral" accept=".pdf,.jpg,.jpeg,.png" style="font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label>Transcript / TOR <span style="color:#9ca3af;font-size:11px;">(for transferees)</span></label>
+            <input type="file" name="doc_Transcript" accept=".pdf,.jpg,.jpeg,.png" style="font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label>Medical Clearance <span style="color:#9ca3af;font-size:11px;">(optional)</span></label>
+            <input type="file" name="doc_MedicalClearance" accept=".pdf,.jpg,.jpeg,.png" style="font-size:13px;">
+          </div>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:#64748b;">⚠️ Files must not exceed 5 MB each. Accepted: PDF, JPG, PNG.</p>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="btn-submit">Submit Enrollment Application →</button>
+      </div>
+    </form>
+  }
+
+  <p class="footer-note">National University Lipa &middot; Lipa City, Batangas &middot; This application will be reviewed by the Office of the Registrar prior to official validation.</p>
+</div>
+
+<script>
+  // Type toggle
+  const typeToggle = document.getElementById('typeToggle');
+  const transfereeBlock = document.getElementById('transfereeBlock');
+  function syncTypeToggle() {
+    if (!typeToggle) return;
+    const radios = typeToggle.querySelectorAll('input[type=radio]');
+    let isTransferee = false;
+    radios.forEach(r => {
+      r.closest('label').classList.toggle('checked', r.checked);
+      if (r.checked && r.value === 'transferee') isTransferee = true;
+    });
+    transfereeBlock.style.display = isTransferee ? 'block' : 'none';
+  }
+  if (typeToggle) {
+    typeToggle.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', syncTypeToggle));
+    syncTypeToggle();
+  }
+
+  // Subject panel
+  const offeringsByYear = @Html.Raw(Model.OfferingsByYearJson);
+  const curriculumMap   = @Html.Raw(Model.CurriculumMapJson);
+
+  const programSelect = document.getElementById('programSelect');
+  const yearSelect    = document.getElementById('yearSelect');
+  const subjectPanel  = document.getElementById('subjectPanel');
+  const subjNote      = document.getElementById('subjNote');
+  const unitsTotal    = document.getElementById('unitsTotal');
+
+  function renderSubjects() {
+    const program = programSelect.value;
+    const year    = yearSelect.value;
+    subjectPanel.innerHTML = '';
+
+    if (!program) {
+      subjNote.textContent = 'Select your Degree Program and Year Level above to see open class sections for this term.';
+      updateUnits(); return;
+    }
+    if (!curriculumMap[program]) {
+      subjNote.textContent = 'No class sections have been pre-loaded for ' + program + ' yet for this term — the Registrar\'s Office will finalize your subject load once your curriculum mapping is confirmed. You may still submit this application.';
+      updateUnits(); return;
+    }
+
+    const list = offeringsByYear[year] || [];
+    if (list.length === 0) {
+      subjNote.textContent = 'No open sections found for ' + year + ' this term yet.';
+      updateUnits(); return;
+    }
+
+    subjNote.textContent = 'Check the sections you want to enroll in. Closed/full sections cannot be selected.';
+
+    const table = document.createElement('table');
+    table.className = 'subj-table';
+    table.innerHTML = '<thead><tr><th></th><th>Code</th><th>Subject</th><th>Units</th><th>Section / Schedule</th><th>Slots</th></tr></thead>';
+    const tbody = document.createElement('tbody');
+
+    list.forEach(off => {
+      const isFull = off.status !== 'open' || off.taken >= off.capacity;
+      const tr = document.createElement('tr');
+      if (isFull) tr.classList.add('full');
+      tr.innerHTML = `
+        <td><input type="checkbox" name="class_offering_ids[]" value="${off.id}" data-units="${off.units}" ${isFull ? 'disabled' : ''}></td>
+        <td><strong>${off.code}</strong></td>
+        <td>${off.name}</td>
+        <td>${off.units.toFixed(1)}</td>
+        <td>${off.section} &middot; ${off.schedule}<br><span style="color:#8791ab;">${off.instructor}</span></td>
+        <td><span class="pill ${isFull ? 'closed' : 'open'}">${off.taken}/${off.capacity} ${isFull ? 'FULL' : 'OPEN'}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    subjectPanel.appendChild(table);
+    subjectPanel.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', updateUnits));
+    updateUnits();
+  }
+
+  function updateUnits() {
+    let total = 0;
+    subjectPanel.querySelectorAll('input[type=checkbox]:checked').forEach(cb => {
+      total += parseFloat(cb.dataset.units || '0');
+    });
+    unitsTotal.textContent = total.toFixed(1) + ' units';
+  }
+
+  if (programSelect && yearSelect) {
+    programSelect.addEventListener('change', renderSubjects);
+    yearSelect.addEventListener('change', renderSubjects);
+    renderSubjects();
+  }
+</script>
+
+</body>
+</html>

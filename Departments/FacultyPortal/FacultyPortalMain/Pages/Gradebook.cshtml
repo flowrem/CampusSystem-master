@@ -1,0 +1,144 @@
+@page
+@model FacultyPortalMain.Pages.GradebookModel
+@{
+    ViewData["Title"] = "Academic Gradebook";
+    ViewData["ActivePage"] = "Gradebook";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div class="portal-eyebrow">Academic Assessment &amp; Encoding</div>
+        <h1 class="portal-page-title">Gradebook &amp; Scholastic Records</h1>
+        <p class="portal-page-subtitle">
+            Directly synchronized with University Registrar &middot; Grades encoded here immediately reflect on Student Portals and Official Transcript Records.
+        </p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <button type="button" onclick="window.print()" class="btn-nu btn-nu-outline">🖨️ Print Grade Sheet</button>
+        <a href="/Roster" class="btn-nu btn-nu-gold">👥 View Roster</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.FlashMessage))
+{
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#15803d;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;">
+        <span>✓</span> @Model.FlashMessage
+    </div>
+}
+
+<div class="portal-card" style="margin-bottom:20px;">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title"><span>📚</span> Active Section &amp; Course</h3>
+        <span class="badge-status badge-secondary">AY 2025-2026 &middot; 1st Semester</span>
+    </div>
+    <div style="padding:16px 20px;">
+        <form method="get" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <select name="sectionId" class="form-select" style="max-width:480px;font-weight:600;" onchange="this.form.submit()">
+                @foreach (var off in Model.Offerings)
+                {
+                    <option value="@off.Id" selected="@(off.Id == Model.SelectedOfferingId)">
+                        @off.SectionCode — @off.SubjectCode (@off.SubjectName)
+                    </option>
+                }
+            </select>
+            @if (Model.CurrentOffering != null)
+            {
+                <span style="font-size:12px;color:var(--nu-text-muted);">
+                    Units: <strong>@Model.CurrentOffering.Units.0</strong> &middot; 
+                    Room: <strong>@Model.CurrentOffering.Room</strong> &middot; 
+                    Schedule: <strong>@Model.CurrentOffering.DaysOfWeek @Model.CurrentOffering.StartTime–@Model.CurrentOffering.EndTime</strong>
+                </span>
+            }
+        </form>
+    </div>
+</div>
+
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>📊</span> Student Grades Sheet
+        </h3>
+        <span class="badge-status badge-secondary">@Model.Students.Count Enrolled Students</span>
+    </div>
+
+    <div class="portal-table-responsive">
+        <table class="portal-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Program &amp; Year</th>
+                    <th style="text-align:center;">Exam Permit Status</th>
+                    <th style="text-align:center;width:150px;">Final Grade</th>
+                    <th style="text-align:center;width:180px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 1; }
+                @foreach (var s in Model.Students)
+                {
+                    var isCleared = s.FinanceClearanceStatus == "Cleared";
+                    var isConditional = s.FinanceClearanceStatus == "Conditional";
+                    var gradeStr = s.FinalGrade.HasValue ? s.FinalGrade.Value.ToString("F2") : "—";
+                    var isPassed = s.FinalGrade.HasValue && s.FinalGrade.Value <= 3.00m;
+                    var gradeColor = s.FinalGrade.HasValue ? (isPassed ? "#15803d" : "#dc2626") : "var(--nu-text-muted)";
+
+                    <tr>
+                        <td style="color:var(--nu-text-muted);">@(idx++)</td>
+                        <td>
+                            <code style="font-weight:700;color:var(--nu-blue);background:#f0f4ff;padding:2px 8px;border-radius:4px;">
+                                @(string.IsNullOrEmpty(s.StudentIdNumber) ? "2024-00192" : s.StudentIdNumber)
+                            </code>
+                        </td>
+                        <td class="cell-title">
+                            <strong>@s.Name</strong>
+                        </td>
+                        <td style="font-size:12.5px;color:var(--nu-text-muted);">
+                            @s.Program (@s.YearLevel)
+                        </td>
+                        <td style="text-align:center;">
+                            @if (isCleared || isConditional)
+                            {
+                                <span class="badge-status badge-success">✓ Cleared for Grading</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">Finance Hold</span>
+                            }
+                        </td>
+                        <td style="text-align:center;">
+                            <strong style="color:@gradeColor;font-size:15px;">@gradeStr</strong>
+                        </td>
+                        <td style="text-align:center;">
+                            <form method="post" asp-page-handler="SaveGrade" style="display:flex;gap:6px;align-items:center;justify-content:center;">
+                                <input type="hidden" name="sectionId" value="@Model.SelectedOfferingId" />
+                                <input type="hidden" name="enrolledSubjectId" value="@s.EnrolledSubjectId" />
+                                <input type="number" step="0.25" min="1.00" max="5.00" name="grade" disabled="@(s.GradeIsFrozen || !Model.EncodingOpen)" 
+                                       value="@(s.FinalGrade.HasValue ? s.FinalGrade.Value.ToString("F2") : "1.75")"
+                                       style="width:75px;padding:3px 6px;font-size:12px;border:1.5px solid var(--nu-border);border-radius:5px;font-weight:700;text-align:center;" />
+                                <button type="submit" class="btn-nu btn-nu-primary" style="padding:4px 10px;font-size:11.5px;" disabled="@(s.GradeIsFrozen || !Model.EncodingOpen)">
+                                    Save
+                                </button>
+                            </form>
+                            <form method="post" asp-page-handler="SaveInc" style="margin-top:6px;display:flex;gap:6px;align-items:center;justify-content:center;">
+                                <input type="hidden" name="sectionId" value="@Model.SelectedOfferingId" />
+                                <input type="hidden" name="enrolledSubjectId" value="@s.EnrolledSubjectId" />
+                                <input type="text" name="incReason" placeholder="INC reason" disabled="@(s.GradeIsFrozen || !Model.EncodingOpen)" style="width:110px;padding:3px 6px;font-size:11.5px;border:1.5px solid var(--nu-border);border-radius:5px;" />
+                                <button type="submit" class="btn-nu btn-nu-outline" style="padding:4px 10px;font-size:11.5px;" disabled="@(s.GradeIsFrozen || !Model.EncodingOpen)">INC</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Students.Any())
+                {
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:36px;color:var(--nu-text-muted);">
+                            No students found for this section.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

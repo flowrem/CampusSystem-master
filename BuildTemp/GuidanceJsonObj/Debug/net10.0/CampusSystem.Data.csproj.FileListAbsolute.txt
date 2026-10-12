@@ -1,0 +1,5 @@
+D:\CampusSystem-master\BuildTemp\GuidanceJsonObj\Debug\net10.0\CampusSystem.Data.csproj.AssemblyReference.cache
+D:\CampusSystem-master\BuildTemp\GuidanceJsonObj\Debug\net10.0\CampusSystem.Data.GeneratedMSBuildEditorConfig.editorconfig
+D:\CampusSystem-master\BuildTemp\GuidanceJsonObj\Debug\net10.0\CampusSystem.Data.AssemblyInfoInputs.cache
+D:\CampusSystem-master\BuildTemp\GuidanceJsonObj\Debug\net10.0\CampusSystem.Data.AssemblyInfo.cs
+D:\CampusSystem-master\BuildTemp\GuidanceJsonObj\Debug\net10.0\CampusSystem.Data.csproj.CoreCompileInputs.cache

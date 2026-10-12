@@ -1,0 +1,117 @@
+@page "{id:int?}"
+@model FinanceMain.Pages.InvoiceModel
+@{
+    ViewData["Title"] = "Invoice";
+    Layout = "_FinanceAdminLayout";
+}
+
+@if (Model.NotFound)
+{
+    <div style="background:var(--fin-amber-bg);border:1px solid var(--fin-amber-border);border-radius:10px;padding:18px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:600;color:var(--fin-amber);">No assessment record found for the requested criteria.</span>
+        <a href="/Assessments" class="btn-fin-outline">&larr; Back to Assessments</a>
+    </div>
+}
+else
+{
+    var a = Model.Assessment!;
+
+    <div class="fin-header">
+        <div>
+            <h1 class="fin-title">Invoice &middot; @a.AssessmentNumber</h1>
+            <p class="fin-subtitle">@a.StudentDisplayName &middot; ID: @a.StudentNumber &middot; @a.Program &middot; AY @a.Semester @a.AcademicYear</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <a href="/Assessments" class="btn-fin-outline">&larr; Assessments</a>
+            <a href="/Billing" class="btn-fin-outline">Billing Ledger</a>
+            <a href="/OAO?id=@a.Id" target="_blank" class="btn-fin-outline">🖨️ Official OAO</a>
+            @if (a.Balance > 0)
+            {
+                <a href="/Pay?assessmentId=@a.Id" class="btn-fin-gold">💳 Pay Balance</a>
+            }
+        </div>
+    </div>
+
+    <!-- Summary KPI cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-sm-6">
+            <div class="fin-stat-card accent-blue">
+                <div class="fin-stat-label">Total Fee Assessment</div>
+                <div class="fin-stat-value" style="color:var(--fin-blue);font-size:22px;">@a.TotalAmount.ToString("₱#,##0.00")</div>
+                <div class="fin-stat-sub">Assessed on @a.AssessedDate.ToString("MMMM d, yyyy")</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="fin-stat-card accent-green">
+                <div class="fin-stat-label">Total Amount Paid</div>
+                <div class="fin-stat-value" style="color:var(--fin-green);font-size:22px;">@a.TotalPaid.ToString("₱#,##0.00")</div>
+                <div class="fin-stat-sub">Verified payments &amp; scholarships</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="fin-stat-card accent-red">
+                <div class="fin-stat-label">Outstanding Balance</div>
+                <div class="fin-stat-value" style="font-size:22px;" class="@(a.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                    @a.Balance.ToString("₱#,##0.00")
+                </div>
+                <div class="fin-stat-sub">
+                    Status: <span class="@FinanceMain.Pages.AssessmentsModel.StatusBadgeClass(a.Status)">@a.Status</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fin-card mb-3">
+        <div class="fin-card-head">
+            <span class="fin-card-head-title">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8v12l-2-1-2 1-2-1-2 1V2z"/><path d="M6 5h4M6 8h4"/></svg>
+                Itemized Line Items
+            </span>
+            <span class="fin-card-badge">@a.Items.Count Line Items</span>
+        </div>
+        <div class="table-responsive">
+            <table class="fin-table">
+                <thead>
+                    <tr>
+                        <th>Fee Description</th>
+                        <th style="text-align:right;">Assessed Amount</th>
+                        <th style="text-align:right;">Paid / Credited</th>
+                        <th style="text-align:right;">Remaining Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in a.Items)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">@item.FeeTypeName</td>
+                            <td style="text-align:right;">@item.Amount.ToString("₱#,##0.00")</td>
+                            <td style="text-align:right;color:var(--fin-green);font-weight:600;">@item.AmountPaid.ToString("₱#,##0.00")</td>
+                            <td style="text-align:right;" class="@(item.Balance > 0 ? "fin-balance-due" : "text-muted")">
+                                @item.Balance.ToString("₱#,##0.00")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="font-weight:800;background:#fafbfc;border-top:2px solid var(--fin-border);">
+                        <td>Total Matriculation Assessment</td>
+                        <td style="text-align:right;">@a.TotalAmount.ToString("₱#,##0.00")</td>
+                        <td style="text-align:right;color:var(--fin-green);">@a.TotalPaid.ToString("₱#,##0.00")</td>
+                        <td style="text-align:right;" class="@(a.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                            @a.Balance.ToString("₱#,##0.00")
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--fin-muted);margin-top:12px;flex-wrap:wrap;gap:8px;">
+        <div>
+            Official Assessment Order &middot; National University Lipa &middot; Office of Student Accounting
+        </div>
+        <div>
+            <a href="/Payments?search=@a.StudentNumber" class="btn-fin-link">&rarr; View Payment Receipts for this Student</a>
+        </div>
+    </div>
+}

@@ -1,0 +1,38 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+.guidance-services-backup/
+
+# Local backups
+BackupFolder/*
+
+# Visual Studio and VS Code local state
+.vs/
+*.user
+*.suo
+.vscode/*
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/settings.json
+
+# Local environment and secrets
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+*.userprefs
+
+# Logs and temporary files
+[Ll]ogs/
+*.log
+*.tmp
+*.temp
+
+# Node tooling, if used by a department frontend
+node_modules/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db

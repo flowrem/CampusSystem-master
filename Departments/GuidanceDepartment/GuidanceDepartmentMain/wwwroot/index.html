@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overview - National University Lipa Guidance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">GUIDANCE SYSTEM</div>
+        <div class="brand-sub">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE GUIDANCE MODULES</div>
+      <a href="/index.html" class="active">
+        <span class="ic">🏠</span> Overview
+      </a>
+      <a href="/dashboard.html">
+        <span class="ic">📊</span> Counselor Dashboard
+      </a>
+      <a href="/students.html">
+        <span class="ic">🗂️</span> Student Records
+      </a>
+      <a href="/triage.html">
+        <span class="ic">⚖️</span> Triage Queue
+      </a>
+      <a href="/appointments.html">
+        <span class="ic">📅</span> Appointments
+      </a>
+      <a href="/case-notes.html">
+        <span class="ic">🔒</span> Case Notes
+      </a>
+      <a href="/monitoring.html">
+        <span class="ic">👁️</span> Student Monitoring
+      </a>
+
+      <div class="nav-section-title">STUDENT SERVICES</div>
+      <a href="/request.html">
+        <span class="ic">📝</span> Submit Request
+      </a>
+      <a href="/resources.html">
+        <span class="ic">📚</span> Support Resources
+      </a>
+
+      <div class="nav-section-title">ADMINISTRATION</div>
+      <a href="/admin.html">
+        <span class="ic">⚙️</span> Department Settings
+      </a>
+      <a href="/openapi/v1.json" target="_blank">
+        <span class="ic">🔌</span> API Documentation
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">MC</div>
+        <div class="user-info">
+          <div class="user-name">Ms. Maya Chen</div>
+          <div class="user-role">Guidance Counselor</div>
+        </div>
+      </div>
+      <a class="guidance-logout" href="/Logout">Log out</a>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY 2026-2027 · 1st Semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/openapi/v1.json" target="_blank" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> Maya Chen (Counselor)</span>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-heading-row">
+        <div>
+          <h1 class="dash-heading">Guidance & Counseling Department</h1>
+          <p class="dash-subheading">National University Lipa Student Care &amp; Institutional Counseling Operations</p>
+        </div>
+        <a href="/request.html" class="btn-primary"><span>+</span> New Guidance Request</a>
+      </div>
+
+      <div class="dash-stats">
+        <div class="dash-stat-card">
+          <div class="dash-stat-top">
+            <span class="dash-stat-label">Open Requests</span>
+            <span class="dash-stat-icon">📨</span>
+          </div>
+          <div class="dash-stat-value">12</div>
+          <div class="dash-stat-sub">+3 new submissions since Friday</div>
+        </div>
+        <div class="dash-stat-card card-danger">
+          <div class="dash-stat-top">
+            <span class="dash-stat-label">Urgent Attention</span>
+            <span class="dash-stat-icon">⚠️</span>
+          </div>
+          <div class="dash-stat-value">2</div>
+          <div class="dash-stat-sub">Review before 10:00 AM</div>
+        </div>
+        <div class="dash-stat-card card-success">
+          <div class="dash-stat-top">
+            <span class="dash-stat-label">Today's Appointments</span>
+            <span class="dash-stat-icon">🗓️</span>
+          </div>
+          <div class="dash-stat-value">7</div>
+          <div class="dash-stat-sub">Next scheduled at 09:30 AM</div>
+        </div>
+        <div class="dash-stat-card card-gold">
+          <div class="dash-stat-top">
+            <span class="dash-stat-label">Monitored Students</span>
+            <span class="dash-stat-icon">👥</span>
+          </div>
+          <div class="dash-stat-value">4</div>
+          <div class="dash-stat-sub">Active follow-up caseload</div>
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <div class="dash-panel-header">
+          <h2><span class="ic">🏛️</span> Core Department Workspaces</h2>
+          <span class="section-count">6 Modules</span>
+        </div>
+        <div class="dash-stats" style="margin-bottom:0;">
+          <a class="dash-stat-card" href="/dashboard.html">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Operations</span>
+              <span class="dash-stat-icon">📊</span>
+            </div>
+            <strong style="font-size:16px;color:var(--text-main);margin:6px 0;">Counselor Dashboard</strong>
+            <span class="dash-stat-sub">Prioritize urgent intake, daily schedule, and request inbox</span>
+          </a>
+
+          <a class="dash-stat-card" href="/triage.html">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Workflow</span>
+              <span class="dash-stat-icon">⚖️</span>
+            </div>
+            <strong style="font-size:16px;color:var(--text-main);margin:6px 0;">Triage Queue</strong>
+            <span class="dash-stat-sub">Sort cases into New, In-Progress, and Resolved statuses</span>
+          </a>
+
+          <a class="dash-stat-card" href="/appointments.html">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Scheduling</span>
+              <span class="dash-stat-icon">📅</span>
+            </div>
+            <strong style="font-size:16px;color:var(--text-main);margin:6px 0;">Appointment Calendar</strong>
+            <span class="dash-stat-sub">Manage counselor consultation slots and student sessions</span>
+          </a>
+
+          <a class="dash-stat-card" href="/students.html">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Directory</span>
+              <span class="dash-stat-icon">🗂️</span>
+            </div>
+            <strong style="font-size:16px;color:var(--text-main);margin:6px 0;">Student Records</strong>
+            <span class="dash-stat-sub">Browse live registered students from the central database</span>
+          </a>
+
+          <a class="dash-stat-card" href="/case-notes.html">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Confidential</span>
+              <span class="dash-stat-icon">🔒</span>
+            </div>
+            <strong style="font-size:16px;color:var(--text-main);margin:6px 0;">Case Notes</strong>
+            <span class="dash-stat-sub">Restricted-access counseling documentation and notes</span>
+          </a>
+
+          <a class="dash-stat-card" href="/resources.html">
+            <div class="dash-stat-top">
+              <span class="dash-stat-label">Materials</span>
+              <span class="dash-stat-icon">📚</span>
+            </div>
+            <strong style="font-size:16px;color:var(--text-main);margin:6px 0;">Student Resources</strong>
+            <span class="dash-stat-sub">Academic advisement, wellness, and career guides</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="dash-grid-equal">
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2><span class="ic">🔌</span> Integration &amp; System Health</h2>
+          </div>
+          <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px;">
+            The Guidance Department connects to the central <strong>CampusSystemDb</strong> database shared across Finance, Registrar, and Student Portals.
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="/openapi/v1.json" target="_blank" class="btn-secondary"><span class="ic">📄</span> OpenAPI Schema</a>
+            <a href="/WeatherForecast" target="_blank" class="btn-secondary"><span class="ic">🩺</span> Health Endpoint</a>
+          </div>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2><span class="ic">📞</span> Campus Coordination Handoffs</h2>
+          </div>
+          <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px;">
+            Direct escalation pipelines configured with campus academic and administrative units.
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="badge badge-active">Registrar Portal</span>
+            <span class="badge badge-active">Finance Office</span>
+            <span class="badge badge-active">Health &amp; Wellness</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

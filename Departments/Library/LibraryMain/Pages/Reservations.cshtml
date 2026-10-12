@@ -1,0 +1,60 @@
+@page
+@model ReservationsModel
+@{
+    ViewData["Title"] = "Reservations";
+}
+
+<div class="page-heading"><div><span class="eyebrow">Library workspace</span><h1>Reservations</h1><p class="text-muted">A reservation is held for 7 days. It is fulfilled when the student borrows the book.</p></div></div>
+
+<partial name="_Flash" model="Model" />
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="">All reservations</option>
+            @foreach (var status in new[] { "Active", "Fulfilled", "Cancelled", "Expired" })
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status</option>
+            }
+        </select>
+    </div>
+</form>
+
+<div class="surface p-0">
+    <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    @if (Model.IsStaff) { <th>Student</th> }
+                    <th>Reserved</th><th>Held until</th><th>Status</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reservation in Model.Reservations)
+                {
+                    <tr>
+                        <td><a asp-page="/Resource" asp-route-id="@reservation.BookId">@reservation.BookTitle</a><div class="small text-muted">@reservation.BookAuthor</div></td>
+                        @if (Model.IsStaff) { <td>@reservation.StudentName</td> }
+                        <td>@reservation.ReservedAt.ToString("MMM d, yyyy")</td>
+                        <td>@reservation.HoldUntil.ToString("MMM d, yyyy")</td>
+                        <td>
+                            <span class="badge @(reservation.Status switch { "Active" => "text-bg-primary", "Fulfilled" => "text-bg-success", _ => "text-bg-secondary" })">@reservation.Status</span>
+                            @if (reservation.Status == "Active" && reservation.CopiesFree > 0) { <div class="small text-success">A copy is available now</div> }
+                        </td>
+                        <td class="text-end">
+                            @if (reservation.Status == "Active")
+                            {
+                                <form method="post" asp-page-handler="Cancel"><input type="hidden" name="reservationId" value="@reservation.Id" /><button class="btn btn-sm btn-outline-dark">Cancel</button></form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (Model.Reservations.Count == 0)
+                {
+                    <tr><td colspan="6" class="text-center text-muted p-4">No reservations.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

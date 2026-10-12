@@ -1,0 +1,343 @@
+@page "{id:int?}"
+@model FinanceMain.Pages.OAOModel
+@{
+    ViewData["Title"] = Model.Assessment != null ? $"OAO — {Model.Assessment.AssessmentNumber}" : "Official Assessment Order";
+    Layout = null; // Standalone printable document layout
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - National University Lipa</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #f1f5f9;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #0f172a;
+            margin: 0;
+            padding: 24px;
+        }
+        .oao-paper {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .oao-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #0d1b3d;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .oao-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0d1b3d;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .oao-sub {
+            font-size: 11px;
+            color: #64748b;
+        }
+        .oao-crest {
+            width: 48px;
+            height: 48px;
+        }
+        .oao-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 24px;
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+        .oao-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        .oao-val {
+            font-weight: 600;
+            color: #0d1b3d;
+        }
+        .oao-mono {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 700;
+        }
+        .oao-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+        .oao-table th {
+            background: #0d1b3d;
+            color: #fff;
+            padding: 10px 14px;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .oao-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .oao-table tfoot td {
+            font-weight: 700;
+            background: #f8fafc;
+            border-top: 2px solid #cbd5e1;
+        }
+        .oao-schedule-box {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .oao-schedule-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            background: #fff;
+        }
+        .oao-signatures {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px dashed #cbd5e1;
+            text-align: center;
+            font-size: 12px;
+        }
+        .oao-sig-line {
+            border-top: 1px solid #0f172a;
+            margin-top: 40px;
+            padding-top: 6px;
+            font-weight: 600;
+        }
+        .badge-oao {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .badge-oao-paid { background: #dcfce7; color: #15803d; }
+        .badge-oao-partial { background: #fef3c7; color: #b45309; }
+        .badge-oao-unpaid { background: #fee2e2; color: #b91c1c; }
+
+        .oao-toolbar {
+            max-width: 860px;
+            margin: 0 auto 16px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @@media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .oao-paper {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .oao-toolbar {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    @if (Model.NotFound || Model.Assessment == null)
+    {
+        <div class="oao-toolbar">
+            <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary">&larr; Return</a>
+        </div>
+        <div class="oao-paper text-center py-5">
+            <h4 class="text-danger">Official Assessment Order Not Found</h4>
+            <p class="text-muted">No assessment record exists matching the specified criteria.</p>
+            <a href="/Assessments" class="btn btn-primary btn-sm mt-3">Go to Assessments</a>
+        </div>
+    }
+    else
+    {
+        var a = Model.Assessment;
+        var downpayment = Math.Round(a.TotalAmount * 0.35m, 2);
+        var prelimDue = Math.Round(a.TotalAmount * 0.25m, 2);
+        var midtermDue = Math.Round(a.TotalAmount * 0.20m, 2);
+        var finalsDue = a.TotalAmount - downpayment - prelimDue - midtermDue;
+
+        <div class="oao-toolbar">
+            <div class="d-flex align-items-center gap-2">
+                <a href="/Invoice/@a.Id" class="btn btn-sm btn-outline-secondary">&larr; Back to Invoice</a>
+                <a href="/Billing" class="btn btn-sm btn-outline-secondary">Student Ledger</a>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="/Pay?assessmentId=@a.Id" class="btn btn-sm btn-warning fw-bold @(a.Balance <= 0 ? "d-none" : "")">💳 Pay Assessment</a>
+                <button type="button" onclick="window.print()" class="btn btn-sm btn-primary fw-bold">🖨️ Print Official OAO</button>
+            </div>
+        </div>
+
+        <div class="oao-paper">
+            <!-- Header -->
+            <div class="oao-header">
+                <div class="d-flex align-items-center gap-3">
+                    <svg class="oao-crest" viewBox="0 0 34 34" fill="none">
+                        <path d="M17 2 L30 7 V16 C30 24 24 30 17 32 C10 30 4 24 4 16 V7 Z" fill="#eab308" stroke="#0d1b3d" stroke-width="1.5" />
+                        <text x="17" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="#0d1b3d">NU</text>
+                    </svg>
+                    <div>
+                        <div class="fw-bold" style="color:#0d1b3d; font-size:14px; letter-spacing:0.05em;">NATIONAL UNIVERSITY LIPA</div>
+                        <div class="oao-sub">Office of the University Registrar &middot; Accounting &amp; Finance Office</div>
+                        <div class="oao-sub">KM 78 President J.P. Laurel Highway, Lipa City, Batangas</div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="oao-title">OFFICIAL ASSESSMENT ORDER</div>
+                    <div class="oao-mono small" style="color:var(--fin-navy);">@a.AssessmentNumber</div>
+                    <div class="mt-1">
+                        @if (a.Status == "Paid")
+                        {
+                            <span class="badge-oao badge-oao-paid">STATUS: FULLY PAID</span>
+                        }
+                        else if (a.Status == "Partial")
+                        {
+                            <span class="badge-oao badge-oao-partial">STATUS: PARTIALLY SETTLED</span>
+                        }
+                        else
+                        {
+                            <span class="badge-oao badge-oao-unpaid">STATUS: UNPAID / PENDING</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Metadata -->
+            <div class="oao-meta-grid">
+                <div>
+                    <div class="oao-label">Student Name</div>
+                    <div class="oao-val">@a.StudentDisplayName</div>
+                </div>
+                <div>
+                    <div class="oao-label">Student ID Number</div>
+                    <div class="oao-val oao-mono">@a.StudentNumber</div>
+                </div>
+                <div>
+                    <div class="oao-label">Academic Program</div>
+                    <div class="oao-val">@a.Program</div>
+                </div>
+                <div>
+                    <div class="oao-label">Academic Year &amp; Term</div>
+                    <div class="oao-val">AY @a.AcademicYear &middot; @a.Semester</div>
+                </div>
+                <div>
+                    <div class="oao-label">Date Assessed</div>
+                    <div class="oao-val">@a.AssessedDate.ToString("MMMM dd, yyyy")</div>
+                </div>
+                <div>
+                    <div class="oao-label">Total Units Enrolled</div>
+                    <div class="oao-val">21 Academic Units (Regular)</div>
+                </div>
+            </div>
+
+            <!-- Itemized Line Items Table -->
+            <div class="fw-bold mb-2" style="font-size:13px; color:#0d1b3d; text-transform:uppercase; letter-spacing:0.04em;">Schedule of Fees &amp; Tuition Breakdown</div>
+            <table class="oao-table">
+                <thead>
+                    <tr>
+                        <th>Fee Description</th>
+                        <th class="text-end" style="width:140px;">Assessed</th>
+                        <th class="text-end" style="width:140px;">Payments Credited</th>
+                        <th class="text-end" style="width:140px;">Outstanding Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in a.Items)
+                    {
+                        <tr>
+                            <td><strong>@item.FeeTypeName</strong></td>
+                            <td class="text-end">@item.Amount.ToString("₱#,##0.00")</td>
+                            <td class="text-end text-success">@item.AmountPaid.ToString("₱#,##0.00")</td>
+                            <td class="text-end fw-bold @(item.Balance > 0 ? "text-danger" : "text-muted")">@item.Balance.ToString("₱#,##0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>TOTAL ASSESSED MATRICULATION</td>
+                        <td class="text-end">@a.TotalAmount.ToString("₱#,##0.00")</td>
+                        <td class="text-end text-success">@a.TotalPaid.ToString("₱#,##0.00")</td>
+                        <td class="text-end text-danger" style="font-size:15px;">@a.Balance.ToString("₱#,##0.00")</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Installment Terms -->
+            <div class="fw-bold mb-2" style="font-size:12px; color:#64748b; text-transform:uppercase;">Authorized Semestral Installment Due Dates</div>
+            <div class="oao-schedule-box">
+                <div class="oao-schedule-card">
+                    <div class="oao-label">Upon Enrollment</div>
+                    <div class="fw-bold">@downpayment.ToString("₱#,##0.00")</div>
+                    <div class="oao-sub">Downpayment</div>
+                </div>
+                <div class="oao-schedule-card">
+                    <div class="oao-label">Prelim Exam</div>
+                    <div class="fw-bold">@prelimDue.ToString("₱#,##0.00")</div>
+                    <div class="oao-sub">Week 6</div>
+                </div>
+                <div class="oao-schedule-card">
+                    <div class="oao-label">Midterm Exam</div>
+                    <div class="fw-bold">@midtermDue.ToString("₱#,##0.00")</div>
+                    <div class="oao-sub">Week 12</div>
+                </div>
+                <div class="oao-schedule-card">
+                    <div class="oao-label">Final Exam</div>
+                    <div class="fw-bold">@finalsDue.ToString("₱#,##0.00")</div>
+                    <div class="oao-sub">Week 18</div>
+                </div>
+            </div>
+
+            <!-- Notice & Disclaimers -->
+            <div class="p-2 mb-3" style="background:#f8fafc; border-left:3px solid #eab308; font-size:11px; color:#475569;">
+                <strong>Notice:</strong> This Official Assessment Order (OAO) confirms official enrollment and fee matriculation under National University Lipa policies. Examination permits and semestral clearance require timely settlement of account balances.
+            </div>
+
+            <!-- Signatures -->
+            <div class="oao-signatures">
+                <div>
+                    <div class="oao-sig-line">Ms. Carmela Ilagan</div>
+                    <div class="text-muted">Finance &amp; Accounting Officer</div>
+                </div>
+                <div>
+                    <div class="oao-sig-line">Dr. Rosalinda Santos</div>
+                    <div class="text-muted">Office of University Registrar</div>
+                </div>
+                <div>
+                    <div class="oao-sig-line">@a.StudentDisplayName</div>
+                    <div class="text-muted">Student Conforme / Payor</div>
+                </div>
+            </div>
+        </div>
+    }
+</body>
+</html>

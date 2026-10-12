@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - NU Lipa Campus System</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/finance-pages.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="fin-body">
+    <div class="fin-gold-bar"></div>
+    <div class="fin-shell">
+        <aside class="fin-sidebar">
+            <div class="fin-sidebar-brand">
+                <svg class="fin-sidebar-crest" width="32" height="32" viewBox="0 0 34 34" fill="none">
+                    <path d="M17 2 L30 7 V16 C30 24 24 30 17 32 C10 30 4 24 4 16 V7 Z" fill="#eab308" stroke="#0d1b3d" stroke-width="1.5" />
+                    <text x="17" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="#0d1b3d">NU</text>
+                </svg>
+                <div>
+                    <div class="fin-sidebar-brand-name">CAMPUS SYSTEM</div>
+                    <div class="fin-sidebar-brand-sub">National University Lipa</div>
+                </div>
+            </div>
+            <nav class="fin-sidebar-nav">
+                <div class="fin-nav-group">Student Portal</div>
+                <a class="fin-nav-link" href="http://localhost:5069/Dashboard">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7l6-5 6 5" /><path d="M4 6.5V13a1 1 0 001 1h6a1 1 0 001-1V6.5" /></svg>
+                    Dashboard
+                </a>
+                <a class="fin-nav-link" href="http://localhost:5069/Enrollment">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5" /><path d="M2 6.5h12" /></svg>
+                    Enrollment
+                </a>
+                <a class="fin-nav-link" href="http://localhost:5069/Grades">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 3h8v10l-4-2-4 2z" /></svg>
+                    Grades
+                </a>
+
+                <div class="fin-nav-group">Finance</div>
+                <a class="fin-nav-link @(ViewData["Title"]?.ToString() == "My Account" ? "active" : "")" href="/StudentAccount">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="8" rx="1" /><path d="M2 7h12" /></svg>
+                    My Account
+                </a>
+                <a class="fin-nav-link @(ViewData["Title"]?.ToString()?.Contains("OAO") == true ? "active" : "")" href="/OAO">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8v12l-2-1-2 1-2-1-2 1V2z"/><path d="M6 5h4M6 8h4"/></svg>
+                    Assessment (OAO)
+                </a>
+                <a class="fin-nav-link @(ViewData["Title"]?.ToString() == "Make a Payment" ? "active" : "")" href="/Pay">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6" /><path d="M8 5v3l2 1.5" /></svg>
+                    Make a Payment
+                </a>
+                <a class="fin-nav-link @(ViewData["Title"]?.ToString()?.Contains("Receipt") == true ? "active" : "")" href="/Receipt">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h10a1 1 0 011 1v11l-3-2-2 2-2-2-2 2-2-2V3a1 1 0 011-1z"/></svg>
+                    My Receipts
+                </a>
+                <a class="fin-nav-link @(ViewData["Title"]?.ToString() == "Document Requests" ? "active" : "")" href="/RequestFees">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h5l3 3v9H4z" /><path d="M8 7.5v3M6.5 9h3" /></svg>
+                    Request Fees
+                </a>
+            </nav>
+            <div class="fin-sidebar-footer">
+                <div class="fin-sidebar-avatar">@(ViewData["StudentInitials"] ?? "ST")</div>
+                <div>
+                    <div class="fin-sidebar-footer-name">@(ViewData["StudentName"] ?? "Student")</div>
+                    <div class="fin-sidebar-footer-role">@(ViewData["StudentProgram"] ?? "Student")</div>
+                </div>
+                <a href="/Logout" style="margin-left:auto;font-size:11.5px;color:#cbd5e1;text-decoration:none;" title="Sign out">Sign out</a>
+            </div>
+        </aside>
+
+        <main class="fin-main">
+            <div class="fin-statusbar">
+                <div class="fin-pill">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#64748b" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5" /><path d="M2 6.5h12M5 2v3M11 2v3" /></svg>
+                    AY 2026-2027 &middot; 1st Semester
+                </div>
+                <div class="fin-pill-live">
+                    <span class="dot"></span>
+                    System Live
+                </div>
+                <div class="flex-grow-1"></div>
+                <a href="http://localhost:5069" class="fin-pill" style="text-decoration:none; color:var(--fin-navy); font-size:11px;">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7l6-5 6 5"/><path d="M4 6.5V13a1 1 0 001 1h6a1 1 0 001-1V6.5"/></svg>
+                    Student Portal
+                </a>
+                <div class="fin-officer" style="border-left: none; padding-left: 0;">
+                    <svg width="26" height="26" viewBox="0 0 16 16" fill="#cbd5e1"><circle cx="8" cy="5.5" r="3" /><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" /></svg>
+                    <div>
+                        <div class="fin-officer-name">@(ViewData["StudentName"] ?? "Student")</div>
+                        <div class="fin-officer-role">@(ViewData["StudentProgram"] ?? "Student")</div>
+                    </div>
+                </div>
+            </div>
+            <div class="fin-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

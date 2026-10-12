@@ -1,0 +1,304 @@
+@page
+@model RegistrarMain.Pages.CurriculumEvaluationModel
+@{
+    ViewData["Title"] = "Curriculum Evaluation & Degree Audit";
+    ViewData["ActivePage"] = "CurriculumEvaluation";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">🧭 Curriculum Evaluation &amp; Degree Audit</h1>
+    <p class="dash-subheading">Audit student flowchart completion, accredit transferee course equivalencies, and evaluate program shifts.</p>
+  </div>
+  <div>
+    @if (Model.ActiveTab == "crediting")
+    {
+      <button class="btn btn-primary" onclick="document.getElementById('accreditModal').style.display='block'">➕ Accredit Transferee Subject</button>
+    }
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav">
+  <a href="/CurriculumEvaluation?tab=audit" class="tab-link @(Model.ActiveTab == "audit" ? "active" : "")">
+    <span>📜 Degree Audit &amp; Flowchart Progress</span>
+  </a>
+  <a href="/CurriculumEvaluation?tab=crediting" class="tab-link @(Model.ActiveTab == "crediting" ? "active" : "")">
+    <span>🔄 Transferee Subject Crediting (@Model.CreditedRecords.Count)</span>
+  </a>
+  <a href="/CurriculumEvaluation?tab=shifting" class="tab-link @(Model.ActiveTab == "shifting" ? "active" : "")">
+    <span>🔀 Course Shifting Petitions (@Model.ShiftingRequests.Count)</span>
+  </a>
+</div>
+
+<!-- TAB 1: DEGREE AUDIT & FLOWCHART -->
+@if (Model.ActiveTab == "audit")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Individual Student Degree Audit Flowchart</h2>
+    </div>
+
+    <form method="get" style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+      <input type="hidden" name="tab" value="audit">
+      <label style="font-weight:700;font-size:13px;">Select Student:</label>
+      <select name="student_id" onchange="this.form.submit()" style="max-width:380px;" class="form-control">
+        @foreach (var s in Model.StudentsList)
+        {
+          <option value="@s.Id" selected="@(Model.SelectedStudentId == s.Id)">
+            @($"{s.Name} ({s.StudentIdNumber}) — {s.Program}")
+          </option>
+        }
+      </select>
+    </form>
+
+    @if (Model.SelectedStudent != null)
+    {
+      var pctComplete = Model.Stats.Total > 0 ? Math.Round((double)(Model.Stats.Completed / Model.Stats.Total) * 100, 1) : 0;
+      <div class="dash-panel" style="background:#f8fafc;border-color:#cbd5e1;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h3 style="margin:0 0 4px;font-size:16px;">@Model.SelectedStudent.Name</h3>
+            <div style="font-size:12px;color:#64748b;">
+              @Model.SelectedStudent.StudentIdNumber &middot; 
+              @Model.SelectedStudent.Program &middot; 
+              Curriculum @Model.SelectedStudent.CurriculumYear
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:22px;font-weight:800;color:var(--accent);">@pctComplete% Completed</div>
+            <div style="font-size:12px;color:#64748b;">@Model.Stats.Completed of @Model.Stats.Total Units Earned</div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="background:#e2e8f0;border-radius:10px;height:12px;margin-top:14px;overflow:hidden;">
+          <div style="width:@pctComplete%;background:var(--accent);height:100%;border-radius:10px;"></div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Term / Year</th>
+              <th>Course Code</th>
+              <th>Descriptive Title</th>
+              <th>Units</th>
+              <th>Prerequisite</th>
+              <th>Grade Mark</th>
+              <th>Curriculum Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var cp in Model.CurriculumProgress)
+            {
+              <tr>
+                <td>@($"{cp.YearLevel} {cp.Semester}")</td>
+                <td><strong>@cp.Code</strong></td>
+                <td>@cp.Name</td>
+                <td>@cp.Units.ToString("F1")</td>
+                <td>
+                  @if (!string.IsNullOrEmpty(cp.Prereq))
+                  {
+                    <span class="badge badge-on-leave">@cp.Prereq</span>
+                  }
+                  else
+                  {
+                    <span style="color:#94a3b8;">None</span>
+                  }
+                </td>
+                <td><strong>@cp.Mark</strong></td>
+                <td><span class="badge @cp.Badge">@cp.Status</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 2: TRANSFEREE SUBJECT CREDITING -->
+@if (Model.ActiveTab == "crediting")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Accredited Transferee Equivalent Courses</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">Evaluation and formal crediting of subjects earned from other tertiary institutions.</p>
+
+    @if (!Model.CreditedRecords.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No transferee credited subjects recorded.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student Details</th>
+              <th>Originating Institution</th>
+              <th>Previous Course Details</th>
+              <th>Grade</th>
+              <th>Accredited NU Lipa Subject</th>
+              <th>Evaluated By</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var cr in Model.CreditedRecords)
+            {
+              <tr>
+                <td>
+                  <strong>@cr.StudentName</strong>
+                  <div style="font-size:11px;color:#64748b;">@cr.StudentIdNumber</div>
+                </td>
+                <td>@cr.PrevSchool</td>
+                <td>
+                  <strong>@cr.PrevSubjectCode</strong>
+                  <div style="font-size:11px;color:#64748b;">@cr.PrevSubjectTitle (@cr.PrevUnits units)</div>
+                </td>
+                <td><strong>@cr.PrevGrade</strong></td>
+                <td>
+                  <strong style="color:var(--accent);">@cr.CreditedCode</strong>
+                  <div style="font-size:11px;color:#64748b;">@cr.CreditedName</div>
+                </td>
+                <td>@cr.EvaluatedBy</td>
+                <td><span class="badge badge-approved">@cr.Status</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 3: COURSE SHIFTING PETITIONS -->
+@if (Model.ActiveTab == "shifting")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Degree Shifting Petitions &amp; Credit Migration</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">Approve program transfers and automatically align earned general education and major credits.</p>
+
+    @if (!Model.ShiftingRequests.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No course shifting petitions filed.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student Details</th>
+              <th>Current Program</th>
+              <th>Target Program</th>
+              <th>GWA</th>
+              <th>Reason / Justification</th>
+              <th>Status</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var sr in Model.ShiftingRequests)
+            {
+              <tr>
+                <td>
+                  <strong>@sr.StudentName</strong>
+                  <div style="font-size:11px;color:#64748b;">@sr.StudentIdNumber &middot; @sr.YearLevel</div>
+                </td>
+                <td><span class="badge badge-on-leave">@sr.FromProgram</span></td>
+                <td><strong style="color:var(--accent);">@sr.ToProgram</strong></td>
+                <td>@(sr.AverageGrade.HasValue ? sr.AverageGrade.Value.ToString("F2") : "—")</td>
+                <td style="font-size:12px;max-width:260px;color:#475569;">@sr.Reason</td>
+                <td><span class="badge badge-@sr.Status.ToLower()">@(char.ToUpper(sr.Status[0]) + sr.Status.Substring(1))</span></td>
+                <td style="text-align:right;">
+                  @if (sr.Status == "pending")
+                  {
+                    <form method="post" asp-page-handler="ShiftingAction" style="display:inline-flex;gap:6px;">
+                      <input type="hidden" name="request_id" value="@sr.Id">
+                      <button type="submit" name="action" value="approve_shifting" class="btn-small primary">Approve &amp; Migrate</button>
+                      <button type="submit" name="action" value="reject_shifting" class="btn-small danger">Reject</button>
+                    </form>
+                  }
+                  else
+                  {
+                    <span style="font-size:11px;color:#64748b;">Processed</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+
+<!-- Modal: Accredit Transferee Subject -->
+<div id="accreditModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:540px;background:#fff;border-radius:12px;margin:50px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Accredit Transferee Equivalent Course</h2>
+      <button onclick="document.getElementById('accreditModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="AccreditSubject">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Select Transferee Student *</label>
+        <select name="student_id" required class="form-control">
+          <option value="">-- Choose Student --</option>
+          @foreach (var s in Model.StudentsList)
+          {
+            <option value="@s.Id">@($"{s.Name} ({s.StudentIdNumber})")</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Originating School / University *</label>
+        <input type="text" name="prev_school" placeholder="e.g. Far Eastern University" required class="form-control">
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Previous Course Code *</label>
+          <input type="text" name="prev_subject_code" placeholder="e.g. CS101" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Units Earned *</label>
+          <input type="number" step="0.5" name="prev_units" value="3.0" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Previous Course Title *</label>
+          <input type="text" name="prev_subject_title" placeholder="e.g. Intro to Computing" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Grade Earned *</label>
+          <input type="text" name="prev_grade" placeholder="e.g. 1.50 or A" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Accredit as MSU Institutional Subject *</label>
+        <select name="credited_to_subject_id" required class="form-control">
+          <option value="">-- Choose Institutional Equivalent Subject --</option>
+          @foreach (var s in Model.SubjectsList)
+          {
+            <option value="@s.Id">@($"{s.SubjectCode} — {s.SubjectName} ({s.Units} units)")</option>
+          }
+        </select>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('accreditModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Accredit Subject</button>
+      </div>
+    </form>
+  </div>
+</div>

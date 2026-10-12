@@ -1,0 +1,217 @@
+@page
+@model StudentPortalMain.Pages.ProfileModel
+@{
+    ViewData["Title"] = "Student Profile & Credentials";
+    ViewData["ActivePage"] = "Profile";
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+    var email = Model.Student?.Email ?? "";
+    var initials = string.Join("", studentName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0]));
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Student Master Record
+        </div>
+        <h1 class="portal-page-title">Profile &amp; Official Credentials</h1>
+        <p class="portal-page-subtitle">
+            View your permanent academic profile, government compliance records, and update contact information.
+        </p>
+    </div>
+</div>
+
+<div class="row" style="display:flex; flex-wrap:wrap; gap:24px; margin:0 -12px;">
+    <!-- ─── Left Profile Badge ────────────────────────────────────────────── -->
+    <div style="flex: 1 1 340px; min-width:300px;">
+        <div class="portal-card" style="text-align:center;">
+            <div class="portal-card-body" style="padding:32px 20px;">
+                <div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, var(--nu-gold), #d49f00); color:var(--nu-blue-deep); font-size:26px; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                    @initials
+                </div>
+                <h3 style="margin:0 0 4px; font-size:18px; color:var(--nu-blue-dark);">@studentName</h3>
+                <div style="font-size:13px; font-weight:700; color:var(--nu-gold-dark); margin-bottom:12px;">
+                    @studentIdNum
+                </div>
+                <div style="font-size:12.5px; color:var(--nu-text-muted); margin-bottom:16px;">
+                    @email
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+                    <span class="badge-status @(Model.Profile.AcademicStatus == "Probation" ? "badge-danger" : "badge-success")">
+                        @Model.Profile.AcademicStatus
+                    </span>
+                    <span class="badge-status badge-info">
+                        @Model.Profile.EnrollmentStatus
+                    </span>
+                    <span class="badge-status @(Model.Profile.GuidanceClearanceStatus == "Cleared" ? "badge-success" : "badge-warning")">
+                        Guidance: @Model.Profile.GuidanceClearanceStatus
+                    </span>
+                </div>
+
+                <div style="border-top:1px solid var(--nu-border); padding-top:16px; text-align:left; font-size:12.5px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--nu-text-muted);">Program:</span>
+                        <strong>@Model.Profile.Program</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--nu-text-muted);">Year Level:</span>
+                        <strong>@Model.Profile.YearLevel</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--nu-text-muted);">Gender:</span>
+                        <strong>@Model.Profile.Gender</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--nu-text-muted);">Admission Date:</span>
+                        <strong>@(Model.Student?.CreatedAt.ToString("MMM yyyy") ?? "—")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Government & Special Credentials Card -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>🏛️</span> Institutional &amp; Gov't Records
+                </h3>
+            </div>
+            <div class="portal-card-body" style="font-size:12.5px;">
+                <div style="margin-bottom:12px;">
+                    <div style="font-weight:700; color:var(--nu-blue-dark);">NSTP Serial Number:</div>
+                    <div style="margin-top:2px;">
+                        @if (!string.IsNullOrEmpty(Model.NstpSerial))
+                        {
+                            <code style="font-size:12px; background:#eff6ff; padding:2px 6px; border-radius:4px; color:#1e40af;">
+                                @Model.NstpSerial (@Model.NstpType)
+                            </code>
+                        }
+                        else
+                        {
+                            <span class="badge-status badge-secondary">In Progress / Pending Issuance</span>
+                        }
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <div style="font-weight:700; color:var(--nu-blue-dark);">CHED Special Order (S.O.):</div>
+                    <div style="margin-top:2px;">
+                        @if (!string.IsNullOrEmpty(Model.ChedSoNumber))
+                        {
+                            <strong style="color:#15803d;">@Model.ChedSoNumber</strong>
+                        }
+                        else
+                        {
+                            <span style="color:var(--nu-text-muted);">Applicable upon graduation application</span>
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-weight:700; color:var(--nu-blue-dark);">Guidance Counselor Notes:</div>
+                    <div style="color:var(--nu-text-muted); margin-top:2px; font-style:italic;">
+                        @(string.IsNullOrEmpty(Model.Profile.GuidanceNotes) ? "No disciplinary records or academic sanctions logged." : Model.Profile.GuidanceNotes)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Right Details & Edit Contact ──────────────────────────────────── -->
+    <div style="flex: 2 1 500px; min-width:320px;">
+        <!-- Degree Details Card -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>🎓</span> Curriculum &amp; Academic Status
+                </h3>
+            </div>
+            <div class="portal-card-body">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:18px;">
+                    <div>
+                        <div class="form-label" style="margin-bottom:2px;">Degree Program</div>
+                        <div style="font-weight:700; color:var(--nu-blue-dark); font-size:14px;">@Model.Profile.Program</div>
+                    </div>
+                    <div>
+                        <div class="form-label" style="margin-bottom:2px;">Curriculum Catalog</div>
+                        <div style="font-weight:700; font-size:14px;">@Model.Profile.CurriculumYear</div>
+                    </div>
+                    <div>
+                        <div class="form-label" style="margin-bottom:2px;">Completed Degree Units</div>
+                        <div style="font-weight:700; color:#15803d; font-size:14px;">@Model.Profile.CompletedUnits units</div>
+                    </div>
+                    <div>
+                        <div class="form-label" style="margin-bottom:2px;">Remaining Units to Graduate</div>
+                        <div style="font-weight:700; color:var(--nu-gold-dark); font-size:14px;">@Model.Profile.UnitsRemaining units</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">Password &amp; Security</h3>
+            </div>
+            <div class="portal-card-body">
+                @if (Model.CanChangePassword)
+                {
+                    <form method="post" asp-page-handler="ChangePassword">
+                        <div class="form-group">
+                            <label class="form-label" for="CurrentPassword">Current password</label>
+                            <input asp-for="CurrentPassword" class="form-control" type="password" autocomplete="current-password" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="NewPassword">New password</label>
+                            <input asp-for="NewPassword" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="72" required />
+                            <span style="font-size:11.5px; color:var(--nu-text-muted);">Use at least 12 characters.</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ConfirmNewPassword">Confirm new password</label>
+                            <input asp-for="ConfirmNewPassword" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="72" required />
+                        </div>
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button type="submit" class="btn-nu btn-nu-primary">Change Password</button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <p style="margin:0; color:var(--nu-text-muted);">
+                        Password changes become available after Registrar activates your account or confirms your enrollment.
+                    </p>
+                }
+            </div>
+        </div>
+
+        <!-- Editable Contact Information Form -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📞</span> Personal Contact Information &amp; Address
+                </h3>
+                <span style="font-size:12px; color:var(--nu-text-muted);">Syncs with Registrar Student Records</span>
+            </div>
+            <div class="portal-card-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label class="form-label">Contact / Mobile Number:</label>
+                        <input type="text" asp-for="ContactNumber" class="form-control" placeholder="e.g. 09171234567" required />
+                        <span style="font-size:11.5px; color:var(--nu-text-muted);">Used for official emergency and enrollment SMS alerts.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Complete Permanent Residential Address:</label>
+                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="House/Lot No., Street, Barangay, City/Municipality, Province" required></textarea>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button type="submit" class="btn-nu btn-nu-primary">
+                            Save Contact Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

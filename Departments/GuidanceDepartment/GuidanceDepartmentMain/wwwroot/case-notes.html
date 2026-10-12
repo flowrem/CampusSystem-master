@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case Notes - National University Lipa Guidance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">GUIDANCE SYSTEM</div>
+        <div class="brand-sub">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE GUIDANCE MODULES</div>
+      <a href="/index.html">
+        <span class="ic">🏠</span> Overview
+      </a>
+      <a href="/dashboard.html">
+        <span class="ic">📊</span> Counselor Dashboard
+      </a>
+      <a href="/students.html">
+        <span class="ic">🗂️</span> Student Records
+      </a>
+      <a href="/triage.html">
+        <span class="ic">⚖️</span> Triage Queue
+      </a>
+      <a href="/appointments.html">
+        <span class="ic">📅</span> Appointments
+      </a>
+      <a href="/case-notes.html" class="active">
+        <span class="ic">🔒</span> Case Notes
+      </a>
+      <a href="/monitoring.html">
+        <span class="ic">👁️</span> Student Monitoring
+      </a>
+
+      <div class="nav-section-title">STUDENT SERVICES</div>
+      <a href="/request.html">
+        <span class="ic">📝</span> Submit Request
+      </a>
+      <a href="/resources.html">
+        <span class="ic">📚</span> Support Resources
+      </a>
+
+      <div class="nav-section-title">ADMINISTRATION</div>
+      <a href="/admin.html">
+        <span class="ic">⚙️</span> Department Settings
+      </a>
+      <a href="/openapi/v1.json" target="_blank">
+        <span class="ic">🔌</span> API Documentation
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">MC</div>
+        <div class="user-info">
+          <div class="user-name">Ms. Maya Chen</div>
+          <div class="user-role">Guidance Counselor</div>
+        </div>
+      </div>
+      <a class="guidance-logout" href="/Logout">Log out</a>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY 2026-2027 · 1st Semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/openapi/v1.json" target="_blank" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> Maya Chen (Counselor)</span>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-heading-row">
+        <div>
+          <h1 class="dash-heading">Confidential Counseling Case Notes</h1>
+          <p class="dash-subheading">Restricted record space protected by university privacy and FERPA/data protection protocols</p>
+        </div>
+        <span class="secure-badge"><span class="ic">🔒</span> Authorized Guidance Staff Only</span>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2><span class="ic">📝</span> Record Confidential Session Note</h2>
+          </div>
+
+          <form class="surface-form restricted" data-notes-form style="border:none;padding:0;box-shadow:none;">
+            <div class="form-group">
+              <label class="form-label">Case Reference / Student</label>
+              <input class="form-control" data-student-id type="number" required placeholder="Student ID (e.g. 5)">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Consultation Category</label>
+              <select class="form-select" data-category>
+                <option>Academic Advising &amp; Probation</option>
+                <option>Emotional &amp; Personal Well-being</option>
+                <option>Behavioral &amp; Conduct Support</option>
+                <option>Career Planning &amp; Placement</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Counselor Clinical / Session Note</label>
+              <textarea class="form-control" data-note-content required rows="7" placeholder="Record objective observations, agreed intervention milestones, and follow-up timeline..."></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:16px;margin-top:20px;">
+              <button class="btn-primary primary" type="submit"><span class="ic">💾</span> Save Case Note</button>
+              <span class="muted" data-form-status style="margin:0;font-size:12px;color:var(--text-muted);">Preview mode. Data stays in current session.</span>
+            </div>
+          </form>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <h2><span class="ic">🛡️</span> Compliance &amp; Protocol</h2>
+          </div>
+          <p style="color:var(--text-muted);font-size:13px;line-height:1.6;">
+            All case notes recorded within the NU Lipa Guidance System are restricted to authorized counseling professionals.
+          </p>
+          <ul style="font-size:13px;color:var(--text-main);padding-left:18px;line-height:1.7;">
+            <li>PII masking is applied to student references.</li>
+            <li>Records are subject to institutional audit trails.</li>
+            <li>Direct cross-department sharing is prohibited without explicit signed consent.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/guidance-app.js"></script>
+</body>
+</html>

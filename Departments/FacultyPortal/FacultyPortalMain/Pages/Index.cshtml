@@ -1,0 +1,99 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Faculty Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div class="portal-eyebrow">🎓 Welcome to NU Lipa Faculty Portal</div>
+        <h1 class="portal-page-title">Faculty Dashboard</h1>
+        <p class="portal-page-subtitle">Manage teaching, attendance, and student communication from one place.</p>
+    </div>
+    <div class="page-actions">
+        <a href="/Roster" class="btn-nu btn-nu-outline">👥 View roster</a>
+        <a href="/Gradebook" class="btn-nu btn-nu-gold">📊 Open gradebook</a>
+    </div>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Roster</div>
+        <div class="stat-value">128</div>
+        <div class="stat-subtext">Students across active classes</div>
+    </div>
+    <div class="stat-card gold-border">
+        <div class="stat-label">Gradebook</div>
+        <div class="stat-value">24</div>
+        <div class="stat-subtext">Assignments in review</div>
+    </div>
+    <div class="stat-card green-border">
+        <div class="stat-label">Attendance</div>
+        <div class="stat-value">92%</div>
+        <div class="stat-subtext">Class participation rate</div>
+    </div>
+    <div class="stat-card info-border">
+        <div class="stat-label">Assignments</div>
+        <div class="stat-value">18</div>
+        <div class="stat-subtext">Submissions to grade</div>
+    </div>
+</div>
+
+<div class="split-grid">
+    <div>
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title"><span>🧰</span> Faculty tools</h3>
+            </div>
+            <div class="portal-card-body">
+                <ul class="list-plain">
+                    <li><a href="/Roster"><div class="cell-title">Class roster</div><div class="cell-sub">Review enrollment and student records.</div></a></li>
+                    <li><a href="/Gradebook"><div class="cell-title">Gradebook</div><div class="cell-sub">Track coursework, marks, and progress.</div></a></li>
+                    <li><a href="/Attendance"><div class="cell-title">Attendance</div><div class="cell-sub">Monitor participation and session records.</div></a></li>
+                    <li><a href="/Assignments"><div class="cell-title">Assignments</div><div class="cell-sub">Create work, set due dates, grade and comment on submissions.</div></a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title"><span>📌</span> Today's focus</h3>
+            </div>
+            <div class="portal-card-body">
+                <ul class="list-plain">
+                    <li>Review student submissions</li>
+                    <li>Check attendance updates</li>
+                    <li>Release graded assignments</li>
+                    <li>Monitor teaching schedule</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3 class="portal-card-title"><span>📅</span> Upcoming</h3>
+            <a href="/Schedule" class="btn-nu btn-nu-outline btn-sm">Full schedule &rarr;</a>
+        </div>
+        <div class="portal-card-body">
+            <ul class="list-plain">
+                <li>
+                    <span class="badge-status badge-info">Mon 09:00</span>
+                    <div class="cell-title">Intro to Business</div>
+                    <div class="cell-sub">Lecture and discussion review</div>
+                </li>
+                <li>
+                    <span class="badge-status badge-warning">Tue 13:30</span>
+                    <div class="cell-title">Assignments due</div>
+                    <div class="cell-sub">Gradebook submission review</div>
+                </li>
+                <li>
+                    <span class="badge-status badge-secondary">Wed 15:00</span>
+                    <div class="cell-title">Faculty meeting</div>
+                    <div class="cell-sub">Department planning and updates</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,323 @@
+@page
+@model StudentPortalMain.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Student Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+    var totalDegreeUnits = Model.Profile.CompletedUnits + Model.Profile.UnitsRemaining;
+    if (totalDegreeUnits <= 0) totalDegreeUnits = 144;
+    var progressPercent = Math.Clamp((int)Math.Round((double)Model.Profile.CompletedUnits / totalDegreeUnits * 100), 0, 100);
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            🎓 Welcome to NU Lipa Student Portal
+        </div>
+        <h1 class="portal-page-title">Mabuhay, @studentName!</h1>
+        <p class="portal-page-subtitle">
+            Student No: <strong style="color:var(--nu-blue-dark);">@studentIdNum</strong> &bull;
+            @Model.Profile.Program &bull; @Model.Profile.YearLevel &bull;
+            <span class="badge-status @(Model.Profile.AcademicStatus == "Probation" ? "badge-danger" : "badge-success")">
+                @Model.Profile.AcademicStatus
+            </span>
+            <span class="badge-status @(Model.Profile.EnrollmentStatus == "Active" ? "badge-info" : "badge-secondary")">
+                @Model.Profile.EnrollmentStatus
+            </span>
+        </p>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <a href="/Enrollment" class="btn-nu btn-nu-outline">
+            📄 View Official COR
+        </a>
+        <a href="/DocumentRequests" class="btn-nu btn-nu-gold">
+            📝 Request Document
+        </a>
+    </div>
+</div>
+
+<!-- ─── KPI Stats Grid ──────────────────────────────────────────────────────── -->
+<div class="stat-grid">
+    <div class="stat-card gold-border">
+        <div class="stat-label">Cumulative GWA</div>
+        <div class="stat-value">
+            @(Model.CumulativeGwa.HasValue ? Model.CumulativeGwa.Value.ToString("0.00") : "N/A")
+        </div>
+        <div class="stat-subtext">
+            @if (Model.CumulativeGwa.HasValue && Model.CumulativeGwa.Value <= 1.45m)
+            {
+                <span style="color:#15803d; font-weight:700;">★ President's Lister Contender</span>
+            }
+            else if (Model.CumulativeGwa.HasValue && Model.CumulativeGwa.Value <= 1.75m)
+            {
+                <span style="color:#15803d; font-weight:700;">✓ Dean's Lister Range</span>
+            }
+            else
+            {
+                <span>Official Weighted Average</span>
+            }
+        </div>
+    </div>
+
+    <div class="stat-card green-border">
+        <div class="stat-label">Degree Progress</div>
+        <div class="stat-value">@Model.Profile.CompletedUnits <span style="font-size:16px; font-weight:500; color:var(--nu-text-muted);">/ @totalDegreeUnits units</span></div>
+        <div class="stat-subtext">
+            <div style="background:#e2e8f0; height:6px; border-radius:3px; overflow:hidden; margin-top:6px;">
+                <div style="background:var(--nu-success); height:100%; width:@progressPercent%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:11px;">
+                <span>@progressPercent% completed</span>
+                <span>@Model.Profile.UnitsRemaining units left</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Current Enrolled Load</div>
+        <div class="stat-value">@Model.EnrolledClasses.Count <span style="font-size:16px; font-weight:500; color:var(--nu-text-muted);">subjects (@Model.TotalEnrolledUnits units)</span></div>
+        <div class="stat-subtext">AY @Model.SchoolYear &bull; @Model.Semester</div>
+    </div>
+
+    <div class="stat-card info-border">
+        <div class="stat-label">Pending Registrar Requests</div>
+        <div class="stat-value">@Model.PendingRequestsCount</div>
+        <div class="stat-subtext">Documents &amp; Petitions under review</div>
+    </div>
+</div>
+
+<div class="row" style="display:flex; flex-wrap:wrap; gap:24px; margin:0 -12px;">
+    <!-- ─── Left Column (Schedule & Recent Grades) ────────────────────────── -->
+    <div style="flex: 1 1 650px; min-width:320px;">
+        <!-- Schedule Card -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📅</span> My Class Schedule — AY @Model.SchoolYear (@Model.Semester)
+                </h3>
+                <a href="/Schedule" class="btn-nu btn-nu-outline btn-sm">Full Schedule &rarr;</a>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                @if (Model.EnrolledClasses.Any())
+                {
+                    <div class="portal-table-responsive">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Section</th>
+                                    <th>Units</th>
+                                    <th>Day &amp; Time</th>
+                                    <th>Room</th>
+                                    <th>Instructor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in Model.EnrolledClasses)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:700; color:var(--nu-blue-dark);">@c.SubjectCode</div>
+                                            <div style="font-size:12px; color:var(--nu-text-muted);">@c.SubjectName</div>
+                                        </td>
+                                        <td><span class="badge-status badge-secondary">@c.SectionCode</span></td>
+                                        <td><strong>@c.Units</strong></td>
+                                        <td>
+                                            <div style="font-weight:600; font-size:12.5px;">@c.FormattedSchedule</div>
+                                        </td>
+                                        <td><span class="badge-status badge-info">@c.Room</span></td>
+                                        <td style="font-size:12.5px;">@c.InstructorName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding:32px; text-align:center; color:var(--nu-text-muted);">
+                        <p style="margin:0;">No enrolled subjects found for this active semester.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Recent Grades Card -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📊</span> Scholastic Record Preview
+                </h3>
+                <a href="/Grades" class="btn-nu btn-nu-outline btn-sm">All Grades &rarr;</a>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                @if (Model.RecentGrades.Any())
+                {
+                    <div class="portal-table-responsive">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Term</th>
+                                    <th>Units</th>
+                                    <th>Grade</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var g in Model.RecentGrades)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:700; color:var(--nu-blue-dark);">@g.SubjectCode</div>
+                                            <div style="font-size:12px; color:var(--nu-text-muted);">@g.SubjectName</div>
+                                        </td>
+                                        <td style="font-size:12px; color:var(--nu-text-muted);">@g.SchoolYear @g.Semester</td>
+                                        <td>@g.Units</td>
+                                        <td><strong style="font-size:15px; color:var(--nu-blue);">@g.GradeDisplay</strong></td>
+                                        <td>
+                                            <span class="badge-status @g.StatusBadgeClass">
+                                                @(g.IsInc ? "INC" : (g.Grade.HasValue && g.Grade <= 3.00m ? "Passed" : (!g.Grade.HasValue ? "Ongoing" : "Failed")))
+                                            </span>
+                                        </td>
+                                        <td style="font-size:12px; color:var(--nu-text-muted);">@(string.IsNullOrEmpty(g.Remarks) ? "—" : g.Remarks)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding:32px; text-align:center; color:var(--nu-text-muted);">
+                        <p style="margin:0;">No grade records submitted yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Right Column (Quick Actions & Requests Tracker) ──────────────── -->
+    <div style="flex: 1 1 350px; min-width:300px;">
+        <!-- Quick Actions Card -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>⚡</span> Quick Services
+                </h3>
+            </div>
+            <div class="portal-card-body" style="display:flex; flex-direction:column; gap:10px;">
+                <a href="/DocumentRequests" class="btn-nu btn-nu-outline" style="justify-content:flex-start;">
+                    <span style="font-size:18px;">📄</span>
+                    <div style="text-align:left;">
+                        <div style="font-weight:700;">Request Official Document</div>
+                        <div style="font-size:11.5px; color:var(--nu-text-muted);">TOR, Good Moral, COE with QR Token</div>
+                    </div>
+                </a>
+                <a href="/Enrollment" class="btn-nu btn-nu-outline" style="justify-content:flex-start;">
+                    <span style="font-size:18px;">📝</span>
+                    <div style="text-align:left;">
+                        <div style="font-weight:700;">Enrollment &amp; Add/Drop Petition</div>
+                        <div style="font-size:11.5px; color:var(--nu-text-muted);">Print COR, request load adjustment</div>
+                    </div>
+                </a>
+                <a href="/Schedule" class="btn-nu btn-nu-outline" style="justify-content:flex-start;">
+                    <span style="font-size:18px;">📅</span>
+                    <div style="text-align:left;">
+                        <div style="font-weight:700;">Print Study Load / Schedule</div>
+                        <div style="font-size:11.5px; color:var(--nu-text-muted);">Official student class schedule sheet</div>
+                    </div>
+                </a>
+                <a href="/Requests" class="btn-nu btn-nu-outline" style="justify-content:flex-start;">
+                    <span style="font-size:18px;">🧭</span>
+                    <div style="text-align:left;">
+                        <div style="font-weight:700;">Guidance &amp; Counseling</div>
+                        <div style="font-size:11.5px; color:var(--nu-text-muted);">Schedule counseling or triage consultation</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Live Document & Petition Tracker -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📡</span> Live Registrar Status Tracker
+                </h3>
+                <a href="/DocumentRequests" class="btn-nu btn-nu-outline btn-sm">Details &rarr;</a>
+            </div>
+            <div class="portal-card-body" style="padding:14px 18px;">
+                @if (Model.DocumentRequests.Any() || Model.AddDropRequests.Any())
+                {
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        @foreach (var doc in Model.DocumentRequests.Take(3))
+                        {
+                            <div style="padding:10px 12px; background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm);">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong style="font-size:13px; color:var(--nu-blue-dark);">@doc.DocumentType</strong>
+                                    <span class="badge-status @(doc.Status == "ready" || doc.Status == "released" ? "badge-success" : (doc.Status == "processing" ? "badge-info" : "badge-warning"))">
+                                        @doc.Status.ToUpper()
+                                    </span>
+                                </div>
+                                <div style="font-size:11.5px; color:var(--nu-text-muted); margin-top:3px; display:flex; justify-content:space-between;">
+                                    <span>Token: <code>@doc.QrCodeToken</code></span>
+                                    <span>@doc.RequestedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                            </div>
+                        }
+
+                        @foreach (var ad in Model.AddDropRequests.Take(2))
+                        {
+                            <div style="padding:10px 12px; background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm);">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong style="font-size:13px; color:var(--nu-blue-dark);">Petition: @ad.RequestType.ToUpper()</strong>
+                                    <span class="badge-status @(ad.Status == "approved" ? "badge-success" : (ad.Status == "rejected" ? "badge-danger" : "badge-warning"))">
+                                        @ad.Status.ToUpper()
+                                    </span>
+                                </div>
+                                <div style="font-size:11.5px; color:var(--nu-text-muted); margin-top:3px;">
+                                    Subject: @(ad.SubjectCode ?? ad.TargetSubjectCode ?? "Load adjustment") &bull; @ad.CreatedAt.ToString("MMM dd, yyyy")
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div style="text-align:center; padding:16px 8px; color:var(--nu-text-muted); font-size:12.5px;">
+                        No pending requests in Registrar queue.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- 201 Credentials Checklist Summary -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>🗂️</span> 201 File Vault Summary
+                </h3>
+                <a href="/DocumentRequests#vault" class="btn-nu btn-nu-outline btn-sm">Vault &rarr;</a>
+            </div>
+            <div class="portal-card-body" style="font-size:12.5px;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--nu-border-subtle);">
+                    <span>Guidance Clearance:</span>
+                    <span class="badge-status @(Model.Profile.GuidanceClearanceStatus == "Cleared" ? "badge-success" : "badge-warning")">
+                        @Model.Profile.GuidanceClearanceStatus
+                    </span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--nu-border-subtle);">
+                    <span>Curriculum Catalog:</span>
+                    <strong>@Model.Profile.CurriculumYear</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                    <span>Registrar Student ID:</span>
+                    <code>@studentIdNum</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

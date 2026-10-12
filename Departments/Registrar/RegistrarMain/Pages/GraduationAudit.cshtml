@@ -1,0 +1,250 @@
+@page
+@model RegistrarMain.Pages.GraduationAuditModel
+@{
+    ViewData["Title"] = "Graduation Audit & Latin Honors";
+    ViewData["ActivePage"] = "GraduationAudit";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">🎓 Graduation Audit &amp; Academic Honors</h1>
+    <p class="dash-subheading">Evaluate prospective graduates, check scholastic deficiencies, compute Latin Honors, and generate commencement rolls.</p>
+  </div>
+  <div>
+    @if (Model.ActiveTab != "print_roll")
+    {
+      <a href="/GraduationAudit?tab=print_roll" class="btn btn-secondary">🖨️ Printable Commencement Roll</a>
+    }
+    else
+    {
+      <button onclick="window.print()" class="btn btn-primary">🖨️ Print Official List</button>
+    }
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav no-print">
+  <a href="/GraduationAudit?tab=candidates" class="tab-link @(Model.ActiveTab == "candidates" ? "active" : "")">
+    <span>📋 Candidates Audit &amp; Clearance (@Model.CandidateAudit.Count)</span>
+  </a>
+  <a href="/GraduationAudit?tab=honors" class="tab-link @(Model.ActiveTab == "honors" ? "active" : "")">
+    <span>🏆 Latin Honors Ranking (@Model.HonorsList.Count)</span>
+  </a>
+  <a href="/GraduationAudit?tab=print_roll" class="tab-link @(Model.ActiveTab == "print_roll" ? "active" : "")">
+    <span>📜 Official Commencement Roll</span>
+  </a>
+</div>
+
+<!-- TAB 1: CANDIDATES AUDIT -->
+@if (Model.ActiveTab == "candidates")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Prospective Graduation Candidates Evaluation (AY @Model.CurrentSchoolYear)</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Candidate Name</th>
+            <th>Program</th>
+            <th>GWA</th>
+            <th>Units Earned</th>
+            <th>NSTP</th>
+            <th>Deficiency / Clearance Audit</th>
+            <th>Honors Potential</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var ca in Model.CandidateAudit)
+          {
+            <tr>
+              <td><strong style="color:var(--accent);">@ca.StudentIdNumber</strong></td>
+              <td>
+                <strong>@ca.Name</strong>
+                <div style="font-size:11px;color:#64748b;">@ca.Email</div>
+              </td>
+              <td>@ca.Program</td>
+              <td><strong style="color:var(--accent);">@(ca.AverageGrade.HasValue ? ca.AverageGrade.Value.ToString("F2") : "5.00")</strong></td>
+              <td>@ca.CompletedUnits / 144</td>
+              <td>
+                @if (ca.HasNstp > 0)
+                {
+                  <span class="badge badge-verified">✔️ Certified</span>
+                }
+                else
+                {
+                  <span class="badge badge-missing">Missing</span>
+                }
+              </td>
+              <td>
+                @if (ca.IsEligible)
+                {
+                  <span class="badge badge-verified">✅ Cleared for Graduation</span>
+                }
+                else
+                {
+                  <span class="badge badge-missing">Deficient (@ca.Deficiencies.Count)</span>
+                  <div style="font-size:11px;color:#dc2626;margin-top:2px;">
+                    @string.Join(", ", ca.Deficiencies)
+                  </div>
+                }
+              </td>
+              <td>
+                @if (!string.IsNullOrEmpty(ca.HonorTitle))
+                {
+                  <span class="badge @ca.HonorBadge">🏆 @ca.HonorTitle</span>
+                }
+                else
+                {
+                  <span style="color:#94a3b8;font-size:12px;">Regular Graduate</span>
+                }
+              </td>
+              <td style="text-align:right;">
+                @if (ca.AcademicStatus == "Graduated")
+                {
+                  <span class="badge badge-graduated">Graduated</span>
+                }
+                else if (ca.IsEligible)
+                {
+                  <form method="post" asp-page-handler="CertifyGraduate" style="display:inline;">
+                    <input type="hidden" name="student_id" value="@ca.Id">
+                    <button type="submit" class="btn-small primary" onclick="return confirm('Officially certify this student as a graduate?')">🎓 Certify</button>
+                  </form>
+                }
+                else
+                {
+                  <a href="/StudentRecords?id=@ca.Id" class="btn-small">Audit 201 ›</a>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+<!-- TAB 2: LATIN HONORS EVALUATION -->
+@if (Model.ActiveTab == "honors")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Official Academic Honors Ranking (CHED Memorandum Order Standard)</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">
+      Honors criteria: <strong>Summa Cum Laude (1.00–1.20)</strong> &middot; <strong>Magna Cum Laude (1.21–1.45)</strong> &middot; <strong>Cum Laude (1.46–1.75)</strong>. Requires zero failing marks, completion of curriculum units, and full 201 &amp; guidance clearances.
+    </p>
+
+    @if (!Model.HonorsList.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No candidates currently qualify for Latin Honors.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Award Title</th>
+              <th>Candidate Name</th>
+              <th>Student ID</th>
+              <th>Degree Program</th>
+              <th>Cumulative GWA</th>
+              <th>Scholastic Standing</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (var idx = 0; idx < Model.HonorsList.Count; idx++)
+            {
+              var h = Model.HonorsList[idx];
+              <tr>
+                <td><strong style="font-size:15px;color:var(--accent);">#@(idx + 1)</strong></td>
+                <td>
+                  <span class="badge @h.HonorBadge" style="font-size:12px;padding:5px 12px;">
+                    🏅 @h.HonorTitle
+                  </span>
+                </td>
+                <td><strong style="font-size:14px;">@h.Name</strong></td>
+                <td>@h.StudentIdNumber</td>
+                <td>@h.Program</td>
+                <td><strong style="font-size:15px;color:var(--success);">@(h.AverageGrade.HasValue ? h.AverageGrade.Value.ToString("F2") : "5.00")</strong></td>
+                <td><span class="badge badge-verified">Full Clearance Met</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 3: PRINTABLE COMMENCEMENT ROLL -->
+@if (Model.ActiveTab == "print_roll")
+{
+  <div class="official-document-sheet">
+    <div class="doc-header" style="text-align:center;margin-bottom:20px;">
+      <img src="~/img/logo3.png" alt="National University Lipa" style="height:72px;width:auto;margin-bottom:8px;" />
+      <div class="doc-institution" style="color:#0a1d4d;font-weight:900;letter-spacing:1px;font-size:20px;">NATIONAL UNIVERSITY LIPA</div>
+      <div class="doc-sub" style="color:#475569;font-size:13px;">Office of the University Registrar &middot; Lipa City, Batangas, Philippines</div>
+      <div class="doc-title" style="color:#0f2a6b;margin-top:8px;">OFFICIAL COMMENCEMENT ROLL OF GRADUATES</div>
+      <div style="font-size:12px;color:#555;">ACADEMIC YEAR @Model.CurrentSchoolYear</div>
+    </div>
+
+    <div style="margin-bottom:24px;">
+      <p style="font-size:13px;line-height:1.6;margin:0 0 16px;">
+        This is to certify that the following candidates have satisfactorily completed all academic, non-academic, and regulatory requirements prescribed by the Commission on Higher Education (CHED) and the University Board of Regents for the conferment of their respective baccalaureate degrees:
+      </p>
+
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px;">
+        <thead>
+          <tr style="border-bottom:2px solid #000;text-align:left;">
+            <th style="padding:6px;">No.</th>
+            <th style="padding:6px;">Student ID</th>
+            <th style="padding:6px;">Full Name</th>
+            <th style="padding:6px;">Degree Program</th>
+            <th style="padding:6px;">Cumulative GWA</th>
+            <th style="padding:6px;">Academic Distinction</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (var idx = 0; idx < Model.CandidateAudit.Count; idx++)
+          {
+            var c = Model.CandidateAudit[idx];
+            <tr style="border-bottom:1px solid #ddd;">
+              <td style="padding:6px;">@(idx + 1)</td>
+              <td style="padding:6px;">@c.StudentIdNumber</td>
+              <td style="padding:6px;font-weight:bold;">@c.Name</td>
+              <td style="padding:6px;">@c.Program</td>
+              <td style="padding:6px;">@(c.AverageGrade.HasValue ? c.AverageGrade.Value.ToString("F2") : "5.00")</td>
+              <td style="padding:6px;font-weight:bold;">@(string.IsNullOrEmpty(c.HonorTitle) ? "—" : c.HonorTitle)</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-signatories">
+      <div class="doc-sign-box">
+        <div class="doc-seal-box">
+          OFFICIAL DRY SEAL<br>OF THE REGISTRAR
+        </div>
+      </div>
+
+      <div class="doc-sign-box">
+        <div class="doc-sign-line">
+          DR. ROSALINDA M. SANTOS, Ed.D.<br>
+          <span style="font-weight:normal;font-size:11px;">University Registrar</span>
+        </div>
+      </div>
+
+      <div class="doc-sign-box">
+        <div class="doc-sign-line">
+          DR. VICENTE C. SANDOVAL, Ph.D.<br>
+          <span style="font-weight:normal;font-size:11px;">University President</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}

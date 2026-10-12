@@ -1,0 +1,168 @@
+@page
+@model FinanceMain.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_FinanceAdminLayout";
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Finance &amp; Accounting</h1>
+        <p class="fin-subtitle">Executive overview &middot; AY @FinanceMain.Pages.DashboardModel.AcademicYear &middot; @FinanceMain.Pages.DashboardModel.Semester</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="/Assessments" class="btn-fin-gold">+ New Assessment</a>
+        <a href="/Payments" class="btn-fin-outline">View All Payments</a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-icon" style="background:#eff6ff;font-size:20px;">📊</div>
+            <div class="fin-stat-label">Total Assessed Fees</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);">@Model.TotalAssessed.ToString("₱#,##0")</div>
+            <div class="fin-stat-sub">@Model.TotalStudents students assessed</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-icon" style="background:var(--fin-green-bg);font-size:20px;">💰</div>
+            <div class="fin-stat-label">Total Collections</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);">@Model.TotalCollected.ToString("₱#,##0")</div>
+            <div class="fin-stat-sub">Verified receipts &amp; deposits</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-red">
+            <div class="fin-stat-icon" style="background:var(--fin-red-bg);font-size:20px;">⚠️</div>
+            <div class="fin-stat-label">Outstanding Balance</div>
+            <div class="fin-stat-value" style="color:var(--fin-red);">@Model.OutstandingReceivables.ToString("₱#,##0")</div>
+            <div class="fin-stat-sub">Unsettled tuition &amp; fees</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-gold">
+            <div class="fin-stat-icon" style="background:var(--fin-gold-light);font-size:20px;">🛡️</div>
+            <div class="fin-stat-label">Clearance Rate</div>
+            <div class="fin-stat-value" style="color:var(--fin-amber);">@Model.ClearancePercentage%</div>
+            <div class="fin-stat-sub">@Model.ClearedCount cleared &middot; @Model.ConditionalCount conditional &middot; @Model.NotClearedCount pending</div>
+        </div>
+    </div>
+</div>
+
+<!-- Interoperability Status -->
+<div class="fin-interop-panel mb-4">
+    <div class="fin-interop-label">
+        <strong>🔗 Campus Interoperability Status</strong>
+        <p>Real-time sync across departments — one shared JSON datastore</p>
+    </div>
+    <div class="fin-interop-links">
+        <a href="http://localhost:5069/Financials" target="_blank" class="fin-pill" style="text-decoration:none;">
+            <span class="dot" style="background:var(--fin-green);width:7px;height:7px;border-radius:50%;display:inline-block;"></span>
+            Student Portal
+        </a>
+        <a href="http://localhost:5005/IntegrationHub" target="_blank" class="fin-pill" style="text-decoration:none;">
+            <span class="dot" style="background:var(--fin-green);width:7px;height:7px;border-radius:50%;display:inline-block;"></span>
+            Registrar
+        </a>
+        <a href="http://localhost:5115/Schedule" target="_blank" class="fin-pill" style="text-decoration:none;">
+            <span class="dot" style="background:var(--fin-green);width:7px;height:7px;border-radius:50%;display:inline-block;"></span>
+            Faculty Portal
+        </a>
+        <a href="/api/finance/assessment" target="_blank" class="fin-pill-api" style="text-decoration:none;">
+            ⚡ API Active
+        </a>
+    </div>
+</div>
+
+<!-- Tables row -->
+<div class="row g-3">
+    <!-- Recent Assessments -->
+    <div class="col-lg-6">
+        <div class="fin-card h-100">
+            <div class="fin-card-head">
+                <span class="fin-card-head-title">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13V8M8 13V3M13 13V6"/></svg>
+                    Fee Assessments
+                </span>
+                <a href="/Assessments" class="btn-fin-link">View All →</a>
+            </div>
+            <div class="table-responsive">
+                <table class="fin-table">
+                    <thead>
+                        <tr>
+                            <th>Assessment #</th>
+                            <th>Student</th>
+                            <th style="text-align:right;">Total</th>
+                            <th style="text-align:right;">Balance</th>
+                            <th style="text-align:center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.RecentAssessments)
+                        {
+                            <tr>
+                                <td class="fin-mono">
+                                    <a href="/Invoice/@a.Id" class="fin-link">@a.AssessmentNumber</a>
+                                </td>
+                                <td>
+                                    <div style="font-weight:600;">@a.StudentDisplayName</div>
+                                    <div style="font-size:11px;color:var(--fin-muted);">@a.StudentNumber</div>
+                                </td>
+                                <td style="text-align:right;font-weight:600;">@a.TotalAmount.ToString("₱#,##0.00")</td>
+                                <td style="text-align:right;" class="@(a.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                                    @a.Balance.ToString("₱#,##0.00")
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="@FinanceMain.Pages.AssessmentsModel.StatusBadgeClass(a.Status)">@a.Status</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="col-lg-6">
+        <div class="fin-card h-100">
+            <div class="fin-card-head">
+                <span class="fin-card-head-title">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="8" rx="1"/><path d="M2 7h12"/></svg>
+                    Recent Transactions
+                </span>
+                <a href="/Payments" class="btn-fin-link">View All →</a>
+            </div>
+            <div class="table-responsive">
+                <table class="fin-table">
+                    <thead>
+                        <tr>
+                            <th>OR #</th>
+                            <th>Student</th>
+                            <th>Method</th>
+                            <th style="text-align:right;">Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.RecentPayments)
+                        {
+                            <tr>
+                                <td class="fin-mono">@p.PaymentNumber</td>
+                                <td style="font-weight:500;">@p.StudentDisplayName</td>
+                                <td>
+                                    <span class="badge-status badge-status-processing" style="font-size:10px;">@p.PaymentMethod</span>
+                                </td>
+                                <td style="text-align:right;font-weight:700;color:var(--fin-green);">@p.AmountPaid.ToString("₱#,##0.00")</td>
+                                <td style="color:var(--fin-muted);font-size:12px;">@p.PaymentDate.ToString("MMM d, yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

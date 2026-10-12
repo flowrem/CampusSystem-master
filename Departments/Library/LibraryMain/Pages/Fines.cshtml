@@ -1,0 +1,81 @@
+@page
+@model FinesModel
+@{
+    ViewData["Title"] = "Fines";
+}
+
+<div class="page-heading"><div><span class="eyebrow">Library workspace</span><h1>Fines and fees</h1></div></div>
+
+<partial name="_Flash" model="Model" />
+
+@if (Model.IsStudent)
+{
+    <div class="surface p-3 mb-3">
+        You owe <strong>₱@Model.Outstanding.ToString("N2")</strong> in library fines (including books that are overdue right now).
+        Pay at the library desk or in Student Portal. New borrowing is blocked until fines are settled.
+    </div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select class="form-select" name="status" onchange="this.form.submit()">
+            <option value="">All fines</option>
+            @foreach (var status in new[] { "Pending", "Paid", "Waived" })
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status</option>
+            }
+        </select>
+    </div>
+</form>
+
+<div class="surface p-0">
+    <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    @if (Model.IsStaff) { <th>Student</th> }
+                    <th>Reason</th><th>Assessed</th><th class="text-end">Amount</th><th>Status</th>
+                    @if (Model.IsStaff) { <th></th> }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var fine in Model.Fines)
+                {
+                    <tr>
+                        <td>@fine.BookTitle</td>
+                        @if (Model.IsStaff) { <td>@fine.StudentName<div class="small text-muted">@fine.StudentNumber</div></td> }
+                        <td>@fine.Reason</td>
+                        <td>@(fine.AssessedAt is { } at ? at.ToString("MMM d, yyyy") : "—")</td>
+                        <td class="text-end">₱@fine.Amount.ToString("N2")</td>
+                        <td><span class="badge @(fine.Status switch { "Pending" => "text-bg-danger", "Paid" => "text-bg-success", _ => "text-bg-secondary" })">@fine.Status</span>@if (fine.Note.Length > 0) { <div class="small text-muted">@fine.Note</div> }</td>
+                        @if (Model.IsStaff)
+                        {
+                            <td class="text-end">
+                                @if (fine.Status == "Pending")
+                                {
+                                    <form method="post" asp-page-handler="Pay" class="d-inline-flex gap-1">
+                                        <input type="hidden" name="fineId" value="@fine.Id" />
+                                        <select name="method" class="form-select form-select-sm" style="width:130px;">
+                                            @foreach (var method in LibraryMain.Services.LibraryDesk.PaymentMethods) { <option>@method</option> }
+                                        </select>
+                                        <button class="btn btn-sm btn-dark">Record payment</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="Waive" class="d-inline-flex gap-1 mt-1">
+                                        <input type="hidden" name="fineId" value="@fine.Id" />
+                                        <input name="reason" class="form-control form-control-sm" style="width:150px;" placeholder="Reason to waive" required />
+                                        <button class="btn btn-sm btn-outline-dark">Waive</button>
+                                    </form>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+                @if (Model.Fines.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center text-muted p-4">No fines to show.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+{
+  "settingsVersion": 1,
+  "defaultProvider": "google",
+  "googleApiKey": "AQ.Ab8RN6J6nDpkQ1MmAQT_n2webhwtom1Z0mUuEU-XkjOugvYsKw",
+  "googleModel": "gemini-3.6-flash",
+  "providers": {
+    "google": {
+      "defaultModel": "gemini-3.6-flash",
+      "apiKeys": [
+        "AQ.Ab8RN6J6nDpkQ1MmAQT_n2webhwtom1Z0mUuEU-XkjOugvYsKw",
+        "AQ.Ab8RN6IsUvAzDUVfpvGVdhfHQpKoFYeV8sj6ggCFsHFOsLlozQ",
+        "AQ.Ab8RN6L_MiVmQfQZXdhkOhB-4PFaoTmN_tMsoT0egycNNcIekg",
+        "AQ.Ab8RN6KfOcskthdp8E6Rn4Y0Co_42xLO-KFGFvUO725RUwtwjg",
+        "AQ.Ab8RN6ImTCkUUNrDEeOzHZ5tVcqIOXlD1M6WgcNUUwQD5E41tw",
+        "AQ.Ab8RN6L-ScbFmLaBclRO7SP_42B3Bao7_M6WD5ov7FKbpWQPFg"
+      ]
+    }
+  },
+  "reviewOnlyMode": true,
+  "swarmFileAccessEnabled": false,
+  "coderModeEnabled": false,
+  "rounds": 3,
+  "includeCurrentContextByDefault": true,
+  "chatProvider": "google",
+  "chatModel": "gemini-3.6-flash",
+  "chatSystemPrompt": "You are a review-focused campus operations assistant. Keep answers concise, evidence-based, and read-only. Do not propose code changes or file writes.",
+  "synthesisProvider": "google",
+  "synthesisModel": "gemini-3.6-flash",
+  "synthesisPrompt": "You are the review synthesizer for a campus-system swarm. Combine the six department reviews into one concise markdown report. Highlight shared risks, inconsistencies, missing context, and the most important open review items. Do not propose code changes, file writes, or system actions. Use markdown headings and a short final takeaway list.",
+  "agents": [
+    {
+      "id": "studentportal",
+      "name": "StudentPortal",
+      "color": "#4f9dde",
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "apiKeyOverride": "AQ.Ab8RN6J6nDpkQ1MmAQT_n2webhwtom1Z0mUuEU-XkjOugvYsKw",
+      "systemPrompt": "You represent the StudentPortal department review. Use only the maintenance context, department context files, and current health data. Evaluate the student-facing experience, system consistency, operational risks, and missing information. Do not propose code changes or actions."
+    },
+    {
+      "id": "guidancedepartment",
+      "name": "GuidanceDepartment",
+      "color": "#e0674f",
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "apiKeyOverride": "AQ.Ab8RN6IsUvAzDUVfpvGVdhfHQpKoFYeV8sj6ggCFsHFOsLlozQ",
+      "systemPrompt": "You represent the GuidanceDepartment review. Assess guidance-related responsibilities, service dependencies, and cross-department risks using only the provided context files and current status. Do not invent facts or propose actions."
+    },
+    {
+      "id": "finance",
+      "name": "Finance",
+      "color": "#9b59d0",
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "apiKeyOverride": "AQ.Ab8RN6L_MiVmQfQZXdhkOhB-4PFaoTmN_tMsoT0egycNNcIekg",
+      "systemPrompt": "You represent the Finance department review. Evaluate financial workflows, operational dependencies, and any evidence of risk or inconsistency from the current project data. Stay read-only and evidence-based."
+    },
+    {
+      "id": "library",
+      "name": "Library",
+      "color": "#4fbf7f",
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "apiKeyOverride": "AQ.Ab8RN6KfOcskthdp8E6Rn4Y0Co_42xLO-KFGFvUO725RUwtwjg",
+      "systemPrompt": "You represent the Library department review. Assess service readiness, consistency, and likely operational gaps from the available context. Do not propose code changes or system actions."
+    },
+    {
+      "id": "registrar",
+      "name": "Registrar",
+      "color": "#ffb703",
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "apiKeyOverride": "AQ.Ab8RN6ImTCkUUNrDEeOzHZ5tVcqIOXlD1M6WgcNUUwQD5E41tw",
+      "systemPrompt": "You represent the Registrar department review. Analyze academic record and administrative concerns using only the supplied files and health status. Focus on consistency, gaps, and risk."
+    },
+    {
+      "id": "facultyportal",
+      "name": "FacultyPortal",
+      "color": "#ef476f",
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "apiKeyOverride": "AQ.Ab8RN6L-ScbFmLaBclRO7SP_42B3Bao7_M6WD5ov7FKbpWQPFg",
+      "systemPrompt": "You represent the FacultyPortal review. Use only the provided context and live status data to assess faculty-facing responsibilities, dependency risk, and cross-department alignment. Do not propose code or operational execution."
+    }
+  ],
+  "provider": "google"
+}

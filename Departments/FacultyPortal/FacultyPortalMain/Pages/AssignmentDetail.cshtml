@@ -1,0 +1,135 @@
+@page
+@model FacultyPortalMain.Pages.AssignmentDetailModel
+@{
+    var detail = Model.Detail!;
+    var header = detail.Header;
+    var editable = header.Status != "Closed";
+    ViewData["Title"] = header.Title;
+    ViewData["ActivePage"] = "Assignments";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div class="portal-eyebrow">@header.SectionCode · @header.SubjectCode</div>
+        <h1 class="portal-page-title">@header.Title</h1>
+        <p class="portal-page-subtitle">
+            <span class="@FacultyPortalMain.Pages.AssignmentsModel.BadgeClass(header.Status)">@header.Status</span>
+            &middot; @header.Type &middot; max score @header.MaxScore.ToString("0.##")
+            &middot; due @(header.DueDate is { } due ? due.ToString("MMM d, yyyy · h:mm tt") : "not set")
+        </p>
+    </div>
+    <div class="page-actions">
+        <a href="/Assignments" class="btn-nu btn-nu-outline">← All assignments</a>
+        @if (header.Status == "Draft")
+        {
+            <form method="post" asp-page-handler="Publish" style="display:inline;"><input type="hidden" name="id" value="@header.Id" /><button class="btn-nu btn-nu-gold">Publish</button></form>
+        }
+        else if (header.Status == "Published")
+        {
+            <form method="post" asp-page-handler="Close" style="display:inline;"><input type="hidden" name="id" value="@header.Id" /><button class="btn-nu btn-nu-outline">Close</button></form>
+        }
+        else
+        {
+            <form method="post" asp-page-handler="Reopen" style="display:inline;"><input type="hidden" name="id" value="@header.Id" /><button class="btn-nu btn-nu-outline">Reopen</button></form>
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="portal-card" style="margin-bottom:16px;border-left:4px solid @(Model.IsError ? "#dc2626" : "#15803d");">
+        <div class="portal-card-body" style="padding:12px 16px;font-weight:600;color:@(Model.IsError ? "#b91c1c" : "#15803d");">@Model.Message</div>
+    </div>
+}
+
+<div class="portal-card">
+    <div class="portal-card-header"><h3 class="portal-card-title"><span>🗂️</span> Submissions (@header.Submitted of @header.Enrolled)</h3></div>
+    <div class="portal-table-responsive">
+        <table class="portal-table">
+            <thead><tr><th>Student</th><th>Submitted work</th><th>Turned in</th><th style="min-width:300px;">Score and feedback</th></tr></thead>
+            <tbody>
+                @foreach (var s in detail.Submissions)
+                {
+                    <tr>
+                        <td><div class="cell-title">@s.Name</div><div class="cell-sub">@s.Number</div></td>
+                        <td style="max-width:320px;white-space:pre-wrap;overflow-wrap:anywhere;">@s.Text</td>
+                        <td>@(s.SubmittedAt is { } at ? at.ToString("MMM d, h:mm tt") : "—")@if (s.IsLate) { <span class="badge-status badge-warning">Late</span> }</td>
+                        <td>
+                            <form method="post" asp-page-handler="Grade">
+                                <input type="hidden" name="id" value="@header.Id" />
+                                <input type="hidden" name="submissionId" value="@s.Id" />
+                                <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                                    <input name="score" type="number" step="0.01" min="0" max="@header.MaxScore.ToString("0.##")" value="@(s.Score?.ToString("0.##"))" class="form-control" style="width:90px;" aria-label="Score for @s.Name" />
+                                    <span class="muted">/ @header.MaxScore.ToString("0.##")</span>
+                                </div>
+                                <textarea name="feedback" class="form-control" rows="2" maxlength="10000" placeholder="Feedback for the student" aria-label="Feedback for @s.Name">@s.Feedback</textarea>
+                                <button type="submit" class="btn-nu btn-nu-primary btn-sm" style="margin-top:6px;">Save</button>
+                                @if (s.GradedAt is { } graded) { <span class="muted" style="font-size:11.5px;">graded @graded.ToString("MMM d")</span> }
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (detail.Submissions.Count == 0)
+                {
+                    <tr><td colspan="4" class="muted" style="text-align:center;padding:28px;">Nothing has been turned in yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (editable)
+{
+    <div class="portal-card">
+        <div class="portal-card-header"><h3 class="portal-card-title"><span>✏️</span> Edit assignment</h3></div>
+        <form method="post" asp-page-handler="Save" class="portal-card-body">
+            <input type="hidden" name="id" value="@header.Id" />
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="title">Title</label>
+                    <input id="title" name="title" value="@header.Title" class="form-control" required maxlength="200" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="offeringId">Section</label>
+                    <select id="offeringId" name="offeringId" class="form-select">
+                        @foreach (var sec in Model.Sections)
+                        {
+                            <option value="@sec.Id" selected="@(sec.Id == header.OfferingId)">@sec.SectionCode — @sec.SubjectCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="type">Type</label>
+                    <select id="type" name="type" class="form-select">
+                        @foreach (var type in FacultyPortalMain.Services.CourseworkStore.Types)
+                        {
+                            <option value="@type" selected="@(type == header.Type)">@type</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="dueDate">Due date</label>
+                    <input id="dueDate" name="dueDate" type="datetime-local" value="@(header.DueDate?.ToString("yyyy-MM-ddTHH:mm"))" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="maxScore">Maximum score</label>
+                    <input id="maxScore" name="maxScore" type="number" min="1" max="1000" value="@header.MaxScore.ToString("0.##")" class="form-control" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="instructions">Instructions</label>
+                <textarea id="instructions" name="instructions" class="form-control" rows="5" maxlength="10000">@detail.Instructions</textarea>
+            </div>
+            <div class="card-footer-actions">
+                <button type="submit" class="btn-nu btn-nu-gold">Save changes</button>
+            </div>
+        </form>
+        @if (header.Status == "Draft" && header.Submitted == 0)
+        {
+            <form method="post" asp-page-handler="Delete" class="portal-card-body" onsubmit="return confirm('Delete this draft?');">
+                <input type="hidden" name="id" value="@header.Id" />
+                <button type="submit" class="btn-nu btn-nu-outline btn-sm">Delete draft</button>
+            </form>
+        }
+    </div>
+}

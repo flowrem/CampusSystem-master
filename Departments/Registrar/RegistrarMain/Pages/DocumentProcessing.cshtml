@@ -1,0 +1,310 @@
+@page
+@model RegistrarMain.Pages.DocumentProcessingModel
+@{
+    ViewData["Title"] = "Document Processing & Issuance";
+    ViewData["ActivePage"] = "DocumentProcessing";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">📄 Official Document Processing &amp; Issuance</h1>
+    <p class="dash-subheading">Process student certifications, transcript orders, diploma releases, and security QR generation.</p>
+  </div>
+  <div>
+    @if (Model.ActiveTab != "issue")
+    {
+      <a href="/DocumentProcessing?tab=issue" class="btn btn-primary">➕ Issue New Request</a>
+    }
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav no-print">
+  <a href="/DocumentProcessing?tab=queue" class="tab-link @(Model.ActiveTab == "queue" ? "active" : "")">
+    <span>📋 Processing Queue (@Model.RequestsQueue.Count)</span>
+  </a>
+  <a href="/DocumentProcessing?tab=issue" class="tab-link @(Model.ActiveTab == "issue" ? "active" : "")">
+    <span>📝 Log / Issue Document Request</span>
+  </a>
+  @if (Model.PrintData != null)
+  {
+    <a href="/DocumentProcessing?tab=print_doc&req_id=@Model.PrintReqId" class="tab-link active">
+      <span>🖨️ Document Print Preview</span>
+    </a>
+  }
+</div>
+
+<!-- TAB 1: PROCESSING QUEUE -->
+@if (Model.ActiveTab == "queue")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Official Document Requests Queue</h2>
+      <form method="get" style="display:flex;gap:8px;">
+        <input type="hidden" name="tab" value="queue">
+        <select name="status_filter" onchange="this.form.submit()" style="padding:4px 8px;font-size:12px;" class="form-control">
+          <option value="">All Statuses</option>
+          <option value="pending" selected="@(Model.StatusFilter == "pending")">Pending</option>
+          <option value="processing" selected="@(Model.StatusFilter == "processing")">Processing</option>
+          <option value="ready" selected="@(Model.StatusFilter == "ready")">Ready for Pickup</option>
+          <option value="released" selected="@(Model.StatusFilter == "released")">Released</option>
+          <option value="rejected" selected="@(Model.StatusFilter == "rejected")">Rejected</option>
+        </select>
+      </form>
+    </div>
+
+    @if (!Model.RequestsQueue.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No document requests found.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Tracking Token</th>
+              <th>Student Name</th>
+              <th>Requested Document</th>
+              <th>Purpose / Copies</th>
+              <th>Status</th>
+              <th>Requested Date</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var r in Model.RequestsQueue)
+            {
+              <tr>
+                <td><strong class="token-chip" style="color:var(--accent);">@r.QrCodeToken</strong></td>
+                <td>
+                  <strong>@r.StudentName</strong>
+                  <div style="font-size:11px;color:#64748b;">@r.StudentIdNumber &middot; @r.Program</div>
+                </td>
+                <td><strong style="color:var(--text-main);">@r.DocumentType</strong></td>
+                <td>
+                  <div style="font-size:12px;color:#475569;">@(string.IsNullOrEmpty(r.Purpose) ? "Official requirement" : r.Purpose)</div>
+                  <div style="font-size:11px;color:#64748b;">@r.Copies copy(ies)</div>
+                </td>
+                <td><span class="badge badge-@r.Status.ToLower()">@(char.ToUpper(r.Status[0]) + r.Status.Substring(1))</span></td>
+                <td>@r.RequestedAt.ToString("MMM dd, yyyy")</td>
+                <td style="text-align:right;">
+                  <div style="display:inline-flex;gap:6px;">
+                    <a href="/DocumentProcessing?tab=print_doc&req_id=@r.Id" class="btn-small" title="Print Document">🖨️ Print</a>
+                    <button onclick="openStatusModal(@r.Id, '@r.Status', '@(r.Remarks?.Replace("'", "\\'") ?? "")')" class="btn-small primary">Update</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 2: ISSUE NEW REQUEST -->
+@if (Model.ActiveTab == "issue")
+{
+  <div class="dash-panel" style="max-width:680px;margin:0 auto;">
+    <div class="dash-panel-header">
+      <h2>Log Official Document Request</h2>
+    </div>
+    <form method="post" asp-page-handler="CreateRequest">
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Select Student *</label>
+        <select name="student_id" required class="form-control">
+          <option value="">-- Choose Enrolled Student or Alumni --</option>
+          @foreach (var s in Model.StudentsList)
+          {
+            <option value="@s.Id">@($"{s.Name} ({s.StudentIdNumber}) — {s.Program}")</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Document Type *</label>
+          <select name="document_type" required class="form-control">
+            <option value="Official Transcript of Records (TOR)">Official Transcript of Records (TOR)</option>
+            <option value="Certificate of Good Moral Character">Certificate of Good Moral Character</option>
+            <option value="Certificate of Grades">Certificate of Grades</option>
+            <option value="Certificate of Enrollment">Certificate of Enrollment</option>
+            <option value="Honorable Dismissal / Transfer Credential">Honorable Dismissal / Transfer Credential</option>
+            <option value="Diploma (Duplicate Copy)">Diploma (Duplicate Copy)</option>
+            <option value="Certified True Copy (CTC)">Certified True Copy (CTC)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Number of Copies</label>
+          <input type="number" name="copies" value="1" min="1" max="10" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Purpose of Request *</label>
+        <input type="text" name="purpose" placeholder="e.g. Employment, Board Exam (PRC), Graduate School Admission, Scholarship" required class="form-control">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Remarks / Special Processing Instructions</label>
+        <textarea name="remarks" rows="2" placeholder="e.g. Rush processing approved; dry seal on every page" class="form-control"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <a href="/DocumentProcessing?tab=queue" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit Request &amp; Generate Token</button>
+      </div>
+    </form>
+  </div>
+}
+<!-- TAB 3: DOCUMENT PRINT PREVIEW -->
+@if (Model.ActiveTab == "print_doc" && Model.PrintData != null)
+{
+  <div style="margin-bottom:16px;" class="no-print">
+    <button onclick="window.print()" class="btn btn-primary">🖨️ Print Document</button>
+    <a href="/DocumentProcessing?tab=queue" class="btn btn-secondary">‹ Back to Queue</a>
+  </div>
+
+  <div class="official-document-sheet">
+    <div class="doc-header" style="text-align:center;margin-bottom:20px;">
+      <img src="~/img/logo3.png" alt="National University Lipa" style="height:68px;width:auto;margin-bottom:8px;" />
+      <div class="doc-institution" style="color:#0a1d4d;font-weight:900;letter-spacing:1px;font-size:20px;">NATIONAL UNIVERSITY LIPA</div>
+      <div class="doc-sub" style="color:#475569;font-size:13px;">Office of the University Registrar &middot; Lipa City, Batangas, Philippines</div>
+      <div class="doc-title" style="color:#0f2a6b;margin-top:8px;">@Model.PrintData!.DocumentType.ToUpper()</div>
+      <div style="font-size:11px;color:#555;">SECURITY TOKEN: @Model.PrintData.QrCodeToken</div>
+    </div>
+
+    @if (Model.PrintData!.DocumentType.Contains("Good Moral"))
+    {
+      <div style="font-size:14px;line-height:1.8;padding:20px 0;">
+        <p style="text-align:right;font-size:13px;margin-bottom:30px;">Date Issued: @DateTime.Today.ToString("MMMM dd, yyyy")</p>
+        
+        <p style="font-size:16px;font-weight:bold;text-align:center;margin-bottom:30px;">TO WHOM IT MAY CONCERN:</p>
+
+        <p style="text-indent:40px;">
+          This is to certify that <strong>@Model.PrintData.StudentName.ToUpper()</strong> (Student ID: <strong>@Model.PrintData.StudentIdNumber</strong>) is a student in good standing pursuing the degree program <strong>@Model.PrintData.Program</strong> at National University Lipa.
+        </p>
+
+        <p style="text-indent:40px;">
+          Records on file with this Office and the University Guidance &amp; Counseling Center show that the above-named student has demonstrated exemplary conduct and has not been subjected to any disciplinary action or violation of university rules and regulations.
+        </p>
+
+        <p style="text-indent:40px;">
+          This certification is issued upon the request of the interested party for <strong>@Model.PrintData.Purpose</strong> and for whatever legal purpose it may serve.
+        </p>
+      </div>
+    }
+    else
+    {
+      <div style="margin-bottom:20px;font-size:12px;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+          <tr>
+            <td style="width:15%;font-weight:bold;">Student Name:</td>
+            <td style="width:45%;">@Model.PrintData.StudentName</td>
+            <td style="width:15%;font-weight:bold;">Student ID:</td>
+            <td style="width:25%;">@Model.PrintData.StudentIdNumber</td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold;">Degree Program:</td>
+            <td>@Model.PrintData.Program</td>
+            <td style="font-weight:bold;">Cumulative GWA:</td>
+            <td><strong>@(Model.PrintData.AverageGrade.HasValue ? Model.PrintData.AverageGrade.Value.ToString("F2") : "1.25")</strong></td>
+          </tr>
+        </table>
+
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead>
+            <tr style="border-top:1px solid #000;border-bottom:1px solid #000;text-align:left;">
+              <th style="padding:5px;">Term</th>
+              <th style="padding:5px;">Course Code</th>
+              <th style="padding:5px;">Course Descriptive Title</th>
+              <th style="padding:5px;">Units</th>
+              <th style="padding:5px;">Grade</th>
+              <th style="padding:5px;">Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var pg in Model.PrintStudentGrades)
+            {
+              var grText = pg.IsInc ? "INC" : (pg.Grade.HasValue ? pg.Grade.Value.ToString("F2") : "IP");
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:4px;">@($"{pg.SchoolYear} {pg.Semester}")</td>
+                <td style="padding:4px;font-weight:bold;">@pg.SubjectCode</td>
+                <td style="padding:4px;">@pg.SubjectName</td>
+                <td style="padding:4px;">@pg.Units.ToString("F1")</td>
+                <td style="padding:4px;font-weight:bold;">@grText</td>
+                <td style="padding:4px;">@(string.IsNullOrEmpty(pg.Remarks) ? "Passed" : pg.Remarks)</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Official Signatories & Dry Seal -->
+    <div class="doc-signatories">
+      <div class="doc-sign-box">
+        <div class="doc-seal-box">
+          OFFICIAL UNIVERSITY<br>DRY SEAL AREA
+        </div>
+        <div style="font-size:10px;color:#777;margin-top:6px;">Not valid without dry seal</div>
+      </div>
+
+      <div class="doc-sign-box">
+        <div style="font-family:monospace;font-size:11px;margin-bottom:20px;">
+          [ QR SECURITY VERIFICATION ]<br>
+          @Model.PrintData.QrCodeToken
+        </div>
+        <div class="doc-sign-line">
+          DR. ROSALINDA M. SANTOS, Ed.D.<br>
+          <span style="font-weight:normal;font-size:11px;">University Registrar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Update Status -->
+<div id="statusModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:440px;background:#fff;border-radius:12px;margin:80px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Update Request Status</h2>
+      <button onclick="document.getElementById('statusModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="UpdateStatus">
+      <input type="hidden" name="request_id" id="modalReqId">
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Lifecycle Status *</label>
+        <select name="status" id="modalStatusSelect" required class="form-control">
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="ready">Ready for Pickup</option>
+          <option value="released">Released</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Registrar Remarks</label>
+        <textarea name="remarks" id="modalRemarksText" rows="3" placeholder="e.g. Printed, sealed, and ready at Window 3" class="form-control"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('statusModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Update Lifecycle</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+  <script>
+    function openStatusModal(id, status, remarks) {
+      document.getElementById('modalReqId').value = id;
+      document.getElementById('modalStatusSelect').value = status;
+      document.getElementById('modalRemarksText').value = remarks;
+      document.getElementById('statusModal').style.display = 'block';
+    }
+  </script>
+}

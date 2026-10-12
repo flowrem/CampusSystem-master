@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "CampusSystem.Data/1.0.0": {
+        "runtime": {
+          "CampusSystem.Data.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "CampusSystem.Data/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

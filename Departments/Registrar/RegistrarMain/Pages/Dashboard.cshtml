@@ -1,0 +1,202 @@
+@page
+@model RegistrarMain.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Registrar Executive Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">Executive Registrar Dashboard</h1>
+    <p class="dash-subheading">Central overview for academic records, active term enrollments, and institution compliance.</p>
+  </div>
+  <div>
+    <button class="btn btn-secondary" onclick="document.getElementById('termModal').style.display='block'">⚙️ Term Settings</button>
+  </div>
+</div>
+
+<!-- Quick KPI Stats -->
+<div class="dash-stats">
+  <div class="dash-stat-card">
+    <div class="dash-stat-top">
+      <div class="dash-stat-label">Active Enrollments</div>
+      <div class="dash-stat-icon">📝</div>
+    </div>
+    <div class="dash-stat-value">@Model.ActiveEnrollments.ToString("N0")</div>
+    <div class="dash-stat-sub">Validated for AY @Model.CurrentSchoolYear</div>
+  </div>
+
+  <div class="dash-stat-card">
+    <div class="dash-stat-top">
+      <div class="dash-stat-label">Graduating Candidates</div>
+      <div class="dash-stat-icon">🎓</div>
+    </div>
+    <div class="dash-stat-value">@Model.GraduatingStudents.ToString("N0")</div>
+    <div class="dash-stat-sub">Ready for honors &amp; S.O. audit</div>
+  </div>
+
+  <div class="dash-stat-card">
+    <div class="dash-stat-top">
+      <div class="dash-stat-label">Pending Queues</div>
+      <div class="dash-stat-icon">⏳</div>
+    </div>
+    <div class="dash-stat-value">@Model.TotalPendingQueue.ToString("N0")</div>
+    <div class="dash-stat-sub">@Model.PendingDocs docs &middot; @(Model.PendingAddDrop + Model.PendingOverload) validation petitions</div>
+  </div>
+
+  <div class="dash-stat-card">
+    <div class="dash-stat-top">
+      <div class="dash-stat-label">Open Class Offerings</div>
+      <div class="dash-stat-icon">🏫</div>
+    </div>
+    <div class="dash-stat-value">@Model.ActiveOfferingsCount.ToString("N0")</div>
+    <div class="dash-stat-sub">Scheduled class sections</div>
+  </div>
+</div>
+
+<!-- Main Two Column Grid -->
+<div class="dash-grid">
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>📊 Student Distribution by Year Level &amp; Program</h2>
+    </div>
+    <div class="stat-mini-row" style="margin-bottom:20px;">
+      @foreach (var kvp in Model.EnrollmentByYear)
+      {
+        <div class="stat-mini">
+          <div class="label">@kvp.Key</div>
+          <div class="value">@kvp.Value.ToString("N0") <span style="font-size:11px;font-weight:normal;color:#64748b;">students</span></div>
+        </div>
+      }
+    </div>
+
+    <h3 style="font-size:13px;text-transform:uppercase;color:#64748b;margin-bottom:10px;">Program Enrollment Breakdown</h3>
+    <table class="table-simple">
+      <thead>
+        <tr>
+          <th>Academic Degree Program</th>
+          <th style="text-align:right;">Enrolled Students</th>
+          <th style="text-align:right;">Share %</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var prog in Model.ProgramDistribution)
+        {
+          var pct = Model.TotalStudents > 0 ? Math.Round(((double)prog.Cnt / Model.TotalStudents) * 100, 1) : 0;
+          <tr>
+            <td><strong>@prog.Program</strong></td>
+            <td style="text-align:right;">@prog.Cnt.ToString("N0")</td>
+            <td style="text-align:right;color:#64748b;">@pct%</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <!-- Quick Actions -->
+    <div class="dash-panel">
+      <div class="dash-panel-header">
+        <h2>⚡ Quick Access</h2>
+      </div>
+      <a href="/StudentRecords" class="quick-action">
+        <span>🗂️ Search / Manage 201 Files</span>
+        <span>›</span>
+      </a>
+      <a href="/EnrollmentValidation" class="quick-action">
+        <span>📝 Validate Pending Enrollments</span>
+        <span>›</span>
+      </a>
+      <a href="/DocumentProcessing" class="quick-action">
+        <span>📄 Issue TOR / Good Moral</span>
+        <span>›</span>
+      </a>
+      <a href="/GradeControl" class="quick-action">
+        <span>📊 Grade Verification &amp; Locking</span>
+        <span>›</span>
+      </a>
+      <a href="/GraduationAudit" class="quick-action">
+        <span>🎓 Latin Honors &amp; Degree Audit</span>
+        <span>›</span>
+      </a>
+      <a href="/IntegrationHub" class="quick-action">
+        <span>🔌 Connect Student / Faculty / Guidance</span>
+        <span>›</span>
+      </a>
+    </div>
+
+    <!-- System & Interop Status -->
+    <div class="dash-panel">
+      <div class="dash-panel-header">
+        <h2>📡 System Heartbeat &amp; Interop</h2>
+      </div>
+      @foreach (var row in Model.SystemStatuses)
+      {
+        var isOk = new[] { "operational", "online", "sync active", "open", "ready", "connected" }.Contains(row.Status.ToLower());
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px;">
+          <span>@row.ServiceName</span>
+          <span class="badge @(isOk ? "badge-active" : "badge-pending")">@row.Status</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Recent Audit Log -->
+<div class="dash-panel">
+  <div class="dash-panel-header">
+    <h2>🕒 Recent Registrar Audit Trail</h2>
+  </div>
+  @if (!Model.RecentActivity.Any())
+  {
+    <p style="color:#94a3b8;font-size:13px;">No system activity recorded yet.</p>
+  }
+  else
+  {
+    @foreach (var act in Model.RecentActivity)
+    {
+      <div class="activity-row">
+        <span class="activity-time">@act.CreatedAt.ToString("MMM dd, hh:mm tt")</span>
+        <span>@act.Message</span>
+      </div>
+    }
+  }
+</div>
+
+<!-- Term Settings Modal -->
+<div id="termModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:480px;background:#fff;border-radius:12px;margin:80px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Academic Term Settings</h2>
+      <button onclick="document.getElementById('termModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="SaveTermSettings">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Academic School Year</label>
+        <input type="text" name="school_year" value="@Model.CurrentSchoolYear" required class="form-control">
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Academic Semester</label>
+        <select name="semester" class="form-control">
+          <option value="1st Semester" selected="@(Model.CurrentSemester == "1st Semester")">1st Semester</option>
+          <option value="2nd Semester" selected="@(Model.CurrentSemester == "2nd Semester")">2nd Semester</option>
+          <option value="Summer Term" selected="@(Model.CurrentSemester == "Summer Term")">Summer Term</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="encoding_open" value="1" checked="@Model.EncodingOpen">
+          Grade Encoding Window Open
+        </label>
+      </div>
+      <div class="form-group" style="margin-bottom:18px;">
+        <label>Encoding Deadline</label>
+        <input type="date" name="deadline" value="@Model.EncodingDeadline" class="form-control">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('termModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+</div>

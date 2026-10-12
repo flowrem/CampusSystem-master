@@ -1,0 +1,107 @@
+@page
+@model FinanceMain.Pages.FacultyClearanceModel
+@{
+    ViewData["Title"] = "Student Clearance Status";
+    Layout = "_FinanceFacultyLayout";
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Class Clearance Verification</h1>
+        <p class="fin-subtitle">Official examination permit status &middot; Faculty roster check &middot; National University Lipa</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge-readonly">READ-ONLY VERIFICATION</span>
+        <button type="button" onclick="window.print()" class="btn-fin-outline">🖨️ Print Class Roster</button>
+    </div>
+</div>
+
+<!-- Mini Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-label">Enrolled in Class</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);font-size:22px;">@Model.Roster.Count Students</div>
+            <div class="fin-stat-sub">@Model.SectionLabel</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-label">Cleared for Exams</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);font-size:22px;">@Model.ClearedCount</div>
+            <div class="fin-stat-sub">Permit validated &middot; Zero balance</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-gold">
+            <div class="fin-stat-label">Conditional Clearance</div>
+            <div class="fin-stat-value" style="color:var(--fin-amber);font-size:22px;">@Model.ConditionalCount</div>
+            <div class="fin-stat-sub">Finance promissory note on file</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-red">
+            <div class="fin-stat-label">Pending Settlement</div>
+            <div class="fin-stat-value" style="color:var(--fin-red);font-size:22px;">@Model.NotClearedCount</div>
+            <div class="fin-stat-sub">Refer student to Finance Cashier</div>
+        </div>
+    </div>
+</div>
+
+<div class="fin-filters">
+    <div class="fin-pill" style="padding:8px 14px;">
+        📚 Class Section: @Model.SectionLabel
+    </div>
+    <div class="flex-grow-1"></div>
+</div>
+
+<div class="fin-card">
+    <div class="fin-card-head">
+        <span class="fin-card-head-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="4.5" r="2.5"/><path d="M3 13c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5"/></svg>
+            Enrolled Students Financial Clearance Status
+        </span>
+        <span class="fin-card-badge">@Model.Roster.Count Students</span>
+    </div>
+    <div class="table-responsive">
+        <table class="fin-table">
+            <thead>
+                <tr>
+                    <th style="width:50px;">#</th>
+                    <th>Student Name</th>
+                    <th>Student ID Number</th>
+                    <th style="text-align:center;">Exam Clearance Status</th>
+                    <th style="text-align:center;">Eligibility</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Roster)
+                {
+                    <tr>
+                        <td style="color:var(--fin-muted);">@row.Index</td>
+                        <td style="font-weight:700;">@row.StudentName</td>
+                        <td class="fin-mono" style="color:var(--fin-muted);">@row.StudentId</td>
+                        <td style="text-align:center;">
+                            <span class="@FinanceMain.Pages.FacultyClearanceModel.StatusBadgeClass(row.Status)">@row.Status</span>
+                        </td>
+                        <td style="text-align:center;">
+                            @if (row.Status == "Cleared" || row.Status == "Conditional")
+                            {
+                                <span style="color:var(--fin-green);font-size:12px;font-weight:700;">✓ Exam Permit Valid</span>
+                            }
+                            else
+                            {
+                                <span style="color:var(--fin-red);font-size:12px;font-weight:700;">⚠️ Settle with Finance</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="font-size:12px;color:var(--fin-muted);margin-top:14px;display:flex;align-items:center;gap:6px;">
+    <span>🔒</span>
+    <span>This view is read-only. Student financial records are managed exclusively by the Finance &amp; Accounting Office.</span>
+</div>

@@ -1,0 +1,165 @@
+@page
+@model FinanceMain.Pages.ClearanceModel
+@{
+    ViewData["Title"] = "Clearance";
+    Layout = "_FinanceAdminLayout";
+}
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div style="background:var(--fin-green-bg);border:1px solid var(--fin-green-border);border-radius:8px;padding:12px 16px;margin-bottom:18px;color:var(--fin-green);font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;">
+        <span>✓</span> @Model.StatusMessage
+    </div>
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Financial Clearance Roster</h1>
+        <p class="fin-subtitle">Official examination permits &amp; semestral sign-offs &middot; Synchronized with Registrar &middot; AY @FinanceMain.Pages.ClearanceModel.AcademicYear @FinanceMain.Pages.ClearanceModel.Semester</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="fin-status-open">
+            <span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--fin-green);display:inline-block;"></span>
+            Clearance Window: ACTIVE
+        </span>
+        <button type="button" onclick="window.print()" class="btn-fin-outline">🖨️ Export / Print</button>
+        <form method="post" asp-page-handler="BatchIssue" style="display:inline;">
+            <button type="submit" class="btn-fin-gold" title="Automatically clear all students with zero balance">⚡ Batch Issue Clearance</button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-label">Total Student Roster</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);font-size:24px;">@Model.TotalStudents</div>
+            <div class="fin-stat-sub">Enrolled &amp; assessed students</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-label">Cleared Accounts</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);font-size:24px;">@Model.Cleared</div>
+            <div class="fin-stat-sub">Zero balance &middot; Ready for exam</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-gold">
+            <div class="fin-stat-label">Conditional Clearances</div>
+            <div class="fin-stat-value" style="color:var(--fin-amber);font-size:24px;">@Model.Conditional</div>
+            <div class="fin-stat-sub">Approved promissory note / plan</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-red">
+            <div class="fin-stat-label">Unsettled / Pending</div>
+            <div class="fin-stat-value" style="color:var(--fin-red);font-size:24px;">@Model.NotCleared</div>
+            <div class="fin-stat-sub">Requires cashier settlement</div>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="fin-filters">
+    <div class="fin-pill" style="padding:8px 14px;">
+        📅 Term: @FinanceMain.Pages.ClearanceModel.Semester @FinanceMain.Pages.ClearanceModel.AcademicYear
+    </div>
+    <select name="status" class="fin-select" onchange="this.form.submit()">
+        <option value="">Status: All Clearances</option>
+        <option value="Cleared">Cleared Accounts</option>
+        <option value="Conditional">Conditional Status</option>
+        <option value="NotCleared">Not Cleared / Pending</option>
+    </select>
+    <div class="flex-grow-1"></div>
+    <input type="search" name="search" class="fin-search" placeholder="Search student name or program..." />
+    <button type="submit" class="btn-fin-navy">Filter</button>
+</form>
+
+<div class="fin-card">
+    <div class="fin-card-head">
+        <span class="fin-card-head-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l5 2v4c0 4-2.5 5.5-5 6-2.5-.5-5-2-5-6V4z"/><path d="M6 8l1.5 1.5L10 6.5"/></svg>
+            Clearance Validation Sheet
+        </span>
+        <span class="fin-card-badge">@Model.TotalCount Student Records</span>
+    </div>
+    <div class="table-responsive">
+        <table class="fin-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Academic Program</th>
+                    <th style="text-align:right;">Total Assessed</th>
+                    <th style="text-align:right;">Current Balance</th>
+                    <th style="text-align:center;">Clearance Status</th>
+                    <th style="text-align:center;">Action / Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td>
+                            <a href="/Invoice/@row.Id" class="fin-link" style="font-weight:700;" title="View Assessment / Invoice">
+                                @row.StudentName
+                            </a>
+                        </td>
+                        <td style="color:var(--fin-muted);font-size:12.5px;">@row.Program</td>
+                        <td style="text-align:right;font-weight:600;">@row.Assessed.ToString("₱#,##0.00")</td>
+                        <td style="text-align:right;" class="@(row.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                            @if (row.Balance > 0)
+                            {
+                                <a href="/Pay?assessmentId=@row.Id" class="fin-link" title="Pay Balance via Cashier">
+                                    @row.Balance.ToString("₱#,##0.00")
+                                </a>
+                            }
+                            else
+                            {
+                                <span>@row.Balance.ToString("₱#,##0.00")</span>
+                            }
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="@FinanceMain.Pages.ClearanceModel.StatusBadgeClass(row.Status)">@row.Status</span>
+                        </td>
+                        <td style="text-align:center;">
+                            @if (row.ClearedOn != null)
+                            {
+                                <span style="font-size:11.5px;color:var(--fin-green);font-weight:600;">✓ @row.ClearedOn</span>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn-fin-outline" style="padding:4px 10px;font-size:11.5px;"
+                                        data-bs-toggle="modal" data-bs-target="#reviewModal-@row.Id">Set Conditional</button>
+
+                                <div class="modal fade" id="reviewModal-@row.Id" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <form method="post" asp-page-handler="Review" class="modal-content" style="border-radius:14px;border:none;box-shadow:var(--fin-shadow-md);">
+                                            <input type="hidden" name="clearanceId" value="@row.Id" />
+                                            <div class="modal-header" style="border-bottom:1px solid var(--fin-border);padding:18px 22px;">
+                                                <h6 class="modal-title" style="font-weight:800;color:var(--fin-navy);">Promissory Note: @row.StudentName</h6>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body" style="padding:20px 22px;">
+                                                <label class="fin-label">Clearance Remarks / Conditions</label>
+                                                <textarea name="remarks" class="fin-input" rows="3" required
+                                                          placeholder="e.g. Promissory note approved by Finance Officer; 50% downpayment received; remaining due before finals."></textarea>
+                                            </div>
+                                            <div class="modal-footer" style="border-top:1px solid var(--fin-border);padding:14px 22px;gap:8px;">
+                                                <button type="button" class="btn-fin-outline" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn-fin-gold">Confirm Conditional Approval</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Rows.Any())
+                {
+                    <tr><td colspan="6" style="text-align:center;color:var(--fin-muted);padding:36px;">No clearance records found for this term yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

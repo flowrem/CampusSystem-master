@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FinanceMain.csproj" />
+  <Project Path="FinanceMain.Tests/FinanceMain.Tests.csproj" />
+</Solution>

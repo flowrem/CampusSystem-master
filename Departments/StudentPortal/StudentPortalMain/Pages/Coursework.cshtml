@@ -1,0 +1,129 @@
+@page
+@model StudentPortalMain.Pages.CourseworkModel
+@{
+    ViewData["Title"] = "Coursework & Assignments";
+    ViewData["ActivePage"] = "Coursework";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Faculty LMS &amp; Academic Tasks
+        </div>
+        <h1 class="portal-page-title">Coursework, Assignments &amp; Submissions</h1>
+        <p class="portal-page-subtitle">
+            Assignments your instructors publish for your sections. Write your answer, turn it in before the due date, and read the score and feedback here.
+        </p>
+    </div>
+</div>
+
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>📝</span> Class Coursework
+        </h3>
+        <span style="font-size:12px; color:var(--nu-text-muted);">
+            @Model.Assignments.Count(a => a.IsSubmitted) / @Model.Assignments.Count Turned in
+        </span>
+    </div>
+    <div class="portal-card-body" style="padding:0;">
+        @if (Model.Assignments.Any())
+        {
+            <div class="portal-table-responsive">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Assignment</th>
+                            <th>Score</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th style="min-width:280px;">Your work</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Assignments)
+                        {
+                            var pastDue = a.DueDate is { } dueAt && dueAt < DateTime.UtcNow;
+                            var scored = a.MyScore.HasValue;
+                            <tr>
+                                <td>
+                                    <strong style="color:var(--nu-blue-dark);">@a.SubjectCode</strong>
+                                    <div style="font-size:11px; color:var(--nu-text-muted);">@a.SubjectName</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:700; font-size:13.5px;">@a.Title <span style="font-weight:400;font-size:11px;color:var(--nu-text-muted);">@a.Type</span></div>
+                                    <div style="font-size:12px; color:var(--nu-text-muted); margin-top:2px; white-space:pre-wrap;">@a.Description</div>
+                                </td>
+                                <td>
+                                    <strong>@(scored ? a.MyScore!.Value.ToString("0.##") : "—")</strong> / @a.MaxScore.ToString("0.##") pts
+                                </td>
+                                <td style="font-size:12px;">
+                                    @if (a.DueDate is { } due)
+                                    {
+                                        <strong style="color:@(pastDue && !a.IsSubmitted ? "#b91c1c" : "inherit");">@due.ToString("MMM dd, yyyy")</strong>
+                                        <div>@due.ToString("h:mm tt") UTC</div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (scored)
+                                    {
+                                        <span class="badge-status badge-success">✓ Scored</span>
+                                    }
+                                    else if (a.IsSubmitted)
+                                    {
+                                        <span class="badge-status badge-success">Turned in</span>
+                                        @if (a.IsLate) { <span class="badge-status badge-warning">Late</span> }
+                                    }
+                                    else if (a.IsClosed)
+                                    {
+                                        <span class="badge-status badge-danger">Closed</span>
+                                    }
+                                    else if (pastDue)
+                                    {
+                                        <span class="badge-status badge-warning">Past due, still open</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status badge-warning">Not turned in</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (scored || a.IsClosed)
+                                    {
+                                        @if (a.IsSubmitted)
+                                        {
+                                            <div style="font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;">@a.SubmissionText</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <form method="post" asp-page-handler="SubmitWork" style="margin:0;">
+                                            <input type="hidden" name="assignmentId" value="@a.Id" />
+                                            <textarea name="answer" class="form-control" rows="3" maxlength="10000" required placeholder="Write your answer" aria-label="Answer for @a.Title">@a.SubmissionText</textarea>
+                                            <button type="submit" class="btn-nu btn-nu-primary btn-sm" style="margin-top:6px;">
+                                                @(a.IsSubmitted ? "Update answer" : "Turn In")
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(a.Feedback))
+                                    {
+                                        <div style="margin-top:8px;padding:8px 10px;background:#f0f4ff;border-radius:6px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;">
+                                            <strong>Instructor feedback:</strong> @a.Feedback
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div style="padding:48px; text-align:center; color:var(--nu-text-muted);">
+                <p>No assignments have been published for your sections yet.</p>
+            </div>
+        }
+    </div>
+</div>

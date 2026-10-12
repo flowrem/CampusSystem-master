@@ -1,0 +1,104 @@
+@page
+@model StudentPortalMain.Pages.ClearanceModel
+@{
+    ViewData["Title"] = "Semestral Clearance";
+    ViewData["ActivePage"] = "Clearance";
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Institutional Compliance &amp; Accountability
+        </div>
+        <h1 class="portal-page-title">Semestral Institutional Clearance</h1>
+        <p class="portal-page-subtitle">
+            AY <strong>@Model.SchoolYear</strong> &bull; <strong>@Model.Semester</strong> &bull;
+            Departmental Sign-off across Registrar, Guidance, Library, Finance &amp; Dean.
+        </p>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;" class="no-print">
+        <button type="button" onclick="window.print()" class="btn-nu btn-nu-gold btn-print">
+            🖨️ Print Clearance Certificate
+        </button>
+    </div>
+</div>
+
+<!-- Clearance Status Banner -->
+<div class="portal-card" style="border-left: 5px solid @(Model.IsAllCleared ? "var(--nu-success)" : "var(--nu-warning)");">
+    <div class="portal-card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--nu-text-muted);">Overall Semestral Status</div>
+            <h2 style="margin:4px 0 0; font-size:22px; color:@(Model.IsAllCleared ? "#15803d" : "#b45309");">
+                @(Model.IsAllCleared ? "✓ OFFICIAL CLEARANCE COMPLETED" : "⏳ CLEARANCE IN PROGRESS")
+            </h2>
+            <div style="font-size:12.5px; color:var(--nu-text-muted); margin-top:4px;">
+                @(Model.IsAllCleared 
+                    ? "All collegiate departments have signed off. You are eligible for subsequent enrollment and document release." 
+                    : "Please settle any pending accountability noted below with the designated department.")
+            </div>
+        </div>
+        <div>
+            <span class="badge-status @(Model.IsAllCleared ? "badge-success" : "badge-warning")" style="font-size:14px; padding:8px 16px;">
+                @Model.ClearanceList.Count(c => c.Status == "Cleared") / @Model.ClearanceList.Count Cleared
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Clearance Sign-off Table -->
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>🛡️</span> Departmental Sign-off Directory
+        </h3>
+        <span style="font-size:12px; color:var(--nu-text-muted);">Multi-department verification pipeline</span>
+    </div>
+    <div class="portal-card-body" style="padding:0;">
+        <div class="portal-table-responsive">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Department / Office</th>
+                        <th>Signatory Officer</th>
+                        <th>Status</th>
+                        <th>Remarks / Accountability</th>
+                        <th>Cleared Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.ClearanceList)
+                    {
+                        <tr>
+                            <td>
+                                <strong style="color:var(--nu-blue-dark); font-size:14px;">@c.DepartmentName</strong>
+                            </td>
+                            <td style="font-size:12.5px;">@c.ClearedBy</td>
+                            <td>
+                                @if (c.Status == "Cleared")
+                                {
+                                    <span class="badge-status badge-success">✓ Cleared</span>
+                                }
+                                else if (c.Status == "Pending")
+                                {
+                                    <span class="badge-status badge-warning">⏳ Pending</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-danger">✕ Hold / Deficiency</span>
+                                }
+                            </td>
+                            <td style="font-size:12.5px; color:var(--nu-text-muted);">
+                                @(string.IsNullOrEmpty(c.Remarks) ? "No accountability" : c.Remarks)
+                            </td>
+                            <td style="font-size:12px;">
+                                @(c.ClearedAt.HasValue ? c.ClearedAt.Value.ToString("MMM dd, yyyy") : "—")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

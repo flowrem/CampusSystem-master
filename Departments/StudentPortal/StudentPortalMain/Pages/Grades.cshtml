@@ -1,0 +1,277 @@
+@page
+@model StudentPortalMain.Pages.GradesModel
+@{
+    ViewData["Title"] = "Grades & Scholastic Record";
+    ViewData["ActivePage"] = "Grades";
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Academic Standing &amp; Transcript Summary
+        </div>
+        <h1 class="portal-page-title">Grades &amp; Scholastic Record</h1>
+        <p class="portal-page-subtitle">
+            Student No: <strong>@studentIdNum</strong> &bull; @Model.Profile.Program &bull;
+            Academic Status:
+            <span class="badge-status @(Model.Profile.AcademicStatus == "Probation" ? "badge-danger" : "badge-success")">
+                @Model.Profile.AcademicStatus
+            </span>
+        </p>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;" class="no-print">
+        <button type="button" onclick="window.print()" class="btn-nu btn-nu-gold btn-print">
+            🖨️ Print Grade Slip
+        </button>
+        <a href="/DocumentRequests" class="btn-nu btn-nu-outline">
+            📄 Request Official TOR
+        </a>
+    </div>
+</div>
+
+<!-- Print Header -->
+<div class="d-none" style="display:none;" id="printHeaderGrades">
+    <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid #344495; padding-bottom:12px;">
+        <h2 style="margin:0; color:#344495; font-size:18px; font-weight:800;">NATIONAL UNIVERSITY LIPA</h2>
+        <div style="font-size:12px; color:#555;">Office of the University Registrar &bull; Student Scholastic Grade Evaluation</div>
+        <div style="font-size:13px; font-weight:700; margin-top:4px;">Cumulative GWA: @(Model.CumulativeGwa.HasValue ? Model.CumulativeGwa.Value.ToString("0.00") : "N/A")</div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:12px; margin-bottom:16px;">
+        <div><strong>Student Name:</strong> @studentName</div>
+        <div><strong>Student ID Number:</strong> @studentIdNum</div>
+        <div><strong>Program:</strong> @Model.Profile.Program</div>
+        <div><strong>Curriculum Catalog:</strong> @Model.Profile.CurriculumYear</div>
+    </div>
+</div>
+
+<style>
+@@media print {
+    #printHeaderGrades { display: block !important; }
+}
+</style>
+
+<!-- Summary Cards -->
+<div class="stat-grid no-print">
+    <div class="stat-card gold-border">
+        <div class="stat-label">Cumulative GWA</div>
+        <div class="stat-value">
+            @(Model.CumulativeGwa.HasValue ? Model.CumulativeGwa.Value.ToString("0.00") : "N/A")
+        </div>
+        <div class="stat-subtext">
+            @if (Model.CumulativeGwa.HasValue && Model.CumulativeGwa.Value <= 1.20m)
+            {
+                <span style="color:#15803d; font-weight:700;">Summa Cum Laude Standing</span>
+            }
+            else if (Model.CumulativeGwa.HasValue && Model.CumulativeGwa.Value <= 1.45m)
+            {
+                <span style="color:#15803d; font-weight:700;">Magna Cum Laude Standing</span>
+            }
+            else if (Model.CumulativeGwa.HasValue && Model.CumulativeGwa.Value <= 1.75m)
+            {
+                <span style="color:#15803d; font-weight:700;">Cum Laude Standing</span>
+            }
+            else
+            {
+                <span>Good Scholastic Performance</span>
+            }
+        </div>
+    </div>
+
+    <div class="stat-card green-border">
+        <div class="stat-label">Total Earned Units</div>
+        <div class="stat-value">@Model.TotalUnitsEarned <span style="font-size:15px; font-weight:500; color:var(--nu-text-muted);">units</span></div>
+        <div class="stat-subtext">Passed collegiate subjects</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Evaluated Semesters</div>
+        <div class="stat-value">@Model.TermGrades.Count</div>
+        <div class="stat-subtext">Academic terms recorded</div>
+    </div>
+
+    <div class="stat-card info-border">
+        <div class="stat-label">Grading System Standard</div>
+        <div class="stat-value" style="font-size:20px;">1.00 – 5.00</div>
+        <div class="stat-subtext">Passing mark: 3.00 &bull; INC for deficiency</div>
+    </div>
+</div>
+
+@if (Model.TermGrades.Any())
+{
+    @foreach (var term in Model.TermGrades)
+    {
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <div>
+                    <h3 class="portal-card-title">
+                        <span>🗓️</span> AY @term.SchoolYear &mdash; @term.Semester
+                    </h3>
+                </div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <span style="font-size:13px; font-weight:600; color:var(--nu-text-muted);">
+                        Credits: <strong>@term.TotalUnits units</strong>
+                    </span>
+                    <span class="badge-status badge-info" style="font-size:12.5px; padding:4px 10px;">
+                        Term GWA: <strong>@(term.SemesterGpa.HasValue ? term.SemesterGpa.Value.ToString("0.00") : "N/A")</strong>
+                    </span>
+                </div>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                <div class="portal-table-responsive">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th>Subject Code</th>
+                                <th>Descriptive Title</th>
+                                <th>Sec</th>
+                                <th>Units</th>
+                                <th>Final Grade</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                                <th class="no-print">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var g in term.Grades)
+                            {
+                                <tr>
+                                    <td><strong style="color:var(--nu-blue-dark);">@g.SubjectCode</strong></td>
+                                    <td>@g.SubjectName</td>
+                                    <td><span class="badge-status badge-secondary">@g.SectionCode</span></td>
+                                    <td><strong>@g.Units</strong></td>
+                                    <td>
+                                        <strong style="font-size:15px; color:@(g.IsInc ? "#b45309" : (g.Grade.HasValue && g.Grade > 3.00m ? "#b91c1c" : "var(--nu-blue)"));">
+                                            @g.GradeDisplay
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status @g.StatusBadgeClass">
+                                            @(g.IsInc ? "Incomplete" : (g.Grade.HasValue && g.Grade <= 3.00m ? "Passed" : (!g.Grade.HasValue ? "Ongoing" : "Failed")))
+                                        </span>
+                                    </td>
+                                    <td style="font-size:12.5px; color:var(--nu-text-muted);">
+                                        @(string.IsNullOrEmpty(g.Remarks) ? "—" : g.Remarks)
+                                    </td>
+                                    <td class="no-print">
+                                        @if (g.IsInc || (g.Grade.HasValue && g.Grade.Value > 0))
+                                        {
+                                            <button type="button" class="btn-nu btn-nu-outline btn-sm"
+                                                    onclick="openRevisionModal(@g.GradeId, '@g.SubjectCode - @g.SubjectName', '@(g.IsInc ? "completion" : "revision")')">
+                                                @(g.IsInc ? "Complete INC" : "Request Revision")
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="portal-card">
+        <div class="portal-card-body" style="text-align:center; padding:48px 24px; color:var(--nu-text-muted);">
+            <div style="font-size:36px; margin-bottom:10px;">📊</div>
+            <h3>No Scholastic Records Found</h3>
+            <p>Your academic grades have not yet been posted by the Registrar's Office for this evaluation.</p>
+        </div>
+    </div>
+}
+
+<!-- Revision Requests History -->
+@if (Model.MyRevisionRequests.Any())
+{
+    <div class="portal-card no-print">
+        <div class="portal-card-header">
+            <h3 class="portal-card-title">
+                <span>📝</span> My Submitted Completion &amp; Revision Petitions
+            </h3>
+        </div>
+        <div class="portal-card-body" style="padding:0;">
+            <div class="portal-table-responsive">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Type</th>
+                            <th>Proposed Grade</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Filed Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.MyRevisionRequests)
+                        {
+                            <tr>
+                                <td><strong>@r.SubjectCode</strong> &mdash; @r.SubjectName</td>
+                                <td><span class="badge-status badge-secondary">@r.RequestType.ToUpper()</span></td>
+                                <td><strong>@r.RequestedGrade.ToString("0.00")</strong></td>
+                                <td style="font-size:12px; color:var(--nu-text-muted);">@r.Reason</td>
+                                <td>
+                                    <span class="badge-status @(r.Status == "approved" ? "badge-success" : (r.Status == "rejected" ? "badge-danger" : "badge-warning"))">
+                                        @r.Status.ToUpper()
+                                    </span>
+                                </td>
+                                <td style="font-size:12px;">@r.RequestedAt.ToString("MMM dd, yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal for INC Completion or Grade Revision -->
+<div id="revisionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#ffffff; border-radius:var(--nu-radius-md); max-width:500px; width:90%; padding:24px; box-shadow:var(--nu-shadow-lg);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--nu-border); padding-bottom:10px;">
+            <h4 style="margin:0; color:var(--nu-blue-dark);" id="modalTitle">File Grade Petition</h4>
+            <button type="button" onclick="closeRevisionModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <form method="post" asp-page-handler="RequestRevision">
+            <input type="hidden" name="gradeId" id="modalGradeId" value="" />
+            <input type="hidden" name="requestType" id="modalRequestType" value="completion" />
+
+            <div class="form-group">
+                <label class="form-label">Subject:</label>
+                <div id="modalSubjectText" style="font-weight:700; color:var(--nu-blue); padding:6px 0;"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Proposed / Completed Final Grade (1.00 - 3.00):</label>
+                <input type="number" step="0.25" min="1.00" max="3.00" name="requestedGrade" class="form-control" value="1.75" required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Justification / Reason (e.g. project submitted, completion exam taken):</label>
+                <textarea name="reason" class="form-control" rows="3" required placeholder="Explain completion requirements submitted to instructor..."></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" onclick="closeRevisionModal()" class="btn-nu btn-nu-outline">Cancel</button>
+                <button type="submit" class="btn-nu btn-nu-primary">Submit to Registrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openRevisionModal(gradeId, subject, type) {
+    document.getElementById('modalGradeId').value = gradeId;
+    document.getElementById('modalRequestType').value = type;
+    document.getElementById('modalSubjectText').innerText = subject;
+    document.getElementById('modalTitle').innerText = type === 'completion' ? 'File INC Completion Request' : 'File Grade Revision Petition';
+    document.getElementById('revisionModal').style.display = 'flex';
+}
+
+function closeRevisionModal() {
+    document.getElementById('revisionModal').style.display = 'none';
+}
+</script>

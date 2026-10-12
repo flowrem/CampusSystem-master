@@ -1,0 +1,241 @@
+:root {
+  --campus-ink: #17211f;
+  --campus-paper: #f5f4ef;
+  --campus-line: #d8d9d2;
+  --campus-mute: #67726f;
+  --campus-gold: #e4b35e;
+  --campus-teal: #8fc6ba;
+  --campus-coral: #e56f58;
+  --campus-navy: #23364b;
+}
+
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--campus-paper);
+  color: var(--campus-ink);
+  font-family: "Segoe UI", sans-serif;
+}
+
+body, .navbar, .dropdown-menu, .footer-shell, .site-header {
+  background: var(--campus-paper);
+}
+
+.site-header {
+  border-bottom: 1px solid var(--campus-line);
+  background: rgba(245, 244, 239, 0.96);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.navbar {
+  min-height: 74px;
+  padding: 0.7rem 0;
+}
+
+.navbar-brand,
+.nav-link,
+.dropdown-item {
+  color: var(--campus-ink) !important;
+  font-weight: 600;
+}
+
+.navbar-brand {
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+.nav-link {
+  color: var(--campus-mute) !important;
+  padding: 0.6rem 0.9rem;
+}
+
+.nav-link:hover,
+.nav-link:focus,
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: var(--campus-ink) !important;
+}
+
+.dropdown-menu {
+  border: 1px solid var(--campus-line);
+  border-radius: 12px;
+  box-shadow: 0 18px 35px rgba(23, 33, 31, 0.08);
+  padding: 0.5rem;
+}
+
+.dropdown-item {
+  border-radius: 8px;
+  font-size: 0.95rem;
+  padding: 0.65rem 0.85rem;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: rgba(143, 198, 186, 0.2);
+}
+
+.shell-container {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+main {
+  background: transparent;
+}
+
+main .display-4,
+main h1,
+main h2,
+main h3,
+main h4 {
+  color: var(--campus-ink);
+  letter-spacing: -0.04em;
+}
+
+main .display-4 {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  margin-bottom: 1rem;
+}
+
+main p,
+main li,
+main td,
+main th,
+main label,
+main small {
+  color: var(--campus-mute);
+}
+
+main a {
+  color: var(--campus-navy);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.page-heading h1 {
+  margin: 0.35rem 0;
+  font-weight: 650;
+}
+
+.eyebrow {
+  color: var(--campus-coral);
+  font: 600 0.72rem/1.2 Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.surface {
+  border: 1px solid var(--campus-line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(29, 39, 51, 0.06);
+}
+
+.empty-state {
+  color: var(--campus-mute);
+  text-align: center;
+  padding: 3.5rem 1rem !important;
+}
+
+.btn,
+.btn-primary,
+.btn-outline-primary,
+.btn-secondary {
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.7rem 1.1rem;
+}
+
+.btn-primary,
+.btn-outline-primary {
+  background: var(--campus-navy);
+  border-color: var(--campus-navy);
+  color: white;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: var(--campus-navy);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  filter: brightness(0.98);
+}
+
+.form-control,
+.form-select,
+.form-check-input {
+  border: 1px solid var(--campus-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--campus-ink);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--campus-coral);
+  box-shadow: 0 0 0 0.15rem rgba(229, 111, 88, 0.15);
+}
+
+.footer-shell {
+  border-top: 1px solid var(--campus-line);
+  color: var(--campus-mute);
+  padding: 1.2rem 0 1.5rem;
+}
+
+.footer-shell a {
+  color: var(--campus-ink);
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+  color: var(--campus-mute);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+.navbar-toggler {
+  border-color: var(--campus-line);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(23,33,31,1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}

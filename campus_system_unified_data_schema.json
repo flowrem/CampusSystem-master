@@ -1,0 +1,1425 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "system": {
+    "name": "National University Lipa - Campus Management System Unified Data \u0026 Schema Bridge",
+    "version": "2.1.0-unified-library",
+    "description": "Single JSON datastore shared by the Registrar, Finance, Student Portal, Faculty Portal, Guidance, Library and Testing apps. Collection ownership is documented in Shared/CampusSystem.Data/Json/README.md.",
+    "last_updated": "2026-09-29",
+    "schema_version": 2
+  },
+  "unified_seed_data": {
+    "settings": [
+      {
+        "key": "current_school_year",
+        "value": "2025-2026",
+        "description": "Active academic school year"
+      },
+      {
+        "key": "current_semester",
+        "value": "1st Semester",
+        "description": "Active academic term"
+      },
+      {
+        "key": "enrollment_status",
+        "value": "Open",
+        "description": "Registration period state"
+      },
+      {
+        "key": "add_drop_deadline",
+        "value": "2025-09-30",
+        "description": "Last day for add/drop petitions"
+      },
+      {
+        "key": "library_overdue_fine_per_day",
+        "value": "20.00",
+        "description": "Overdue book fine rate per day"
+      },
+      {
+        "key": "library_damaged_book_fine",
+        "value": "500.00",
+        "description": "Standard fine for damaged library materials"
+      },
+      {
+        "key": "library_lost_book_fine",
+        "value": "1200.00",
+        "description": "Standard replacement fine for lost library books"
+      }
+    ],
+    "users": [
+      {
+        "id": 1,
+        "student_id_number": "REG-2024-001",
+        "name": "Dr. Rosalinda Santos",
+        "email": "rosalinda.santos@nulipa.edu.ph",
+        "role": "registrar",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM.",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T18:52:46.5053074\u002B00:00"
+      },
+      {
+        "id": 2,
+        "student_id_number": "FIN-2024-002",
+        "name": "Mr. Roberto Gomez",
+        "email": "roberto.gomez@nulipa.edu.ph",
+        "role": "finance",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM."
+      },
+      {
+        "id": 3,
+        "student_id_number": "FAC-2024-003",
+        "name": "Prof. Alan Turing",
+        "email": "alan.turing@nulipa.edu.ph",
+        "role": "faculty",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM.",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T19:05:44.7776858\u002B00:00"
+      },
+      {
+        "id": 4,
+        "student_id_number": "GUI-2024-004",
+        "name": "Ms. Maria Clara",
+        "email": "maria.clara@nulipa.edu.ph",
+        "role": "guidance",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM.",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T18:59:57.8728056\u002B00:00"
+      },
+      {
+        "id": 5,
+        "student_id_number": "2023-01045",
+        "name": "Alyssa Bea Mendoza",
+        "email": "alyssa.mendoza@students.nulipa.edu.ph",
+        "role": "student",
+        "status": "active",
+        "created_at": "2023-08-01T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM.",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T19:17:11.7543033\u002B00:00"
+      },
+      {
+        "id": 6,
+        "student_id_number": "2023-01088",
+        "name": "Juan Dela Cruz",
+        "email": "juan.delacruz@students.nulipa.edu.ph",
+        "role": "student",
+        "status": "active",
+        "created_at": "2023-08-01T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM."
+      },
+      {
+        "id": 7,
+        "student_id_number": "2022-00512",
+        "name": "Kathryn Bernardo",
+        "email": "kathryn.bernardo@students.nulipa.edu.ph",
+        "role": "student",
+        "status": "active",
+        "created_at": "2022-08-01T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM."
+      },
+      {
+        "id": 8,
+        "student_id_number": "2024-1086767",
+        "name": "Benjamin Dizon",
+        "email": "benjamin.dizon@nulipa.edu.ph",
+        "role": "student",
+        "status": "active",
+        "account_state": "account_created",
+        "password_hash": "$2a$11$rB8rtBCWi1MkKdPsM4NV7eOmN8JL.8hIYJHij/8HE48TKnxLrw21O",
+        "created_at": "2026-09-29T13:47:36.8183818Z"
+      },
+      {
+        "id": 9,
+        "student_id_number": "2024-1086969",
+        "name": "James Charles Medina",
+        "email": "jamescharles.medina@nulipa.edu.ph",
+        "role": "student",
+        "status": "active",
+        "account_state": "account_created",
+        "password_hash": "$2a$11$Rks9pzR8avM/YJignTxzs.t8o2J.XmMDQjnikmukq.Yi.dEcNM/im",
+        "created_at": "2026-09-29T13:57:54.3781684Z"
+      },
+      {
+        "id": 10,
+        "student_id_number": "2024-1068080",
+        "name": "Lance Rogelio",
+        "email": "lance.rogelio@nulipa.edu.ph",
+        "role": "student",
+        "status": "active",
+        "account_state": "account_created",
+        "password_hash": "$2a$11$fchLDNT3hBVIYvQgf59.oOOChHPFsrOK/W0q7igy.LtkqwiYzqAg6",
+        "created_at": "2026-09-29T14:05:55.8754290Z"
+      },
+      {
+        "id": 11,
+        "student_id_number": "LIB-2024-005",
+        "name": "Ms. Corazon Reyes",
+        "email": "corazon.reyes@nulipa.edu.ph",
+        "role": "librarian",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM."
+      },
+      {
+        "id": 12,
+        "student_id_number": "ADM-2024-006",
+        "name": "System Administrator",
+        "email": "admin@nulipa.edu.ph",
+        "role": "admin",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00Z",
+        "password_hash": "$2a$10$5YjkvS1HNkG5vAMHQCmMIeByENXurBtGSVbGT5dunSdoK/Oc3hHM."
+      },
+      {
+        "id": 13,
+        "student_id_number": "2024-1086812",
+        "name": "Marjon Bautista",
+        "email": "mendoza.adrian1096@gmail.com",
+        "role": "student",
+        "status": "active",
+        "account_state": "account_created",
+        "password_hash": "$2a$11$ekBGso83swds5VWFXGgRJOkYXATyuYsOp0esTCU..5mHm1A8uh7Va",
+        "created_at": "2026-10-12T15:45:45.9961540Z",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T17:28:56.7908812\u002B00:00"
+      },
+      {
+        "id": 14,
+        "student_id_number": "2024-6767",
+        "name": "John Sander Seat",
+        "email": "johnsanderseat@yahoo.com",
+        "role": "student",
+        "status": "active",
+        "account_state": "account_created",
+        "password_hash": "$2a$11$uDfjct/nkGR1BqB.x8kFyOrJQxEQfvbQtEjGNkXMsRs5N2l2IFbE2",
+        "created_at": "2026-10-12T17:31:04.8065513Z",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T17:32:48.6886302\u002B00:00"
+      },
+      {
+        "id": 15,
+        "student_id_number": "2026-00015",
+        "name": "Adrian Mendoza",
+        "email": "mendoza.adrian1999@gmail.com",
+        "role": "student",
+        "status": "active",
+        "account_state": "account_created",
+        "password_hash": "$2a$11$iss/iT7C0m4/D2DBcLRhS..3k7sxSMQSbybqlN3cxtkQY5bz9NIHW",
+        "created_at": "2026-10-12T18:55:19.4171888Z",
+        "failed_logins": 0,
+        "locked_until": null,
+        "last_login": "2026-10-12T19:15:19.6700155\u002B00:00"
+      }
+    ],
+    "student_profiles": [
+      {
+        "user_id": 5,
+        "program": "BS Information Technology",
+        "year_level": "3rd Year",
+        "curriculum_year": "2023-2027",
+        "average_grade": 1.33,
+        "academic_status": "Dean\u0027s Lister",
+        "enrollment_status": "Regular / Enrolled",
+        "completed_units": 72,
+        "units_remaining": 72,
+        "guidance_clearance_status": "Cleared",
+        "guidance_notes": "Student is in good scholastic and behavioral standing.",
+        "contact_number": "\u002B63 917 123 4567",
+        "address": "Ayala Highway, Lipa City, Batangas",
+        "birth_date": "2004-05-15",
+        "gender": "Female"
+      },
+      {
+        "user_id": 6,
+        "program": "BS Computer Science",
+        "year_level": "2nd Year",
+        "curriculum_year": "2024-2028",
+        "average_grade": 1.75,
+        "academic_status": "Good Standing",
+        "enrollment_status": "Regular / Enrolled",
+        "completed_units": 45,
+        "units_remaining": 99,
+        "guidance_clearance_status": "Cleared",
+        "guidance_notes": "None",
+        "contact_number": "\u002B63 918 987 6543",
+        "address": "Marawoy, Lipa City, Batangas",
+        "birth_date": "2005-02-20",
+        "gender": "Male"
+      },
+      {
+        "user_id": 7,
+        "program": "BS Business Administration",
+        "year_level": "4th Year",
+        "curriculum_year": "2022-2026",
+        "average_grade": 1.2,
+        "academic_status": "President\u0027s Lister",
+        "enrollment_status": "Graduating Regular",
+        "completed_units": 120,
+        "units_remaining": 24,
+        "guidance_clearance_status": "Cleared",
+        "guidance_notes": "Scholastic achievement citation",
+        "contact_number": "\u002B63 920 555 1212",
+        "address": "Tambo, Lipa City, Batangas",
+        "birth_date": "2003-11-10",
+        "gender": "Female"
+      },
+      {
+        "user_id": 8,
+        "program": "BS Information Technology",
+        "year_level": "1st Year",
+        "curriculum_year": "2026-2030",
+        "academic_status": "Good Standing",
+        "enrollment_status": "Active",
+        "completed_units": 0,
+        "units_remaining": 144,
+        "guidance_clearance_status": "Pending",
+        "guidance_notes": "Applicant awaiting payment",
+        "gender": "Unspecified"
+      },
+      {
+        "user_id": 9,
+        "program": "BS Information Technology",
+        "year_level": "1st Year",
+        "curriculum_year": "2026-2030",
+        "academic_status": "Good Standing",
+        "enrollment_status": "Active",
+        "completed_units": 0,
+        "units_remaining": 144,
+        "guidance_clearance_status": "Pending",
+        "guidance_notes": "Applicant awaiting payment",
+        "gender": "Unspecified"
+      },
+      {
+        "user_id": 10,
+        "program": "BS Information Technology",
+        "year_level": "1st Year",
+        "curriculum_year": "2026-2030",
+        "academic_status": "Good Standing",
+        "enrollment_status": "Active",
+        "completed_units": 0,
+        "units_remaining": 144,
+        "guidance_clearance_status": "Pending",
+        "guidance_notes": "Applicant awaiting payment",
+        "gender": "Unspecified"
+      },
+      {
+        "user_id": 13,
+        "program": "BS Information Technology",
+        "year_level": "1st Year",
+        "curriculum_year": "2026-2030",
+        "academic_status": "Good Standing",
+        "enrollment_status": "Active",
+        "completed_units": 0,
+        "units_remaining": 144,
+        "guidance_clearance_status": "Pending",
+        "guidance_notes": "Applicant awaiting payment",
+        "gender": "Unspecified",
+        "contact_number": null
+      },
+      {
+        "user_id": 14,
+        "program": "Architecture",
+        "year_level": "First Year",
+        "curriculum_year": "2026-2030",
+        "academic_status": "Good Standing",
+        "enrollment_status": "Active",
+        "completed_units": 0,
+        "units_remaining": 144,
+        "guidance_clearance_status": "Pending",
+        "guidance_notes": "Applicant awaiting payment",
+        "gender": "Unspecified",
+        "contact_number": null
+      },
+      {
+        "user_id": 15,
+        "program": "BS Business Administration",
+        "year_level": "1st Year",
+        "curriculum_year": "2026-2030",
+        "academic_status": "Good Standing",
+        "enrollment_status": "Active",
+        "completed_units": 0,
+        "units_remaining": 144,
+        "guidance_clearance_status": "Pending",
+        "guidance_notes": "Applicant awaiting payment",
+        "gender": "Unspecified",
+        "contact_number": null
+      }
+    ],
+    "tuition_fee_matrix": [
+      {
+        "id": 1,
+        "program_code": "BSIT",
+        "academic_year": "2025-2026",
+        "tuition_per_unit": 1500.0,
+        "base_miscellaneous_fee": 6500.0,
+        "energy_it_fee": 2500.0,
+        "library_fee": 1200.0,
+        "registration_fee": 800.0
+      },
+      {
+        "id": 2,
+        "program_code": "BSCS",
+        "academic_year": "2025-2026",
+        "tuition_per_unit": 1550.0,
+        "base_miscellaneous_fee": 6500.0,
+        "energy_it_fee": 2500.0,
+        "library_fee": 1200.0,
+        "registration_fee": 800.0
+      },
+      {
+        "id": 3,
+        "program_code": "BSBA",
+        "academic_year": "2025-2026",
+        "tuition_per_unit": 1350.0,
+        "base_miscellaneous_fee": 5500.0,
+        "energy_it_fee": 1800.0,
+        "library_fee": 1200.0,
+        "registration_fee": 800.0
+      }
+    ],
+    "subjects": [
+      {
+        "id": 101,
+        "subject_code": "IT311",
+        "subject_name": "Advanced Web Systems and Architecture",
+        "units": 3,
+        "lec_hours": 2,
+        "lab_hours": 3,
+        "has_lab": true,
+        "lab_fee_amount": 1800.0,
+        "prerequisites": "IT211",
+        "curriculum_year": "2024-2025",
+        "department": "CCIT"
+      },
+      {
+        "id": 102,
+        "subject_code": "IT312",
+        "subject_name": "Database Administration and Data Warehousing",
+        "units": 3,
+        "lec_hours": 2,
+        "lab_hours": 3,
+        "has_lab": true,
+        "lab_fee_amount": 1800.0,
+        "prerequisites": "IT212",
+        "curriculum_year": "2024-2025",
+        "department": "CCIT"
+      },
+      {
+        "id": 103,
+        "subject_code": "IT313",
+        "subject_name": "Information Assurance and Security 1",
+        "units": 3,
+        "lec_hours": 3,
+        "lab_hours": 0,
+        "has_lab": false,
+        "lab_fee_amount": 0.0,
+        "prerequisites": "IT213",
+        "curriculum_year": "2024-2025",
+        "department": "CCIT"
+      }
+    ],
+    "class_offerings": [
+      {
+        "id": 501,
+        "subject_id": 101,
+        "section_code": "IT31S1",
+        "room": "CLAB-302",
+        "days_of_week": "MW",
+        "start_time": "08:00:00",
+        "end_time": "10:30:00",
+        "instructor_id": 3,
+        "instructor_name": "Prof. Alan Turing",
+        "max_capacity": 40,
+        "enrolled_count": 35,
+        "school_year": "2025-2026",
+        "semester": "1st Semester"
+      },
+      {
+        "id": 502,
+        "subject_id": 102,
+        "section_code": "IT31S2",
+        "room": "CLAB-304",
+        "days_of_week": "TTH",
+        "start_time": "10:30:00",
+        "end_time": "13:00:00",
+        "instructor_id": 3,
+        "instructor_name": "Prof. Alan Turing",
+        "max_capacity": 40,
+        "enrolled_count": 32,
+        "school_year": "2025-2026",
+        "semester": "1st Semester"
+      },
+      {
+        "id": 503,
+        "subject_id": 103,
+        "section_code": "IT31S3",
+        "room": "LEC-405",
+        "days_of_week": "F",
+        "start_time": "09:00:00",
+        "end_time": "12:00:00",
+        "instructor_id": 3,
+        "instructor_name": "Prof. Alan Turing",
+        "max_capacity": 45,
+        "enrolled_count": 38,
+        "school_year": "2025-2026",
+        "semester": "1st Semester"
+      }
+    ],
+    "enrollments": [
+      {
+        "id": 1001,
+        "student_id": 5,
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "total_units": 9,
+        "total_assessment_amount": 28100.0,
+        "status": "enrolled",
+        "validated_by_registrar_id": 1,
+        "validated_at": "2025-08-15T09:30:00Z",
+        "created_at": "2025-08-10T14:20:00Z"
+      },
+      {
+        "id": 1002,
+        "student_id": 8,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "status": "registered",
+        "created_at": "2026-09-29T13:47:36.8183818Z",
+        "registered_at": "2026-09-29T13:49:31.5550321Z"
+      },
+      {
+        "id": 1003,
+        "student_id": 9,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "status": "registered",
+        "created_at": "2026-09-29T13:57:54.3781684Z",
+        "registered_at": "2026-09-29T13:59:49.1714154Z"
+      },
+      {
+        "id": 1004,
+        "student_id": 10,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "status": "registered",
+        "created_at": "2026-09-29T14:05:55.8754290Z",
+        "registered_at": "2026-09-29T14:16:42.2412844Z"
+      },
+      {
+        "id": 1005,
+        "student_id": 13,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "status": "registered",
+        "created_at": "2026-10-12T15:45:45.9961540Z",
+        "registered_at": "2026-10-12T15:46:50.3730980Z"
+      },
+      {
+        "id": 1006,
+        "student_id": 14,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "status": "registered",
+        "created_at": "2026-10-12T17:31:04.8065513Z",
+        "registered_at": "2026-10-12T17:32:40.6203004Z"
+      },
+      {
+        "id": 1007,
+        "student_id": 15,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "status": "registered",
+        "created_at": "2026-10-12T18:55:19.4171888Z",
+        "registered_at": "2026-10-12T19:07:47.2206157Z"
+      }
+    ],
+    "enrolled_subjects": [
+      {
+        "id": 2001,
+        "enrollment_id": 1001,
+        "student_id": 5,
+        "class_offering_id": 501,
+        "subject_code": "IT311",
+        "subject_name": "Advanced Web Systems and Architecture",
+        "units": 3,
+        "status": "enrolled"
+      },
+      {
+        "id": 2002,
+        "enrollment_id": 1001,
+        "student_id": 5,
+        "class_offering_id": 502,
+        "subject_code": "IT312",
+        "subject_name": "Database Administration and Data Warehousing",
+        "units": 3,
+        "status": "enrolled"
+      },
+      {
+        "id": 2003,
+        "enrollment_id": 1001,
+        "student_id": 5,
+        "class_offering_id": 503,
+        "subject_code": "IT313",
+        "subject_name": "Information Assurance and Security 1",
+        "units": 3,
+        "status": "enrolled"
+      }
+    ],
+    "fee_assessments": [
+      {
+        "id": 8001,
+        "assessment_number": "OAO-2025-001045",
+        "enrollment_id": 1001,
+        "student_id": 5,
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "total_units": 9,
+        "tuition_fee": 13500.0,
+        "miscellaneous_fees": 11000.0,
+        "laboratory_fees": 3600.0,
+        "discounts_or_scholarship": 0.0,
+        "total_net_assessment": 28100.0,
+        "total_paid": 10000.0,
+        "remaining_balance": 18100.0,
+        "payment_plan": "Installment (3 Terms)",
+        "status": "Partially Paid"
+      },
+      {
+        "id": 8002,
+        "enrollment_id": 1002,
+        "student_id": 8,
+        "total_net_assessment": 10000,
+        "total_paid": 10000,
+        "remaining_balance": 0,
+        "status": "Paid"
+      },
+      {
+        "id": 8003,
+        "enrollment_id": 1003,
+        "student_id": 9,
+        "total_net_assessment": 10000,
+        "total_paid": 10000,
+        "remaining_balance": 0,
+        "status": "Paid"
+      },
+      {
+        "id": 8004,
+        "enrollment_id": 1004,
+        "student_id": 10,
+        "total_net_assessment": 10000,
+        "total_paid": 10000,
+        "remaining_balance": 0,
+        "status": "Paid"
+      },
+      {
+        "id": 8005,
+        "enrollment_id": 1005,
+        "student_id": 13,
+        "total_net_assessment": 10000,
+        "total_paid": 10000,
+        "remaining_balance": 0,
+        "status": "Paid"
+      },
+      {
+        "id": 8006,
+        "enrollment_id": 1006,
+        "student_id": 14,
+        "total_net_assessment": 10000,
+        "total_paid": 10000,
+        "remaining_balance": 0,
+        "status": "Paid"
+      },
+      {
+        "id": 8007,
+        "enrollment_id": 1007,
+        "student_id": 15,
+        "total_net_assessment": 10000,
+        "total_paid": 10000,
+        "remaining_balance": 0,
+        "status": "Paid"
+      }
+    ],
+    "installment_schedules": [
+      {
+        "id": 9001,
+        "assessment_id": 8001,
+        "student_id": 5,
+        "term_type": "Downpayment",
+        "due_date": "2025-08-15",
+        "amount_due": 10000.0,
+        "amount_paid": 10000.0,
+        "status": "Paid",
+        "cleared_for_exam": true
+      },
+      {
+        "id": 9002,
+        "assessment_id": 8001,
+        "student_id": 5,
+        "term_type": "Midterm Installment",
+        "due_date": "2025-10-15",
+        "amount_due": 9050.0,
+        "amount_paid": 0.0,
+        "status": "Pending",
+        "cleared_for_exam": false
+      },
+      {
+        "id": 9003,
+        "assessment_id": 8001,
+        "student_id": 5,
+        "term_type": "Final Installment",
+        "due_date": "2025-12-10",
+        "amount_due": 9050.0,
+        "amount_paid": 0.0,
+        "status": "Pending",
+        "cleared_for_exam": false
+      }
+    ],
+    "student_payments": [
+      {
+        "id": 3001,
+        "student_id": 5,
+        "assessment_id": 8001,
+        "installment_id": 9001,
+        "receipt_no": "OR-2025-99812",
+        "amount": 10000.0,
+        "pay_date": "2025-08-14T11:20:00Z",
+        "payment_method": "Maya",
+        "payment_category": "Downpayment",
+        "status": "Paid",
+        "description": "Downpayment for 1st Sem 2025-2026 BSIT Enrollment",
+        "processed_by_user_id": 2,
+        "verification_token": "PAY-SEC-TOKEN-7782194"
+      },
+      {
+        "id": 3002,
+        "student_id": 8,
+        "assessment_id": 8002,
+        "receipt_no": "REG-OR-20260929134832",
+        "amount": 10000,
+        "pay_date": "2026-09-29T13:48:32.4912026Z",
+        "payment_method": "Registrar Demo",
+        "payment_category": "Downpayment",
+        "status": "Paid"
+      },
+      {
+        "id": 3003,
+        "student_id": 9,
+        "assessment_id": 8003,
+        "receipt_no": "REG-OR-20260929135839",
+        "amount": 10000,
+        "pay_date": "2026-09-29T13:58:39.1598370Z",
+        "payment_method": "Registrar Demo",
+        "payment_category": "Downpayment",
+        "status": "Paid"
+      },
+      {
+        "id": 3004,
+        "student_id": 10,
+        "assessment_id": 8004,
+        "receipt_no": "REG-OR-20260929140609",
+        "amount": 10000,
+        "pay_date": "2026-09-29T14:06:09.9569557Z",
+        "payment_method": "Registrar Demo",
+        "payment_category": "Downpayment",
+        "status": "Paid"
+      },
+      {
+        "id": 3005,
+        "student_id": 13,
+        "assessment_id": 8005,
+        "receipt_no": "REG-OR-20261012154625",
+        "amount": 10000,
+        "pay_date": "2026-10-12T15:46:25.6381421Z",
+        "payment_method": "Registrar Demo",
+        "payment_category": "Downpayment",
+        "status": "Paid"
+      },
+      {
+        "id": 3006,
+        "student_id": 14,
+        "assessment_id": 8006,
+        "receipt_no": "REG-OR-20261012173237",
+        "amount": 10000,
+        "pay_date": "2026-10-12T17:32:37.7250121Z",
+        "payment_method": "Registrar Demo",
+        "payment_category": "Downpayment",
+        "status": "Paid"
+      },
+      {
+        "id": 3007,
+        "student_id": 15,
+        "assessment_id": 8007,
+        "receipt_no": "REG-OR-20261012185632",
+        "amount": 10000,
+        "pay_date": "2026-10-12T18:56:32.4142698Z",
+        "payment_method": "Registrar Demo",
+        "payment_category": "Downpayment",
+        "status": "Paid"
+      }
+    ],
+    "student_clearance": [
+      {
+        "id": 4001,
+        "student_id": 5,
+        "department_name": "Finance Office",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "status": "Cleared",
+        "remarks": "Downpayment settled on schedule",
+        "cleared_by": "Roberto Gomez",
+        "cleared_at": "2025-08-14T11:25:00Z"
+      },
+      {
+        "id": 4002,
+        "student_id": 5,
+        "department_name": "Registrar Office",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "status": "Cleared",
+        "remarks": "COR Validated and 201 Credentials verified",
+        "cleared_by": "Dr. Rosalinda Santos",
+        "cleared_at": "2025-08-15T09:35:00Z"
+      },
+      {
+        "id": 4003,
+        "student_id": 5,
+        "department_name": "Guidance Office",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "status": "Cleared",
+        "remarks": "Good standing, no disciplinary infractions",
+        "cleared_by": "Ms. Maria Clara",
+        "cleared_at": "2025-08-10T10:00:00Z"
+      },
+      {
+        "id": 4004,
+        "student_id": 5,
+        "department_name": "University Library Department",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "status": "Cleared",
+        "remarks": "No unreturned books or outstanding fines",
+        "cleared_by": "Head Librarian",
+        "cleared_at": "2025-08-10T10:30:00Z"
+      }
+    ],
+    "document_credentials": [
+      {
+        "id": 5001,
+        "student_id": 5,
+        "document_name": "Form 137",
+        "status": "Verified",
+        "submission_date": "2023-07-10",
+        "verification_status": "Verified",
+        "verified_by_user_id": 1,
+        "remarks": "Complete secondary scholastic record"
+      },
+      {
+        "id": 5002,
+        "student_id": 5,
+        "document_name": "Form 138",
+        "status": "Verified",
+        "submission_date": "2023-07-10",
+        "verification_status": "Verified",
+        "verified_by_user_id": 1,
+        "remarks": "High school report card on file"
+      },
+      {
+        "id": 5003,
+        "student_id": 5,
+        "document_name": "Birth Certificate",
+        "status": "Verified",
+        "submission_date": "2023-07-10",
+        "verification_status": "Verified",
+        "verified_by_user_id": 1,
+        "remarks": "PSA authenticated copy"
+      },
+      {
+        "id": 5004,
+        "student_id": 5,
+        "document_name": "Good Moral Certificate",
+        "status": "Verified",
+        "submission_date": "2023-07-10",
+        "verification_status": "Verified",
+        "verified_by_user_id": 1,
+        "remarks": "Clean disciplinary record"
+      },
+      {
+        "id": 5005,
+        "student_id": 8,
+        "document_type": "Form 137",
+        "status": "Missing"
+      },
+      {
+        "id": 5006,
+        "student_id": 8,
+        "document_type": "Form 138",
+        "status": "Missing"
+      },
+      {
+        "id": 5007,
+        "student_id": 8,
+        "document_type": "Birth Certificate",
+        "status": "Missing"
+      },
+      {
+        "id": 5008,
+        "student_id": 8,
+        "document_type": "Good Moral",
+        "status": "Missing"
+      },
+      {
+        "id": 5009,
+        "student_id": 8,
+        "document_type": "Transcript from Previous School",
+        "status": "Missing"
+      },
+      {
+        "id": 5010,
+        "student_id": 8,
+        "document_type": "Medical Clearance",
+        "status": "Missing"
+      },
+      {
+        "id": 5011,
+        "student_id": 9,
+        "document_type": "Form 137",
+        "status": "Missing"
+      },
+      {
+        "id": 5012,
+        "student_id": 9,
+        "document_type": "Form 138",
+        "status": "Missing"
+      },
+      {
+        "id": 5013,
+        "student_id": 9,
+        "document_type": "Birth Certificate",
+        "status": "Missing"
+      },
+      {
+        "id": 5014,
+        "student_id": 9,
+        "document_type": "Good Moral",
+        "status": "Missing"
+      },
+      {
+        "id": 5015,
+        "student_id": 9,
+        "document_type": "Transcript from Previous School",
+        "status": "Missing"
+      },
+      {
+        "id": 5016,
+        "student_id": 9,
+        "document_type": "Medical Clearance",
+        "status": "Missing"
+      },
+      {
+        "id": 5017,
+        "student_id": 10,
+        "document_type": "Form 137",
+        "status": "Missing"
+      },
+      {
+        "id": 5018,
+        "student_id": 10,
+        "document_type": "Form 138",
+        "status": "Missing"
+      },
+      {
+        "id": 5019,
+        "student_id": 10,
+        "document_type": "Birth Certificate",
+        "status": "Missing"
+      },
+      {
+        "id": 5020,
+        "student_id": 10,
+        "document_type": "Good Moral",
+        "status": "Missing"
+      },
+      {
+        "id": 5021,
+        "student_id": 10,
+        "document_type": "Transcript from Previous School",
+        "status": "Missing"
+      },
+      {
+        "id": 5022,
+        "student_id": 10,
+        "document_type": "Medical Clearance",
+        "status": "Missing"
+      },
+      {
+        "id": 5023,
+        "student_id": 13,
+        "document_type": "Form 137",
+        "status": "Missing"
+      },
+      {
+        "id": 5024,
+        "student_id": 13,
+        "document_type": "Form 138",
+        "status": "Missing"
+      },
+      {
+        "id": 5025,
+        "student_id": 13,
+        "document_type": "Birth Certificate",
+        "status": "Missing"
+      },
+      {
+        "id": 5026,
+        "student_id": 13,
+        "document_type": "Good Moral",
+        "status": "Missing"
+      },
+      {
+        "id": 5027,
+        "student_id": 13,
+        "document_type": "Transcript from Previous School",
+        "status": "Missing"
+      },
+      {
+        "id": 5028,
+        "student_id": 13,
+        "document_type": "Medical Clearance",
+        "status": "Missing"
+      },
+      {
+        "id": 5029,
+        "student_id": 14,
+        "document_type": "Form 137",
+        "status": "Missing"
+      },
+      {
+        "id": 5030,
+        "student_id": 14,
+        "document_type": "Form 138",
+        "status": "Missing"
+      },
+      {
+        "id": 5031,
+        "student_id": 14,
+        "document_type": "Birth Certificate",
+        "status": "Missing"
+      },
+      {
+        "id": 5032,
+        "student_id": 14,
+        "document_type": "Good Moral",
+        "status": "Missing"
+      },
+      {
+        "id": 5033,
+        "student_id": 14,
+        "document_type": "Transcript from Previous School",
+        "status": "Missing"
+      },
+      {
+        "id": 5034,
+        "student_id": 14,
+        "document_type": "Medical Clearance",
+        "status": "Missing"
+      },
+      {
+        "id": 5035,
+        "student_id": 15,
+        "document_type": "Form 137",
+        "status": "Missing"
+      },
+      {
+        "id": 5036,
+        "student_id": 15,
+        "document_type": "Form 138",
+        "status": "Missing"
+      },
+      {
+        "id": 5037,
+        "student_id": 15,
+        "document_type": "Birth Certificate",
+        "status": "Missing"
+      },
+      {
+        "id": 5038,
+        "student_id": 15,
+        "document_type": "Good Moral",
+        "status": "Missing"
+      },
+      {
+        "id": 5039,
+        "student_id": 15,
+        "document_type": "Transcript from Previous School",
+        "status": "Missing"
+      },
+      {
+        "id": 5040,
+        "student_id": 15,
+        "document_type": "Medical Clearance",
+        "status": "Missing"
+      }
+    ],
+    "transcript_requests": [
+      {
+        "id": 6001,
+        "student_id": 5,
+        "tracking_token": "MSU-TOR-2025-9A82",
+        "document_type": "Official Transcript of Records (TOR)",
+        "purpose": "Scholarship Application",
+        "fee_amount": 150.0,
+        "payment_status": "Paid",
+        "payment_receipt_no": "OR-DOC-2025-104",
+        "processing_status": "Ready for Release",
+        "request_date": "2025-09-10T10:15:00Z",
+        "released_date": null
+      }
+    ],
+    "grades": [
+      {
+        "id": 7001,
+        "student_id": 5,
+        "enrolled_subject_id": 2001,
+        "subject_code": "IT311",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "midterm_grade": 1.25,
+        "final_grade": 1.25,
+        "is_inc": false,
+        "inc_reason": null,
+        "remarks": "Passed",
+        "encoded_by_faculty_id": 3,
+        "encoded_at": "2025-12-15T15:00:00Z"
+      },
+      {
+        "id": 7002,
+        "student_id": 5,
+        "enrolled_subject_id": 2002,
+        "subject_code": "IT312",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "midterm_grade": 1.5,
+        "final_grade": 1.5,
+        "is_inc": false,
+        "inc_reason": null,
+        "remarks": "Passed",
+        "encoded_by_faculty_id": 3,
+        "encoded_at": "2025-12-15T15:10:00Z"
+      },
+      {
+        "id": 7003,
+        "student_id": 5,
+        "enrolled_subject_id": 2003,
+        "subject_code": "IT313",
+        "school_year": "2025-2026",
+        "semester": "1st Semester",
+        "midterm_grade": 1.25,
+        "final_grade": 1.25,
+        "is_inc": false,
+        "inc_reason": null,
+        "remarks": "Passed",
+        "encoded_by_faculty_id": 3,
+        "encoded_at": "2025-12-15T15:20:00Z"
+      }
+    ],
+    "library_books": [
+      {
+        "id": 1,
+        "isbn": "978-0132350884",
+        "title": "Clean Code: A Handbook of Agile Software Craftsmanship",
+        "author": "Robert C. Martin",
+        "call_number": "QA 76.76 .C64 M37 2008",
+        "category": "Software Engineering",
+        "total_copies": 5,
+        "available_copies": 3,
+        "shelf_location": "Main Stacks - Section B4"
+      },
+      {
+        "id": 2,
+        "isbn": "978-0201633610",
+        "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
+        "author": "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides",
+        "call_number": "QA 76.64 .D47 1994",
+        "category": "Computer Science",
+        "total_copies": 4,
+        "available_copies": 2,
+        "shelf_location": "Main Stacks - Section B4"
+      },
+      {
+        "id": 3,
+        "isbn": "978-0073523323",
+        "title": "Database System Concepts (7th Edition)",
+        "author": "Abraham Silberschatz, Henry F. Korth, S. Sudarshan",
+        "call_number": "QA 76.9 .D3 S56 2019",
+        "category": "Database Systems",
+        "total_copies": 6,
+        "available_copies": 4,
+        "shelf_location": "Main Stacks - Section C2"
+      },
+      {
+        "id": 4,
+        "isbn": "978-0134092669",
+        "title": "Computer Networks (5th Edition)",
+        "author": "Andrew S. Tanenbaum, David J. Wetherall",
+        "call_number": "TK 5105.5 .T36 2011",
+        "category": "Networking \u0026 Security",
+        "total_copies": 4,
+        "available_copies": 3,
+        "shelf_location": "Main Stacks - Section D1"
+      },
+      {
+        "id": 5,
+        "isbn": "978-0262033848",
+        "title": "Introduction to Algorithms (3rd Edition)",
+        "author": "Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford Stein",
+        "call_number": "QA 76.6 .C662 2009",
+        "category": "Algorithms",
+        "total_copies": 5,
+        "available_copies": 1,
+        "shelf_location": "Main Stacks - Section A1"
+      }
+    ],
+    "book_loans": [
+      {
+        "id": 1,
+        "book_id": 3,
+        "student_id": 5,
+        "borrow_date": "2025-09-15T09:30:00Z",
+        "due_date": "2025-09-22T17:00:00Z",
+        "return_date": null,
+        "condition_on_return": null,
+        "status": "Borrowed",
+        "fine_amount": 0.0,
+        "fine_status": "None",
+        "remarks": "Regular semestral loan"
+      },
+      {
+        "id": 2,
+        "book_id": 1,
+        "student_id": 5,
+        "borrow_date": "2025-08-20T10:00:00Z",
+        "due_date": "2025-08-27T17:00:00Z",
+        "return_date": "2025-08-26T14:00:00Z",
+        "condition_on_return": "Good",
+        "status": "Returned",
+        "fine_amount": 0.0,
+        "fine_status": "None",
+        "remarks": "Returned in good condition"
+      }
+    ],
+    "library_fines": [],
+    "certificate_of_registrations": [
+      {
+        "id": 1,
+        "student_id": 8,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "payment_status": "Paid",
+        "registration_date": "2026-09-29T13:49:31.5555116Z",
+        "status": "Demo COR"
+      },
+      {
+        "id": 2,
+        "student_id": 9,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "payment_status": "Paid",
+        "registration_date": "2026-09-29T13:58:41.1202714Z",
+        "status": "Demo COR"
+      },
+      {
+        "id": 3,
+        "student_id": 10,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "payment_status": "Paid",
+        "registration_date": "2026-09-29T14:06:11.8125966Z",
+        "status": "Demo COR"
+      },
+      {
+        "id": 4,
+        "student_id": 13,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "payment_status": "Paid",
+        "registration_date": "2026-10-12T15:46:50.3734030Z",
+        "status": "Demo COR"
+      },
+      {
+        "id": 5,
+        "student_id": 14,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "payment_status": "Paid",
+        "registration_date": "2026-10-12T17:32:40.6205763Z",
+        "status": "Demo COR"
+      },
+      {
+        "id": 6,
+        "student_id": 15,
+        "school_year": "2026-2027",
+        "semester": "1st Semester",
+        "total_units": 0,
+        "payment_status": "Paid",
+        "registration_date": "2026-10-12T18:56:41.7299754Z",
+        "status": "Demo COR"
+      }
+    ],
+    "add_drop_requests": [],
+    "overload_waiver_requests": [],
+    "course_shifting_requests": [],
+    "completion_revision_requests": [],
+    "transferee_credited_subjects": [],
+    "nstp_serial_numbers": [],
+    "ched_special_orders": [],
+    "scholarships": [
+      {
+        "id": 1,
+        "code": "ACAD-100",
+        "name": "Presidential Academic Excellence Grant",
+        "coverage": "100% Tuition \u0026 Misc Discount",
+        "budget": 455000,
+        "status": "Active"
+      },
+      {
+        "id": 2,
+        "code": "ACAD-50",
+        "name": "University Academic Honors Scholarship",
+        "coverage": "50% Tuition Discount",
+        "budget": 448000,
+        "status": "Active"
+      },
+      {
+        "id": 3,
+        "code": "ATH-100",
+        "name": "Varsity Athlete Athletic Scholarship",
+        "coverage": "100% Tuition \u002B Uniform Stipend",
+        "budget": 585000,
+        "status": "Active"
+      },
+      {
+        "id": 4,
+        "code": "EMP-DEP",
+        "name": "Faculty \u0026 Staff Dependent Benefit",
+        "coverage": "75% Tuition Discount",
+        "budget": 288000,
+        "status": "Active"
+      },
+      {
+        "id": 5,
+        "code": "SIBL-10",
+        "name": "Sibling Enrollment Discount",
+        "coverage": "10% Tuition Discount",
+        "budget": 112000,
+        "status": "Active"
+      }
+    ],
+    "scholarship_applications": [],
+    "attendance_logs": [],
+    "assignments": [
+      {
+        "id": 1,
+        "status": "Published",
+        "created_at": "2026-10-12T19:06:25.9283837Z",
+        "created_by": 3,
+        "class_offering_id": 501,
+        "title": "Java Programming",
+        "instructions": "Create a calculator using java programming language.",
+        "type": "Lab",
+        "max_score": 100,
+        "due_date": "2026-10-22T03:06:00.0000000Z",
+        "published_at": "2026-10-12T19:07:00.4175871Z"
+      }
+    ],
+    "assignment_submissions": [
+      {
+        "id": 1,
+        "assignment_id": 1,
+        "student_id": 5,
+        "text": "idk",
+        "submitted_at": "2026-10-12T19:18:07.4164220Z",
+        "is_late": false,
+        "status": "Graded",
+        "score": 0,
+        "graded_at": "2026-10-12T19:20:48.0623602Z",
+        "graded_by": 3,
+        "feedback": "wrong answer"
+      }
+    ],
+    "guidance_requests": [
+      {
+        "created_at": "2026-10-12T17:24:52.0282842Z",
+        "id": 1,
+        "student_id": 6,
+        "subject": "Academic: Java Programming",
+        "details": "Di ko na po kaya",
+        "safety_valve_text": null,
+        "urgency": "Urgent",
+        "status": "Resolved",
+        "assigned_counselor_id": null,
+        "idempotency_key": null,
+        "row_version": "Aw=="
+      },
+      {
+        "id": 2,
+        "student_id": 15,
+        "subject": "Academic Stress",
+        "category": "Academic Counseling",
+        "details": "I cant study properly",
+        "safety_valve_text": null,
+        "urgency": "Priority",
+        "status": "InProgress",
+        "assigned_counselor_id": null,
+        "idempotency_key": null,
+        "row_version": "Ag==",
+        "created_at": "2026-10-12T18:59:18.8149327Z"
+      }
+    ],
+    "student_guidance_tickets": [],
+    "counseling_case_notes": [],
+    "guidance_appointments": [],
+    "library_reservations": [],
+    "activity_log": [
+      {
+        "id": 1,
+        "user_id": 15,
+        "message": "Submitted Guidance ticket (Academic Counseling: Academic Stress) via Student Portal",
+        "created_at": "2026-10-12T18:59:18.8394810Z"
+      },
+      {
+        "id": 2,
+        "user_id": 5,
+        "message": "Submitted assignment #1",
+        "created_at": "2026-10-12T19:18:07.4382867Z"
+      }
+    ],
+    "audit_events": [],
+    "refresh_tokens": [],
+    "fee_adjustments": []
+  }
+}

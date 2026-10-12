@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Submit Request - National University Lipa Guidance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">GUIDANCE SYSTEM</div>
+        <div class="brand-sub">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE GUIDANCE MODULES</div>
+      <a href="/index.html">
+        <span class="ic">🏠</span> Overview
+      </a>
+      <a href="/dashboard.html">
+        <span class="ic">📊</span> Counselor Dashboard
+      </a>
+      <a href="/students.html">
+        <span class="ic">🗂️</span> Student Records
+      </a>
+      <a href="/triage.html">
+        <span class="ic">⚖️</span> Triage Queue
+      </a>
+      <a href="/appointments.html">
+        <span class="ic">📅</span> Appointments
+      </a>
+      <a href="/case-notes.html">
+        <span class="ic">🔒</span> Case Notes
+      </a>
+      <a href="/monitoring.html">
+        <span class="ic">👁️</span> Student Monitoring
+      </a>
+
+      <div class="nav-section-title">STUDENT SERVICES</div>
+      <a href="/request.html" class="active">
+        <span class="ic">📝</span> Submit Request
+      </a>
+      <a href="/resources.html">
+        <span class="ic">📚</span> Support Resources
+      </a>
+
+      <div class="nav-section-title">ADMINISTRATION</div>
+      <a href="/admin.html">
+        <span class="ic">⚙️</span> Department Settings
+      </a>
+      <a href="/openapi/v1.json" target="_blank">
+        <span class="ic">🔌</span> API Documentation
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">MC</div>
+        <div class="user-info">
+          <div class="user-name">Ms. Maya Chen</div>
+          <div class="user-role">Guidance Counselor</div>
+        </div>
+      </div>
+      <a class="guidance-logout" href="/Logout">Log out</a>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY 2026-2027 · 1st Semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/openapi/v1.json" target="_blank" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> Maya Chen (Counselor)</span>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-heading-row">
+        <div>
+          <h1 class="dash-heading">Submit Guidance Request</h1>
+          <p class="dash-subheading">Confidential intake for counseling appointments, academic advising, and wellness interventions</p>
+        </div>
+      </div>
+
+      <div class="dash-panel" style="max-width:760px;">
+        <div class="dash-panel-header">
+          <h2><span class="ic">📝</span> Guidance Intake Form</h2>
+          <span class="badge badge-active">Confidential</span>
+        </div>
+
+        <form class="surface-form" data-request-form style="border:none;padding:0;box-shadow:none;">
+          <div class="form-group">
+            <label class="form-label">Student ID</label>
+            <input class="form-control" data-student-id type="number" required placeholder="Campus student record ID">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input class="form-control" data-request-subject required placeholder="What do you need assistance with?">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select" data-request-category required>
+              <option value="">Select a guidance category</option>
+              <option>Academic</option>
+              <option>Personal &amp; Emotional Wellness</option>
+              <option>Career &amp; Internship Advising</option>
+              <option>Financial &amp; Scholarship Endorsement</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Details</label>
+            <textarea class="form-control" data-request-details required rows="6" placeholder="Provide background or details so a counselor can prepare for your session..."></textarea>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" data-request-urgent>
+            <span><strong>Urgent Attention:</strong> Check if this request requires immediate same-day safety or crisis support</span>
+          </label>
+
+          <div style="display:flex;align-items:center;gap:16px;margin-top:20px;">
+            <button class="btn-primary primary" type="submit"><span class="ic">📨</span> Submit Guidance Request</button>
+            <span class="muted" data-form-status style="margin:0;font-size:12px;color:var(--text-muted);"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/guidance-app.js"></script>
+</body>
+</html>

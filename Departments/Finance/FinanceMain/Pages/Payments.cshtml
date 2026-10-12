@@ -1,0 +1,110 @@
+@page
+@model FinanceMain.Pages.PaymentsModel
+@{
+    ViewData["Title"] = "Payments";
+    Layout = "_FinanceAdminLayout";
+    var totalAmountPaid = Model.Payments.Sum(p => p.AmountPaid);
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Payments &amp; Collections Ledger</h1>
+        <p class="fin-subtitle">Official payment transaction history &middot; Automated receipt generation &middot; National University Lipa</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <a href="/Billing" class="btn-fin-outline">📑 Billing Ledger</a>
+        <button type="button" onclick="window.print()" class="btn-fin-outline">🖨️ Print Log</button>
+    </div>
+</div>
+
+<!-- Mini Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-label">Total Collections Recorded</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);font-size:22px;">@totalAmountPaid.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Across @Model.TotalCount official receipts issued</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-label">Verified Receipt Count</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);font-size:22px;">@Model.TotalCount Receipts</div>
+            <div class="fin-stat-sub">Synchronized with Student Portal and Registrar</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="fin-stat-card accent-gold">
+            <div class="fin-stat-label">Payment Channels Accepted</div>
+            <div class="fin-stat-value" style="color:var(--fin-navy);font-size:16px;margin-top:8px;">
+                GCash &middot; Maya &middot; BDO/BPI &middot; OTC Cash
+            </div>
+            <div class="fin-stat-sub">Multi-channel cashier reconciliation</div>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="fin-filters">
+    <input type="search" name="search" class="fin-search" placeholder="Search student name, OR number, or bill #..." />
+    <button type="submit" class="btn-fin-navy">Filter Receipts</button>
+</form>
+
+<div class="fin-card">
+    <div class="fin-card-head">
+        <span class="fin-card-head-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="8" rx="1"/><path d="M2 7h12"/></svg>
+            Official University Payment Transactions
+        </span>
+        <span class="fin-card-badge">@Model.TotalCount Verified Transactions</span>
+    </div>
+    <div class="table-responsive">
+        <table class="fin-table">
+            <thead>
+                <tr>
+                    <th>Official Receipt (OR) #</th>
+                    <th>Student Name &amp; Program</th>
+                    <th>Assessment Ref</th>
+                    <th style="text-align:right;">Amount Paid</th>
+                    <th>Channel / Method</th>
+                    <th>Transaction Date</th>
+                    <th style="text-align:center;">Receipt Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Payments)
+                {
+                    <tr>
+                        <td class="fin-mono">
+                            <a href="/Receipt?paymentNumber=@p.PaymentNumber" class="fin-link" title="View Printable Receipt">
+                                @p.PaymentNumber
+                            </a>
+                        </td>
+                        <td>
+                            <div style="font-weight:700;">@p.StudentDisplayName</div>
+                            <div style="font-size:11px;color:var(--fin-muted);">@p.Program</div>
+                        </td>
+                        <td class="fin-mono">
+                            <a href="/Invoice/@p.FeeAssessmentId" class="fin-link">@p.AssessmentNumber</a>
+                        </td>
+                        <td style="text-align:right;font-weight:700;color:var(--fin-green);font-size:14px;">
+                            @p.AmountPaid.ToString("₱#,##0.00")
+                        </td>
+                        <td>
+                            <span class="badge-status badge-status-processing" style="font-size:11px;">@p.PaymentMethod</span>
+                        </td>
+                        <td style="color:var(--fin-muted);font-size:12px;">@p.PaymentDate.ToString("MMM d, yyyy · hh:mm tt")</td>
+                        <td style="text-align:center;">
+                            <a href="/Receipt?paymentNumber=@p.PaymentNumber" target="_blank" class="btn-fin-outline" style="padding:4px 10px;font-size:11.5px;">
+                                🧾 View Receipt
+                            </a>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Payments.Any())
+                {
+                    <tr><td colspan="7" style="text-align:center;color:var(--fin-muted);padding:36px;">No payments recorded yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

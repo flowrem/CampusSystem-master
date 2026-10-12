@@ -1,0 +1,394 @@
+@page
+@model RegistrarMain.Pages.ClassSchedulingModel
+@{
+    ViewData["Title"] = "Class Scheduling & Course Management";
+    ViewData["ActivePage"] = "ClassScheduling";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">🏫 Class Scheduling &amp; Curriculum Catalog</h1>
+    <p class="dash-subheading">Manage curriculum subjects, class offerings, room allocations, conflict checks, and class rosters.</p>
+  </div>
+  <div>
+    @if (Model.ActiveTab == "offerings")
+    {
+      <button class="btn btn-primary" onclick="document.getElementById('addOfferingModal').style.display='block'">➕ Schedule New Class</button>
+    }
+    @if (Model.ActiveTab == "subjects")
+    {
+      <button class="btn btn-primary" onclick="document.getElementById('addSubjectModal').style.display='block'">➕ Add Course Subject</button>
+    }
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav">
+  <a href="/ClassScheduling?tab=offerings" class="tab-link @(Model.ActiveTab == "offerings" ? "active" : "")">
+    <span>📅 Class Schedule Offerings (@Model.OfferingsList.Count)</span>
+  </a>
+  <a href="/ClassScheduling?tab=subjects" class="tab-link @(Model.ActiveTab == "subjects" ? "active" : "")">
+    <span>📚 Curriculum Subjects Catalog (@Model.SubjectsList.Count)</span>
+  </a>
+  <a href="/ClassScheduling?tab=roster" class="tab-link @(Model.ActiveTab == "roster" ? "active" : "")">
+    <span>👥 Section Class Roster Viewer</span>
+  </a>
+</div>
+
+<!-- TAB 1: CLASS OFFERINGS -->
+@if (Model.ActiveTab == "offerings")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Active Class Offerings for Term (AY @Model.CurrentSchoolYear @Model.CurrentSemester)</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Section</th>
+            <th>Course Code &amp; Title</th>
+            <th>Units</th>
+            <th>Room</th>
+            <th>Schedule Days &amp; Time</th>
+            <th>Assigned Faculty</th>
+            <th>Slots</th>
+            <th>Status</th>
+            <th style="text-align:right;">Control</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var co in Model.OfferingsList)
+          {
+            var slotRatio = $"{co.SlotsTaken}/{co.Capacity}";
+            var isFull = co.SlotsTaken >= co.Capacity;
+            var startDisplay = DateTime.Today.Add(co.StartTime).ToString("hh:mm tt");
+            var endDisplay = DateTime.Today.Add(co.EndTime).ToString("hh:mm tt");
+
+            <tr>
+              <td><strong style="color:var(--accent);">@co.SectionCode</strong></td>
+              <td>
+                <strong>@co.SubjectCode</strong>
+                <div style="font-size:11px;color:#64748b;">@co.SubjectName</div>
+              </td>
+              <td>@co.Units</td>
+              <td><span class="token-chip" style="font-weight:bold;">@co.Room</span></td>
+              <td>
+                <div style="font-weight:600;">@co.DaysOfWeek</div>
+                <div style="font-size:11px;color:#64748b;">@startDisplay – @endDisplay</div>
+              </td>
+              <td>@co.InstructorName</td>
+              <td>
+                <span style="font-weight:700;color:@(isFull ? "var(--danger)" : "var(--text-main)");">
+                  @slotRatio
+                </span>
+              </td>
+              <td><span class="badge badge-@co.Status.ToLower()">@(char.ToUpper(co.Status[0]) + co.Status.Substring(1))</span></td>
+              <td style="text-align:right;">
+                <div style="display:inline-flex;gap:6px;">
+                  <a href="/ClassScheduling?tab=roster&offering_id=@co.Id" class="btn-small" title="View Students">👥 Roster</a>
+                  <form method="post" style="display:inline;">
+                    <input type="hidden" name="offering_id" value="@co.Id">
+                    <button type="submit" asp-page-handler="ToggleOffering" class="btn-small">@(co.Status == "open" ? "Close" : "Open")</button>
+                    <button type="submit" asp-page-handler="DeleteOffering" class="btn-small danger" onclick="return confirm('Delete this class offering?')">🗑️</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+<!-- TAB 2: SUBJECTS CATALOG -->
+@if (Model.ActiveTab == "subjects")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Degree Curriculum Subjects Masterlist</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Descriptive Title</th>
+            <th>Credit Units</th>
+            <th>Lec / Lab Hours</th>
+            <th>Prerequisite</th>
+            <th>Program &amp; Year</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var s in Model.SubjectsList)
+          {
+            <tr>
+              <td><strong style="color:var(--accent);">@s.SubjectCode</strong></td>
+              <td><strong>@s.SubjectName</strong></td>
+              <td>@s.Units.ToString("F1")</td>
+              <td>@s.LecHours hrs lec / @s.LabHours hrs lab</td>
+              <td>
+                @if (!string.IsNullOrEmpty(s.PrereqCode))
+                {
+                  <span class="badge badge-inc">@s.PrereqCode</span>
+                }
+                else
+                {
+                  <span style="color:#94a3b8;">None</span>
+                }
+              </td>
+              <td>
+                <span>@s.CurriculumProgram</span>
+                <div style="font-size:11px;color:#64748b;">@s.YearLevel, @s.Semester</div>
+              </td>
+              <td style="text-align:right;">
+                <form method="post" asp-page-handler="DeleteSubject" style="display:inline;">
+                  <input type="hidden" name="subject_id" value="@s.Id">
+                  <button type="submit" class="btn-small danger" onclick="return confirm('Delete course subject?')">🗑️ Delete</button>
+                </form>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+<!-- TAB 3: CLASS ROSTER -->
+@if (Model.ActiveTab == "roster")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Class Enrollee Roster Viewer</h2>
+    </div>
+
+    <form method="get" style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+      <input type="hidden" name="tab" value="roster">
+      <label style="font-weight:700;font-size:13px;">Select Section &amp; Subject Offering:</label>
+      <select name="offering_id" onchange="this.form.submit()" style="max-width:400px;" class="form-control">
+        @foreach (var o in Model.OfferingsList)
+        {
+          <option value="@o.Id" selected="@(Model.SelectedOfferingId == o.Id)">
+            @($"{o.SectionCode} — {o.SubjectCode}: {o.SubjectName} ({o.Room})")
+          </option>
+        }
+      </select>
+    </form>
+
+    @if (Model.SelectedOfferingDetails != null)
+    {
+      <div class="stat-mini-row" style="margin-bottom:20px;">
+        <div class="stat-mini">
+          <div class="label">Section Code</div>
+          <div class="value">@Model.SelectedOfferingDetails.SectionCode</div>
+        </div>
+        <div class="stat-mini">
+          <div class="label">Subject</div>
+          <div class="value">@Model.SelectedOfferingDetails.SubjectCode</div>
+        </div>
+        <div class="stat-mini">
+          <div class="label">Room &amp; Time</div>
+          <div class="value" style="font-size:13px;">@($"{Model.SelectedOfferingDetails.Room} ({Model.SelectedOfferingDetails.DaysOfWeek})")</div>
+        </div>
+        <div class="stat-mini">
+          <div class="label">Assigned Faculty</div>
+          <div class="value" style="font-size:13px;">@Model.SelectedOfferingDetails.InstructorName</div>
+        </div>
+        <div class="stat-mini">
+          <div class="label">Total Enrolled</div>
+          <div class="value" style="color:var(--accent);">@Model.RosterStudents.Count / @Model.SelectedOfferingDetails.Capacity</div>
+        </div>
+      </div>
+
+      @if (!Model.RosterStudents.Any())
+      {
+        <p style="text-align:center;padding:30px;color:#64748b;">No students currently enrolled in this section.</p>
+      }
+      else
+      {
+        <div class="table-responsive">
+          <table class="table-simple">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student ID</th>
+                <th>Student Full Name</th>
+                <th>Program &amp; Year</th>
+                <th>Email</th>
+                <th>Current Grade Status</th>
+                <th class="no-print">Student Profile</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (var i = 0; i < Model.RosterStudents.Count; i++)
+              {
+                var st = Model.RosterStudents[i];
+                var gVal = st.IsInc ? "INC" : (st.Grade.HasValue ? st.Grade.Value.ToString("F2") : "Unencoded");
+                <tr>
+                  <td>@(i + 1)</td>
+                  <td><strong style="color:var(--accent);">@st.StudentIdNumber</strong></td>
+                  <td><strong>@st.Name</strong></td>
+                  <td>@($"{st.Program} ({st.YearLevel})")</td>
+                  <td>@st.Email</td>
+                  <td><span class="badge @(gVal == "Unencoded" ? "badge-draft" : "badge-verified")">@gVal</span></td>
+                  <td class="no-print"><a href="/StudentRecords?id=@st.StudentId" class="btn-small">201 File ›</a></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+}
+
+<!-- Modal: Schedule New Class Offering -->
+<div id="addOfferingModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:540px;background:#fff;border-radius:12px;margin:50px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Schedule Class Section Offering</h2>
+      <button onclick="document.getElementById('addOfferingModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="AddOffering">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Select Course Subject *</label>
+        <select name="subject_id" required class="form-control">
+          <option value="">-- Choose Subject --</option>
+          @foreach (var s in Model.SubjectsList)
+          {
+            <option value="@s.Id">@($"{s.SubjectCode} — {s.SubjectName} ({s.Units} units)")</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Section Code *</label>
+          <input type="text" name="section_code" placeholder="e.g. BSIT-2A" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Room Assignment *</label>
+          <input type="text" name="room" placeholder="e.g. CL-301 or IT-LAB-1" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Schedule Days *</label>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;padding:6px 0;">
+          @foreach (var d in RegistrarMain.Pages.ClassSchedulingModel.AllDays)
+          {
+            <label style="display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:normal;">
+              <input type="checkbox" name="days" value="@d"> @d
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Start Time *</label>
+          <input type="time" name="start_time" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label>End Time *</label>
+          <input type="time" name="end_time" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Assigned Faculty / Instructor</label>
+          <input type="text" name="instructor_name" placeholder="Prof. Dan Castillo" value="Engr. Danilo Castillo" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Max Class Capacity</label>
+          <input type="number" name="capacity" value="40" min="10" max="80" class="form-control">
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('addOfferingModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Schedule Offering</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Add New Subject to Catalog -->
+<div id="addSubjectModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:540px;background:#fff;border-radius:12px;margin:50px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Add New Course to Catalog</h2>
+      <button onclick="document.getElementById('addSubjectModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="AddSubject">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Course Code *</label>
+          <input type="text" name="subject_code" placeholder="e.g. IT306" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Credit Units *</label>
+          <input type="number" step="0.5" name="units" value="3.0" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Descriptive Title *</label>
+        <input type="text" name="subject_name" placeholder="e.g. Web Application Security" required class="form-control">
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Lecture Hours</label>
+          <input type="number" name="lec_hours" value="3" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Lab Hours</label>
+          <input type="number" name="lab_hours" value="0" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Prerequisite Subject (if any)</label>
+        <select name="prerequisite_subject_id" class="form-control">
+          <option value="">None (No Prerequisite)</option>
+          @foreach (var s in Model.SubjectsList)
+          {
+            <option value="@s.Id">@($"{s.SubjectCode} - {s.SubjectName}")</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Program</label>
+          <select name="curriculum_program" class="form-control">
+            <option value="BSIT">BSIT</option>
+            <option value="BSCS">BSCS</option>
+            <option value="BSBA">BSBA</option>
+            <option value="All">General Education / All</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Year Level</label>
+          <select name="year_level" class="form-control">
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </select>
+        </div>
+      </div>
+
+      <input type="hidden" name="semester" value="1st Semester">
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('addSubjectModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Course</button>
+      </div>
+    </form>
+  </div>
+</div>

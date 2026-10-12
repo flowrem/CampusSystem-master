@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus System Maintenance</title>
+  <style>
+    :root { color-scheme: dark; --bg: #101416; --panel: #171d20; --panel-2: #20292d; --line: #344247; --text: #eaf1ef; --muted: #91a19f; --green: #62d39a; --red: #ff7373; --amber: #f2c56b; --cyan: #79d5df; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 80% 0%, #26383a 0, transparent 38%), var(--bg); color: var(--text); font: 15px/1.5 "Segoe UI", sans-serif; }
+    main { width: min(1180px, calc(100% - 36px)); margin: 0 auto; padding: 42px 0 56px; }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 24px; border-bottom: 1px solid var(--line); padding-bottom: 24px; }
+    .eyebrow { color: var(--cyan); font: 12px/1.2 Consolas, monospace; letter-spacing: 1.6px; text-transform: uppercase; }
+    h1 { margin: 8px 0 0; font-size: clamp(28px, 5vw, 52px); line-height: 1; letter-spacing: 0; }
+    .subtitle { color: var(--muted); margin: 12px 0 0; }
+    button { border: 1px solid var(--cyan); background: var(--cyan); color: #102024; padding: 11px 16px; border-radius: 5px; font: 600 14px Consolas, monospace; cursor: pointer; }
+    button:hover { background: #a1e8ed; } button:disabled { cursor: wait; opacity: .6; }
+    .summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 18px; }
+    .metric { background: var(--panel); border: 1px solid var(--line); min-width: 150px; padding: 15px 18px; border-radius: 5px; }
+    .metric strong { display: block; font-size: 25px; line-height: 1.1; } .metric span { color: var(--muted); font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .department { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 5px; padding: 17px; min-height: 156px; }
+    .department.healthy { border-left-color: var(--green); } .department.failed { border-left-color: var(--red); }
+    .department h2 { margin: 0 0 8px; font-size: 18px; } .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 12px Consolas, monospace; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px #ff73731c; } .dot.running { background: var(--green); box-shadow: 0 0 0 3px #62d39a1c; }
+    .healthy .status { color: var(--green); } .failed .status { color: var(--red); }
+    .actions { display: flex; gap: 8px; margin-top: 16px; } .actions button { padding: 7px 10px; border-color: var(--line); background: var(--panel-2); color: var(--text); font-size: 12px; } .actions button:hover { border-color: var(--cyan); } .actions button:disabled { opacity: .4; cursor: not-allowed; }
+    .errors { margin-top: 30px; } .section-title { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    h3 { margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; } .section-title span { color: var(--muted); font-size: 12px; }
+    .terminal { margin: 0; min-height: 190px; max-height: 340px; overflow: auto; background: #0b0f10; border: 1px solid var(--line); border-radius: 5px; padding: 16px; color: #b8c8c5; font: 13px/1.65 Consolas, monospace; white-space: pre-wrap; }
+    .terminal .error { color: var(--red); } .terminal .ok { color: var(--green); } .terminal .info { color: var(--cyan); }
+    .terminal-nav { display: flex; gap: 6px; overflow-x: auto; padding: 4px; margin: 28px 0 10px; border-bottom: 1px solid var(--line); }
+    .terminal-tab { flex: 0 0 auto; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted); padding: 9px 12px; font-size: 12px; }
+    .terminal-tab:hover, .terminal-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); background: transparent; }
+    .bulk-actions { display: flex; gap: 8px; } .bulk-actions button { border-color: var(--line); background: var(--panel-2); color: var(--text); } .bulk-actions button:hover { border-color: var(--cyan); }
+
+    /* ---- top nav ---- */
+    .topnav { display: flex; gap: 4px; padding: 14px 0; margin-bottom: 4px; }
+    .topnav-tab { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 9px 18px; border-radius: 5px; font: 600 13px Consolas, monospace; letter-spacing: .4px; }
+    .topnav-tab:hover { color: var(--text); border-color: var(--cyan); background: var(--panel-2); }
+    .topnav-tab.active { color: #102024; background: var(--cyan); border-color: var(--cyan); }
+
+    /* ---- AI chat view ---- */
+    .chat-settings { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 14px; margin: 22px 0 16px; }
+    .chat-settings label { display: flex; flex-direction: column; gap: 4px; font: 12px Consolas, monospace; color: var(--muted); flex: 1 1 220px; }
+    .chat-settings input, .chat-settings select { background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 9px 10px; border-radius: 4px; font: 13px Consolas, monospace; }
+    .chat-settings .save-row { display: flex; align-items: end; gap: 8px; }
+    .key-hint { color: var(--muted); font-size: 12px; margin: -6px 0 16px; }
+    .key-hint a { color: var(--cyan); }
+    .chat-window { background: #0b0f10; border: 1px solid var(--line); border-radius: 5px; min-height: 320px; max-height: 480px; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .msg { max-width: 78%; padding: 10px 13px; border-radius: 8px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+    .msg.user { align-self: flex-end; background: var(--cyan); color: #102024; border-bottom-right-radius: 2px; }
+    .msg.model { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-bottom-left-radius: 2px; }
+    .msg.system { align-self: center; color: var(--muted); font: 12px Consolas, monospace; }
+    .msg.error { align-self: flex-start; background: #2a1414; border: 1px solid var(--red); color: var(--red); }
+    .chat-form { display: flex; gap: 10px; margin-top: 12px; }
+    .chat-form textarea { flex: 1; resize: vertical; min-height: 46px; background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 5px; padding: 11px 13px; font: 14px "Segoe UI", sans-serif; }
+    .chat-form button { align-self: flex-end; }
+    .chat-empty { color: var(--muted); font-size: 13px; text-align: center; margin: auto; }
+    .report-box { background: var(--panel); border: 1px solid var(--line); border-radius: 5px; margin-top: 18px; padding: 14px; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .report-header strong { font-size: 15px; }
+    .report-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .report-sources { color: var(--muted); font: 12px Consolas, monospace; }
+    .report-preview { background: #0b0f10; border: 1px solid var(--line); border-radius: 5px; min-height: 180px; max-height: 420px; overflow: auto; padding: 16px; white-space: pre-wrap; color: #dfe7e5; font: 13px/1.6 Consolas, monospace; }
+
+    .swarm-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-top: 18px; }
+    .swarm-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .swarm-header h3 { margin: 0; }
+    .swarm-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .swarm-rounds { display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px; color: var(--muted); font: 12px Consolas, monospace; }
+    .swarm-rounds input { width: 52px; background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 4px; padding: 6px 8px; font: 12px Consolas, monospace; text-align: center; }
+
+    /* ---- Swarm diagram: ONE diagram, wired to real per-agent/synthesis state.
+       Matches the actual flow this swarm runs: Topic -> 6 agents (one pass each,
+       no rounds) -> Synthesis. Previously there were two unrelated diagrams
+       rendered on top of each other here (a static hexagon SVG with hardcoded
+       "active" edges, plus a separate 5-round grid that didn't match how the
+       code actually calls agents) and neither was ever updated at runtime. ---- */
+    .swarm-visual { position: relative; min-height: 360px; border-radius: 8px; overflow: hidden; background: radial-gradient(circle at center, rgba(72, 108, 116, 0.18), transparent 40%), #0b1013; border: 1px solid var(--line); margin-top: 16px; padding: 10px; }
+    .swarm-visual svg { width: 100%; height: 360px; display: block; }
+    .swarm-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 2px 6px 10px; font: 11px Consolas, monospace; color: var(--muted); }
+    .swarm-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+    .swarm-node circle { fill: rgba(15, 22, 27, 0.85); stroke: var(--cyan); stroke-width: 2; transition: fill .25s ease, stroke .25s ease, r .2s ease, filter .25s ease; }
+    .swarm-node text { fill: #dfe7e5; font: 11px Consolas, monospace; text-anchor: middle; }
+    .swarm-node[data-state="active"] circle { fill: var(--node-color, var(--cyan)); stroke: var(--node-color, var(--cyan)); filter: drop-shadow(0 0 6px var(--node-color, var(--cyan))); animation: swarmPulse .9s ease-in-out infinite; }
+    .swarm-node[data-state="done"] circle { fill: var(--node-color, var(--cyan)); opacity: .35; }
+    .swarm-node[data-state="error"] circle { fill: var(--red); stroke: var(--red); }
+    @keyframes swarmPulse { 0%, 100% { r: 24; opacity: 1; } 50% { r: 28; opacity: .8; } }
+
+    .swarm-edge { stroke: rgba(121, 213, 223, 0.22); stroke-width: 1.2; fill: none; transition: stroke .25s ease, opacity .25s ease; }
+    .swarm-edge[data-state="active"] { stroke: var(--edge-color, var(--cyan)); stroke-width: 2; opacity: .9; stroke-dasharray: 5 4; animation: swarmFlow .6s linear infinite; }
+    .swarm-edge[data-state="done"] { stroke: rgba(223, 231, 229, 0.35); opacity: .6; }
+    .swarm-edge[data-state="error"] { stroke: var(--red); stroke-width: 2; opacity: .9; }
+    @keyframes swarmFlow { to { stroke-dashoffset: -9; } }
+
+    .swarm-output { background: #0b0f10; border: 1px solid var(--line); border-radius: 5px; margin-top: 16px; min-height: 220px; max-height: 520px; overflow: auto; padding: 14px; white-space: pre-wrap; color: #dfe7e5; font: 13px/1.6 Consolas, monospace; }
+    .swarm-preview { background: #0b0f10; border: 1px solid var(--line); border-radius: 5px; margin-top: 12px; padding: 16px; color: #dfe7e5; min-height: 220px; }
+    .swarm-preview h1, .swarm-preview h2, .swarm-preview h3 { margin: 0 0 10px; color: #f4f8f7; }
+    .swarm-preview p, .swarm-preview li { line-height: 1.6; }
+    .swarm-preview ul, .swarm-preview ol { padding-left: 18px; margin: 8px 0; }
+    .swarm-preview blockquote { border-left: 3px solid var(--cyan); padding-left: 12px; color: var(--muted); margin: 10px 0; }
+    .swarm-preview code { background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; font: 12px Consolas, monospace; }
+    .swarm-preview pre { background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow: auto; }
+    .swarm-preview a { color: var(--cyan); }
+    .swarm-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+
+    @media (max-width: 650px) { main { width: min(100% - 24px, 1180px); padding-top: 26px; } header { display: block; } button { margin-top: 20px; width: 100%; } .msg { max-width: 92%; } .report-header { display: block; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><div class="eyebrow">Campus System</div><h1 id="pageTitle">Department health</h1><p class="subtitle" id="pageSubtitle">Service integrity and build status across every department.</p></div>
+      <div class="bulk-actions" id="maintenanceActions"><button id="startAll" type="button">Start all</button><button id="stopAll" type="button">Stop all</button><button id="stopAllRuntimes" type="button">Stop all .NET runtimes</button><button id="debug" type="button">Run full debug</button></div>
+    </header>
+
+    <nav class="topnav" aria-label="Primary">
+      <button type="button" class="topnav-tab active" id="navMaintenance" data-view="maintenance">Maintenance</button>
+      <button type="button" class="topnav-tab" id="navChat" data-view="chat">AI Chat</button>
+      <button type="button" class="topnav-tab" id="navSwarm" data-view="swarm">Swarm Review</button>
+    </nav>
+
+    <!-- ===================== MAINTENANCE VIEW ===================== -->
+    <div id="view-maintenance">
+      <section class="summary" aria-label="Health summary">
+        <div class="metric"><strong id="total">0</strong><span>departments checked</span></div>
+        <div class="metric"><strong id="healthy">0</strong><span>healthy</span></div>
+        <div class="metric"><strong id="failed">0</strong><span>with errors</span></div>
+        <div class="metric"><strong id="checked">Never</strong><span>last checked</span></div>
+      </section>
+      <section class="grid" id="departments" aria-live="polite"></section>
+      <nav class="terminal-nav" id="terminalNav" aria-label="Department terminals"></nav>
+      <section class="errors">
+        <div class="section-title"><h3 id="terminalTitle">Campus Terminal</h3><span id="terminalState">Ready</span></div>
+        <pre class="terminal" id="terminal">Click “Run full debug” to run the health checker and build every department.</pre>
+      </section>
+    </div>
+
+    <!-- ===================== AI CHAT VIEW ===================== -->
+    <div id="view-chat" style="display:none;">
+      <div class="chat-settings">
+        <label>Google AI Studio API key
+          <input type="password" id="apiKey" placeholder="AIza...">
+        </label>
+        <label style="flex:0 1 200px;">Model
+          <select id="chatModel">
+            <option value="gemini-3.6-flash">gemini-3.6-flash</option>
+            <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+          </select>
+        </label>
+        <div class="save-row">
+          <button type="button" id="saveKey">Save key</button>
+          <button type="button" id="clearChat" style="background:var(--panel-2); color:var(--text); border-color:var(--line);">Clear chat</button>
+        </div>
+      </div>
+      <p class="key-hint">Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. The key is stored only in this browser (localStorage) and sent directly to Google's API — never to this dashboard's server.</p>
+      <div class="report-box" id="reportBox" style="display:none;">
+        <div class="report-header">
+          <strong>Campus System Report Preview</strong>
+          <div class="report-actions">
+            <span class="report-sources" id="reportSources">Sources: 0 files loaded (0 missing)</span>
+            <button type="button" id="downloadReportBtn">Download .md</button>
+          </div>
+        </div>
+        <div class="report-preview" id="reportPreview"></div>
+      </div>
+      <button type="button" id="generateReportBtn" style="margin-top:18px;">Generate Campus Report</button>
+      <div class="chat-window" id="chatWindow" style="margin-top:18px;"><p class="chat-empty">Ask about a department's status, paste an error log, or just say hi.</p></div>
+      <form class="chat-form" id="chatForm">
+        <textarea id="chatInput" placeholder="Message the AI..." rows="2"></textarea>
+        <button type="submit" id="sendBtn">Send</button>
+      </form>
+    </div>
+
+    <div id="view-swarm" style="display:none;">
+      <div class="swarm-panel">
+        <div class="swarm-header">
+          <h3>Campus Review Swarm</h3>
+          <div class="swarm-controls">
+            <label class="swarm-rounds" for="swarmRounds">
+              <span>Rounds</span>
+              <input id="swarmRounds" type="number" min="1" max="8" step="1" value="3">
+            </label>
+            <button type="button" id="runSwarmBtn">Run review swarm</button>
+            <button type="button" id="clearSwarmBtn" style="background:var(--panel-2); color:var(--text); border-color:var(--line);">Clear</button>
+          </div>
+        </div>
+        <div class="swarm-visual" id="swarmVisual"></div>
+        <div class="swarm-output" id="swarmOutput">The review swarm is ready. It will read the maintenance context and department context files, then synthesize a single Markdown report without writing code or files.</div>
+        <div class="swarm-actions">
+          <button type="button" id="downloadSwarmReportBtn">Download .md</button>
+        </div>
+        <div class="swarm-preview" id="swarmPreview" aria-live="polite"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* =========================================================
+       NAV / VIEW SWITCHING
+    ========================================================= */
+    const views = { maintenance: document.getElementById('view-maintenance'), chat: document.getElementById('view-chat'), swarm: document.getElementById('view-swarm') };
+    const navButtons = [document.getElementById('navMaintenance'), document.getElementById('navChat'), document.getElementById('navSwarm')];
+    const maintenanceActions = document.getElementById('maintenanceActions');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+
+    function switchView(name) {
+      Object.entries(views).forEach(([key, el]) => el.style.display = key === name ? '' : 'none');
+      navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.view === name));
+      maintenanceActions.style.display = name === 'maintenance' ? 'flex' : 'none';
+      if (name === 'chat') { pageTitle.textContent = 'AI chat'; pageSubtitle.textContent = 'Chat with Gemini via the Google AI Studio API.'; document.getElementById('chatInput').focus(); }
+      else if (name === 'swarm') { pageTitle.textContent = 'Swarm review'; pageSubtitle.textContent = 'Six department reviewers synthesize a read-only campus status report.'; }
+      else { pageTitle.textContent = 'Department health'; pageSubtitle.textContent = 'Service integrity and build status across every department.'; }
+      const hash = name === 'maintenance' ? '' : (name === 'chat' ? '#chat' : '#swarm');
+      history.replaceState(null, '', hash ? `${location.pathname}${hash}` : location.pathname);
+    }
+    navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+    switchView(location.hash === '#chat' ? 'chat' : (location.hash === '#swarm' ? 'swarm' : 'maintenance'));
+
+    /* =========================================================
+       MAINTENANCE DASHBOARD (unchanged behavior)
+    ========================================================= */
+    const names = ['FacultyPortalMain', 'FinanceMain', 'GuidanceDepartmentMain', 'LibraryMain', 'RegistrarMain', 'StudentPortalMain'];
+    const departments = document.getElementById('departments');
+    const terminal = document.getElementById('terminal');
+    const button = document.getElementById('debug');
+    const terminalNav = document.getElementById('terminalNav');
+    const terminalTitle = document.getElementById('terminalTitle');
+    let selectedTerminal = 'Campus';
+    let refreshInFlight = false;
+    let lastReports = names.map(name => ({ name, healthy: null, errors: [] }));
+    let hasCheckedOnce = false;
+    const write = (text, type = '') => { const line = document.createElement('div'); line.className = type; line.textContent = text; terminal.append(line); terminal.scrollTop = terminal.scrollHeight; };
+    function selectTerminal(name) { selectedTerminal = name; terminalNav.querySelectorAll('button').forEach(tab => tab.classList.toggle('active', tab.dataset.name === name)); terminalTitle.textContent = name === 'Campus' ? 'Campus Terminal' : `${name} Terminal`; loadLog(name); }
+    function buildTerminalNav() { terminalNav.replaceChildren(); ['Campus', ...names].forEach(name => { const tab = document.createElement('button'); tab.className = `terminal-tab ${name === selectedTerminal ? 'active' : ''}`; tab.dataset.name = name; tab.type = 'button'; tab.textContent = name; tab.addEventListener('click', () => selectTerminal(name)); terminalNav.append(tab); }); }
+    async function loadLog(name) { if (name === 'Campus') return; try { const response = await fetch(`/api/departments/${encodeURIComponent(name)}/log`, { cache: 'no-store' }); terminal.textContent = await response.text() || `${name}: no log output yet.`; } catch (error) { terminal.textContent = `${name}: log unavailable - ${error.message}`; } }
+    function render(reports, processes = []) {
+      departments.replaceChildren();
+      reports.forEach(report => {
+        const statusClass = report.healthy === null ? '' : (report.healthy ? 'healthy' : 'failed');
+        const card = document.createElement('article'); card.className = `department ${statusClass}`;
+        const title = document.createElement('h2'); title.textContent = report.name;
+        const process = processes.find(item => item.Name === report.name) || { Running: false };
+        const status = document.createElement('div'); status.className = 'status';
+        const dot = document.createElement('span'); dot.className = `dot ${process.Running ? 'running' : ''}`; dot.setAttribute('aria-label', process.Running ? 'Running' : 'Stopped');
+        const label = document.createElement('span'); label.textContent = process.Running ? 'RUNNING' : `STOPPED : ${process.Port || 'port unavailable'}`; status.append(dot, label);
+        if (process.Running && process.Url) { const link = document.createElement('a'); link.href = process.Url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = `Open site : ${process.Port}`; status.append(link); }
+        const actions = document.createElement('div'); actions.className = 'actions';
+        ['start', 'stop'].forEach(action => { const actionButton = document.createElement('button'); actionButton.type = 'button'; actionButton.textContent = action === 'start' ? 'Start' : (process.Running && process.CanStop === false ? 'Stop in VS' : 'Stop'); actionButton.disabled = action === 'start' ? process.Running : !process.Running || process.CanStop === false; actionButton.addEventListener('click', () => manageDepartment(report.name, action)); actions.append(actionButton); });
+        card.append(title, status, actions); departments.append(card);
+      });
+      const known = reports.filter(report => report.healthy !== null);
+      const healthy = known.filter(report => report.healthy).length;
+      document.getElementById('total').textContent = hasCheckedOnce ? reports.length : 0;
+      document.getElementById('healthy').textContent = healthy;
+      document.getElementById('failed').textContent = known.length - healthy;
+      document.getElementById('checked').textContent = hasCheckedOnce ? new Date().toLocaleTimeString() : 'Never';
+    }
+    async function loadProcesses() {
+      const response = await fetch('/api/departments', { cache: 'no-store' });
+      const data = await response.json();
+      render(lastReports, data.Departments || []);
+    }
+    async function refreshInterface() {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
+      try { await loadProcesses(); if (selectedTerminal !== 'Campus') await loadLog(selectedTerminal); }
+      catch (error) { /* The initial unavailable state remains visible until the next refresh. */ }
+      finally { refreshInFlight = false; }
+    }
+    async function manageDepartment(name, action) {
+      try {
+        const response = await fetch(`/api/departments/${encodeURIComponent(name)}/${action}`, { method: 'POST' });
+        if (!response.ok) throw new Error(await response.text());
+        write(`${name}: ${action === 'start' ? 'started' : 'stopped'}`, action === 'start' ? 'ok' : 'info');
+        await loadProcesses();
+      } catch (error) { write(`${name}: ${action} failed: ${error.message}`, 'error'); }
+    }
+    async function manageAll(action) { const control = action === 'start-all' ? document.getElementById('startAll') : document.getElementById('stopAll'); control.disabled = true; try { const response = await fetch(`/api/departments/${action}`, { method: 'POST' }); if (!response.ok) throw new Error(await response.text()); write(`Campus: ${action === 'start-all' ? 'all departments started' : 'all departments stopped'}`, action === 'start-all' ? 'ok' : 'info'); await loadProcesses(); } catch (error) { write(`Campus: ${action} failed: ${error.message}`, 'error'); } finally { control.disabled = false; } }
+    async function stopAllDotnetRuntimes() {
+      const control = document.getElementById('stopAllRuntimes');
+      control.disabled = true;
+      try {
+        const response = await fetch('/api/netruntime/stop-all', { method: 'POST' });
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+        const stopped = (data.Stopped || []).map(item => item.ProcessId).join(', ') || 'none';
+        write(`Campus: stopped .NET runtimes (${stopped})`, 'warning');
+        await loadProcesses();
+      } catch (error) {
+        write(`Campus: stop-all .NET runtimes failed: ${error.message}`, 'error');
+      } finally {
+        control.disabled = false;
+      }
+    }
+    async function runDebug() {
+      button.disabled = true; document.getElementById('terminalState').textContent = 'Running'; terminal.replaceChildren();
+      write('> Starting dotnet build and service integrity checks...', 'info');
+      try {
+        const response = await fetch('/api/health?build=true', { cache: 'no-store' });
+        const data = await response.json(); const processes = await (await fetch('/api/departments', { cache: 'no-store' })).json(); const reports = (data.Reports || data.reports || []).map(report => ({ name: report.Name || report.name, healthy: report.Passed ?? report.Healthy ?? report.healthy, errors: report.Errors || report.errors || [] }));
+        lastReports = reports;
+        hasCheckedOnce = true;
+        render(reports, processes.Departments || []);
+        reports.forEach(report => {
+          write(`${report.name}: ${report.healthy ? 'HEALTHY' : 'FAILED'}`, report.healthy ? 'ok' : 'error');
+          report.errors.forEach(error => write(`  ${error}`, 'error'));
+        });
+        write(data.Summary || data.summary, (data.Failed || data.failed) === 0 ? 'ok' : 'error'); document.getElementById('terminalState').textContent = (data.Failed || data.failed) === 0 ? 'Complete' : 'Errors found';
+      } catch (error) {
+        const failedReports = names.map(name => ({ name, healthy: false, errors: ['Dashboard connection failed: ' + error.message] }));
+        lastReports = failedReports;
+        hasCheckedOnce = true;
+        render(failedReports);
+        write('Dashboard connection failed: ' + error.message, 'error'); document.getElementById('terminalState').textContent = 'Unavailable';
+      }
+      finally { button.disabled = false; }
+    }
+    buildTerminalNav(); loadProcesses().catch(() => { names.forEach(name => { const card = document.createElement('article'); card.className = 'department'; card.innerHTML = `<h2>${name}</h2><div class="status"><span class="dot"></span><span>HOST UNAVAILABLE</span></div>`; departments.append(card); }); });
+    button.addEventListener('click', runDebug);
+    document.getElementById('startAll').addEventListener('click', () => manageAll('start-all'));
+    document.getElementById('stopAll').addEventListener('click', () => manageAll('stop-all'));
+    document.getElementById('stopAllRuntimes').addEventListener('click', stopAllDotnetRuntimes);
+    setInterval(refreshInterface, 500);
+
+    /* =========================================================
+       AI CHAT (Google AI Studio / Gemini generateContent API)
+    ========================================================= */
+    const chatWindow = document.getElementById('chatWindow');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const apiKeyInput = document.getElementById('apiKey');
+    const chatModelSelect = document.getElementById('chatModel');
+    const saveKeyBtn = document.getElementById('saveKey');
+    const clearChatBtn = document.getElementById('clearChat');
+    const sendBtn = document.getElementById('sendBtn');
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    const reportBox = document.getElementById('reportBox');
+    const reportPreview = document.getElementById('reportPreview');
+    const reportSources = document.getElementById('reportSources');
+
+    const swarmAgents = [
+      { id: 'studentportal', name: 'StudentPortal', color: '#4f9dde', prompt: 'Review the student experience, operational readiness, and the consistency of the student portal context against the rest of the campus system.' },
+      { id: 'guidancedepartment', name: 'GuidanceDepartment', color: '#e0674f', prompt: 'Review guidance workflows, data dependencies, and cross-department support gaps with a focus on evidence and risk.' },
+      { id: 'finance', name: 'Finance', color: '#9b59d0', prompt: 'Review financial workflows, controls, service dependencies, and operational concerns using only the provided context and current health data.' },
+      { id: 'library', name: 'Library', color: '#4fbf7f', prompt: 'Review library operations, departmental consistency, and likely service or integration risks from the available evidence.' },
+      { id: 'registrar', name: 'Registrar', color: '#ffb703', prompt: 'Review academic records, administrative dependencies, and campus coordination risks with a read-only, evidence-based lens.' },
+      { id: 'facultyportal', name: 'FacultyPortal', color: '#ef476f', prompt: 'Review faculty-facing responsibilities, dependencies, consistency, and risk points using only the provided context.' }
+    ];
+    const swarmVisual = document.getElementById('swarmVisual');
+    const swarmOutput = document.getElementById('swarmOutput');
+    const swarmPreview = document.getElementById('swarmPreview');
+    const swarmRoundsInput = document.getElementById('swarmRounds');
+    const runSwarmBtn = document.getElementById('runSwarmBtn');
+    const clearSwarmBtn = document.getElementById('clearSwarmBtn');
+    const downloadSwarmReportBtn = document.getElementById('downloadSwarmReportBtn');
+    let swarmMarkdownContent = '';
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function sanitizeForMarkdown(value) {
+      return String(value || '').replace(/\r\n/g, '\n').trim();
+    }
+
+    function renderMarkdownPreview(markdownText) {
+      const source = sanitizeForMarkdown(markdownText);
+      if (!source) {
+        swarmPreview.innerHTML = '<p class="chat-empty">No markdown report generated yet.</p>';
+        return;
+      }
+
+      const lines = source.split('\n');
+      let html = '';
+      let listType = null;
+      let inCodeBlock = false;
+      let codeBuffer = [];
+      let paragraphBuffer = [];
+      let quoteBuffer = [];
+
+      const flushParagraph = () => {
+        if (!paragraphBuffer.length) return;
+        const paragraph = paragraphBuffer.join(' ').trim();
+        if (paragraph) {
+          html += `<p>${paragraph}</p>`;
+        }
+        paragraphBuffer = [];
+      };
+
+      const flushQuote = () => {
+        if (!quoteBuffer.length) return;
+        html += `<blockquote>${quoteBuffer.join('<br>')}</blockquote>`;
+        quoteBuffer = [];
+      };
+
+      const flushList = () => {
+        if (listType) {
+          html += `</${listType}>`;
+          listType = null;
+        }
+      };
+
+      const formatInline = (text) => {
+        let formatted = escapeHtml(text)
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+          .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        return formatted;
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.startsWith('```')) {
+          flushParagraph();
+          flushQuote();
+          flushList();
+          if (inCodeBlock) {
+            html += `<pre><code>${escapeHtml(codeBuffer.join('\n'))}</code></pre>`;
+            codeBuffer = [];
+            inCodeBlock = false;
+          } else {
+            inCodeBlock = true;
+          }
+          continue;
+        }
+
+        if (inCodeBlock) {
+          codeBuffer.push(line);
+          continue;
+        }
+
+        if (/^\s*#{1,6}\s+/.test(line)) {
+          flushParagraph();
+          flushQuote();
+          flushList();
+          const level = line.match(/^#+/)[0].length;
+          const text = line.replace(/^\s*#{1,6}\s+/, '');
+          html += `<h${level}>${formatInline(text)}</h${level}>`;
+          continue;
+        }
+
+        if (/^\s*>\s?/.test(line)) {
+          flushParagraph();
+          flushList();
+          quoteBuffer.push(formatInline(line.replace(/^\s*>\s?/, '')));
+          continue;
+        }
+
+        if (/^\s*[-*+]\s+/.test(line)) {
+          flushParagraph();
+          flushQuote();
+          if (!listType) {
+            html += '<ul>';
+            listType = 'ul';
+          }
+          html += `<li>${formatInline(line.replace(/^\s*[-*+]\s+/, ''))}</li>`;
+          continue;
+        }
+
+        if (/^\s*\d+\.\s+/.test(line)) {
+          flushParagraph();
+          flushQuote();
+          if (listType !== 'ol') {
+            if (listType) html += `</${listType}>`;
+            html += '<ol>';
+            listType = 'ol';
+          }
+          html += `<li>${formatInline(line.replace(/^\s*\d+\.\s+/, ''))}</li>`;
+          continue;
+        }
+
+        if (!line.trim()) {
+          flushParagraph();
+          flushQuote();
+          flushList();
+          continue;
+        }
+
+        paragraphBuffer.push(line.trim());
+      }
+
+      flushParagraph();
+      flushQuote();
+      flushList();
+      if (inCodeBlock) {
+        html += `<pre><code>${escapeHtml(codeBuffer.join('\n'))}</code></pre>`;
+      }
+
+      swarmPreview.innerHTML = html;
+    }
+
+    function clampSwarmRounds(value) {
+      const parsed = Number.parseInt(value, 10);
+      if (Number.isNaN(parsed)) return 1;
+      return Math.min(8, Math.max(1, parsed));
+    }
+
+    /* ---------------------------------------------------------
+       Multi-agent debate layout:
+       Topic -> Round 1 agents -> Round 2 agents -> ... -> Round N agents -> Synthesis.
+       Each agent keeps the same row across all columns, and the full transcript is
+       re-sent as plain text to each agent call. This matches the requested debate model:
+       fixed sequential order within each round and transcript-aware context from all
+       previous rounds plus earlier agents in the same round.
+    --------------------------------------------------------- */
+    const SWARM_NODE_R = 15;
+    const SWARM_VIEW_W = 760;
+    const SWARM_VIEW_H = 360;
+
+    function buildSwarmDiagram() {
+      swarmVisual.innerHTML = '';
+      const rounds = clampSwarmRounds(swarmRoundsInput.value || '1');
+      const topicX = 90, topicY = 180;
+      const synthX = SWARM_VIEW_W - 90, synthY = 180;
+      const roundXs = [220, 440, 660].slice(0, rounds);
+      const top = 70;
+      const rowGap = 54;
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', `0 0 ${SWARM_VIEW_W} ${SWARM_VIEW_H}`);
+
+      const edgesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+      function makeLine(id, x1, y1, x2, y2, color, state = 'idle') {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('id', id);
+        line.setAttribute('class', 'swarm-edge');
+        line.setAttribute('data-state', state);
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        line.style.setProperty('--edge-color', color);
+        return line;
+      }
+
+      const topicNode = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      topicNode.setAttribute('id', 'node-topic');
+      topicNode.setAttribute('class', 'swarm-node');
+      topicNode.setAttribute('data-state', 'done');
+      topicNode.setAttribute('title', 'Topic — the debate prompt everyone starts from. Every agent\'s Round 1 call includes this text (plus file-access instructions, if enabled).');
+      const topicCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      topicCircle.setAttribute('cx', topicX); topicCircle.setAttribute('cy', topicY); topicCircle.setAttribute('r', SWARM_NODE_R + 8);
+      const topicText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      topicText.setAttribute('x', topicX); topicText.setAttribute('y', topicY + 5); topicText.textContent = 'Topic';
+      topicNode.appendChild(topicCircle); topicNode.appendChild(topicText);
+      svg.appendChild(topicNode);
+
+      const synthNode = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      synthNode.setAttribute('id', 'node-synthesis');
+      synthNode.setAttribute('class', 'swarm-node');
+      synthNode.setAttribute('data-state', 'idle');
+      synthNode.setAttribute('title', 'Synthesis — a separate call, on its own provider/model, made once after every round finishes. Receives the topic plus the ENTIRE debate transcript — every agent, every round — and produces one coherent note. Does not itself take part in the debate.');
+      const synthCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      synthCircle.setAttribute('cx', synthX); synthCircle.setAttribute('cy', synthY); synthCircle.setAttribute('r', SWARM_NODE_R + 8);
+      const synthText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      synthText.setAttribute('x', synthX); synthText.setAttribute('y', synthY + 5); synthText.textContent = 'Synth';
+      synthNode.appendChild(synthCircle); synthNode.appendChild(synthText);
+      svg.appendChild(synthNode);
+
+      swarmAgents.forEach((agent, rowIndex) => {
+        const rowY = top + rowIndex * rowGap;
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', 130); label.setAttribute('y', rowY - 18); label.textContent = `Agent#${rowIndex + 1}`;
+        svg.appendChild(label);
+      });
+
+      for (let round = 1; round <= rounds; round++) {
+        const x = roundXs[round - 1];
+        swarmAgents.forEach((agent, rowIndex) => {
+          const rowY = top + rowIndex * rowGap;
+          const nodeId = `node-${agent.id}-r${round}`;
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          g.setAttribute('id', nodeId);
+          g.setAttribute('class', 'swarm-node');
+          g.setAttribute('data-state', 'idle');
+          g.style.setProperty('--node-color', agent.color);
+          g.setAttribute('title', round === 1
+            ? `${agent.name} — Round 1. Receives the topic (plus file-access instructions, if enabled) and anything already said earlier in Round 1 by agents before ${agent.name} in the roster order. This is the first time ${agent.name} has seen the topic.`
+            : `${agent.name} — Round ${round}. Receives the full transcript so far: the topic, every message from Round 1 through Round ${round - 1}, plus anything already said earlier in Round ${round} by agents before ${agent.name} in the roster order. Responds building on, challenging, or adding to that.`);
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', x); circle.setAttribute('cy', rowY); circle.setAttribute('r', SWARM_NODE_R);
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', x); text.setAttribute('y', rowY + 4); text.textContent = `R${round}`;
+          g.appendChild(circle); g.appendChild(text);
+          svg.appendChild(g);
+
+          const topicLine = makeLine(`edge-topic-${nodeId}`, topicX, topicY, x, rowY, agent.color);
+          edgesGroup.appendChild(topicLine);
+
+          if (round < rounds) {
+            const nextRoundX = roundXs[round];
+            swarmAgents.forEach((nextAgent, nextIndex) => {
+              const nextY = top + nextIndex * rowGap;
+              const nextNodeId = `node-${nextAgent.id}-r${round + 1}`;
+              edgesGroup.appendChild(makeLine(`edge-${nodeId}-to-${nextNodeId}`, x, rowY, nextRoundX, nextY, agent.color));
+            });
+          }
+
+          const synthLine = makeLine(`edge-${nodeId}-synthesis`, x, rowY, synthX, synthY, agent.color);
+          edgesGroup.appendChild(synthLine);
+        });
+      }
+
+      svg.appendChild(edgesGroup);
+      swarmVisual.appendChild(svg);
+    }
+
+    function setNodeState(id, state) {
+      const el = swarmVisual.querySelector(`#${CSS.escape(id)}`);
+      if (el) el.setAttribute('data-state', state);
+    }
+    function setEdgeState(id, state) {
+      const el = swarmVisual.querySelector(`#${CSS.escape(id)}`);
+      if (el) el.setAttribute('data-state', state);
+    }
+
+    function setRoundActive(roundIndex) {
+      const maxRounds = clampSwarmRounds(swarmRoundsInput.value || '1');
+      for (let round = 1; round <= maxRounds; round++) {
+        const isCurrentRound = round === roundIndex;
+        swarmAgents.forEach(agent => {
+          const nodeId = `node-${agent.id}-r${round}`;
+          const state = round < roundIndex ? 'done' : (isCurrentRound ? 'idle' : 'idle');
+          setNodeState(nodeId, state);
+          setEdgeState(`edge-topic-${nodeId}`, round < roundIndex ? 'done' : 'idle');
+          setEdgeState(`edge-${nodeId}-synthesis`, round < roundIndex ? 'done' : 'idle');
+        });
+      }
+    }
+    function setAgentActive(agentId, roundIndex) {
+      const maxRounds = clampSwarmRounds(swarmRoundsInput.value || '1');
+      const agentOrder = swarmAgents.map(agent => agent.id);
+      const currentIndex = agentOrder.indexOf(agentId);
+
+      for (let round = 1; round <= maxRounds; round++) {
+        swarmAgents.forEach((agent, index) => {
+          const nodeId = `node-${agent.id}-r${round}`;
+          if (round < roundIndex) {
+            setNodeState(nodeId, 'done');
+            setEdgeState(`edge-topic-${nodeId}`, 'done');
+            setEdgeState(`edge-${nodeId}-synthesis`, 'done');
+            return;
+          }
+
+          if (round > roundIndex) {
+            setNodeState(nodeId, 'idle');
+            setEdgeState(`edge-topic-${nodeId}`, 'idle');
+            setEdgeState(`edge-${nodeId}-synthesis`, 'idle');
+            return;
+          }
+
+          if (agent.id === agentId) {
+            setNodeState(nodeId, 'active');
+            setEdgeState(`edge-topic-${nodeId}`, 'active');
+            setEdgeState(`edge-${nodeId}-synthesis`, 'active');
+            return;
+          }
+
+          if (index < currentIndex) {
+            setNodeState(nodeId, 'done');
+            setEdgeState(`edge-topic-${nodeId}`, 'done');
+            setEdgeState(`edge-${nodeId}-synthesis`, 'done');
+          } else {
+            setNodeState(nodeId, 'idle');
+            setEdgeState(`edge-topic-${nodeId}`, 'idle');
+            setEdgeState(`edge-${nodeId}-synthesis`, 'idle');
+          }
+        });
+      }
+    }
+    function setAgentDone(agentId, roundIndex) {
+      const nodeId = `node-${agentId}-r${roundIndex}`;
+      setNodeState(nodeId, 'done');
+    }
+    function setAgentError(agentId, roundIndex) {
+      const nodeId = `node-${agentId}-r${roundIndex}`;
+      setNodeState(nodeId, 'error');
+    }
+    function setSynthesisActive() { setNodeState('node-synthesis', 'active'); }
+    function setSynthesisDone() { setNodeState('node-synthesis', 'done'); }
+    function setSynthesisError() { setNodeState('node-synthesis', 'error'); }
+
+    async function runReviewSwarm() {
+      const key = apiKeyInput.value.trim();
+      if (!key) {
+        swarmOutput.textContent = 'Enter and save your Google AI Studio API key above first.';
+        return;
+      }
+
+      const rounds = clampSwarmRounds(swarmRoundsInput.value);
+      swarmRoundsInput.value = rounds;
+      runSwarmBtn.disabled = true;
+      swarmOutput.textContent = `Loading context and health data for ${rounds} review round(s)...`;
+      buildSwarmDiagram();
+
+      try {
+        const contextResponse = await fetchWithTimeout('/api/ai-context', { cache: 'no-store' }, 12000);
+        if (!contextResponse.ok) throw new Error(`Context endpoint failed: ${contextResponse.status}`);
+        const contextData = await contextResponse.json();
+
+        let healthText = 'Current health report unavailable.';
+        try {
+          const healthResponse = await fetchWithTimeout('/api/health?build=true', { cache: 'no-store' }, 7000);
+          if (healthResponse.ok) {
+            const healthData = await healthResponse.json();
+            healthText = JSON.stringify(healthData, null, 2);
+          }
+        } catch (error) {
+          console.warn('Health fetch failed for swarm review:', error);
+        }
+
+        const contextText = contextData.map(entry => {
+          const content = entry && entry.content ? entry.content : `Context unavailable: ${entry?.error || 'Unknown error'}`;
+          return `### ${entry.name}\nPath: ${entry.path}\n\n${content}`;
+        }).join('\n\n---\n\n');
+
+        const model = normalizeModelName(chatModelSelect.value);
+        const keyPool = await loadGoogleKeyPool(key);
+        const fullTranscript = [];
+        const debateSummary = [];
+
+        for (let roundIndex = 1; roundIndex <= rounds; roundIndex++) {
+          swarmOutput.textContent = `Review round ${roundIndex} of ${rounds} in progress...`;
+          const roundMessages = [];
+
+          for (const agent of swarmAgents) {
+            setAgentActive(agent.id, roundIndex);
+            const previousRoundsText = fullTranscript.map(message => `### ${message.agent} — Round ${message.round}\n${message.content}`).join('\n\n');
+            const sameRoundEarlierText = roundMessages.map(message => `### ${message.agent} — Round ${message.round}\n${message.content}`).join('\n\n');
+            const transcriptSoFar = [
+              previousRoundsText ? `## Debate transcript so far\n\n${previousRoundsText}` : '',
+              sameRoundEarlierText ? `\n\n## Earlier in this round\n\n${sameRoundEarlierText}` : ''
+            ].join('\n\n').trim();
+
+            const prompt = `You are ${agent.name}, speaking in a fixed-sequence multi-agent debate.\n\nYou are producing a read-only review in Markdown. Use only the supplied context and health data. Build on, challenge, or extend the discussion so far instead of restarting. Keep your answer concise and evidence-based.\n\n## Topic\n${contextText}\n\n## Health Status\n${healthText}\n\n## Discussion so far\n${transcriptSoFar || 'No earlier discussion yet.'}\n\n## Your role\n- Speak in order for this round, after any agents earlier in the roster have already contributed.\n- If this is Round 1, you only receive the topic plus any earlier Round 1 speakers before you.\n- If this is Round ${roundIndex}, you also receive the full transcript from all prior rounds and any earlier messages in this same round.\n- Do not propose code changes, file writes, or operational actions.\n- Identify dependencies, evidence, gaps, risks, and missing context.`;
+
+            try {
+              const result = await callGeminiReview(prompt, key, model, keyPool);
+              const message = { agent: agent.name, round: roundIndex, content: result };
+              roundMessages.push(message);
+              fullTranscript.push(message);
+              debateSummary.push(message);
+              setAgentDone(agent.id, roundIndex);
+            } catch (agentError) {
+              setAgentError(agent.id, roundIndex);
+              throw new Error(`${agent.name} failed during round ${roundIndex}: ${agentError.message}`);
+            }
+          }
+        }
+
+        setSynthesisActive();
+        const synthesisPrompt = `You are the final synthesis model for a multi-agent debate. Use the topic and the ENTIRE transcript below to produce one coherent final campus review note.\n\n## Topic\n${contextText}\n\n## Health Status\n${healthText}\n\n## Full debate transcript\n${fullTranscript.map(item => `### ${item.agent} — Round ${item.round}\n${item.content}`).join('\n\n')}`;
+
+        try {
+          const finalReport = await callGeminiReview(synthesisPrompt, key, model, keyPool);
+          const markdownReport = `# Campus Review Summary\n\n${finalReport}`;
+          swarmMarkdownContent = markdownReport;
+          setSynthesisDone();
+          swarmOutput.textContent = markdownReport;
+          renderMarkdownPreview(markdownReport);
+        } catch (synthError) {
+          setSynthesisError();
+          throw synthError;
+        }
+      } catch (error) {
+        swarmOutput.textContent = `The review swarm failed: ${error.message}`;
+      } finally {
+        runSwarmBtn.disabled = false;
+      }
+    }
+
+    buildSwarmDiagram();
+    renderMarkdownPreview('The swarm result will appear here as a rendered Markdown preview.');
+    runSwarmBtn.addEventListener('click', runReviewSwarm);
+    swarmRoundsInput.addEventListener('input', () => {
+      swarmRoundsInput.value = clampSwarmRounds(swarmRoundsInput.value);
+      buildSwarmDiagram();
+    });
+
+    clearSwarmBtn.addEventListener('click', () => {
+      swarmMarkdownContent = '';
+      swarmOutput.textContent = 'The review swarm is ready. It will read the maintenance context and department context files, then synthesize a single Markdown report without writing code or files.';
+      renderMarkdownPreview('The swarm result will appear here as a rendered Markdown preview.');
+      buildSwarmDiagram();
+    });
+
+    downloadSwarmReportBtn.addEventListener('click', () => {
+      if (!swarmMarkdownContent.trim()) {
+        return;
+      }
+      const blob = new Blob([swarmMarkdownContent], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'campus-review-swarm.md';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
+    const downloadReportBtn = document.getElementById('downloadReportBtn');
+
+    const STORAGE_KEY = 'campus_aistudio_api_key';
+    const STORAGE_MODEL = 'campus_aistudio_model';
+    const TEST_API_KEY = 'AQ.Ab8RN6J6nDpkQ1MmAQT_n2webhwtom1Z0mUuEU-XkjOugvYsKw';
+    const savedKey = localStorage.getItem(STORAGE_KEY);
+    apiKeyInput.value = savedKey || TEST_API_KEY;
+    if (!savedKey) {
+      localStorage.setItem(STORAGE_KEY, TEST_API_KEY);
+    }
+    let campusReportMarkdown = '';
+
+    function normalizeModelName(modelName) {
+      const value = (modelName || '').trim();
+      if (!value) return 'gemini-3.6-flash';
+      return value.startsWith('models/') ? value.replace(/^models\//, '') : value;
+    }
+
+    async function loadSwarmConfig() {
+      try {
+        const response = await fetch('/api/swarm-config', { cache: 'no-store' });
+        if (!response.ok) {
+          const fallbackResponse = await fetch('/swarm/campus-review-swarm.json', { cache: 'no-store' }).catch(() => null);
+          if (!fallbackResponse || !fallbackResponse.ok) return;
+          const config = await fallbackResponse.json();
+          const preferredModel = normalizeModelName(config?.chatModel || config?.googleModel || config?.providers?.google?.defaultModel || config?.synthesisModel || localStorage.getItem(STORAGE_MODEL));
+          localStorage.setItem(STORAGE_MODEL, preferredModel);
+          chatModelSelect.value = preferredModel;
+          return;
+        }
+        const config = await response.json();
+        const preferredModel = normalizeModelName(config?.chatModel || config?.googleModel || config?.providers?.google?.defaultModel || config?.synthesisModel || localStorage.getItem(STORAGE_MODEL));
+        localStorage.setItem(STORAGE_MODEL, preferredModel);
+        chatModelSelect.value = preferredModel;
+      } catch (error) {
+        console.warn('Swarm config load failed, using in-browser fallback model.', error);
+        chatModelSelect.value = localStorage.getItem(STORAGE_MODEL) || 'gemini-3.6-flash';
+      }
+    }
+
+    const defaultModel = localStorage.getItem(STORAGE_MODEL) || 'gemini-3.6-flash';
+    chatModelSelect.value = defaultModel;
+    loadSwarmConfig();
+
+    saveKeyBtn.addEventListener('click', () => {
+      localStorage.setItem(STORAGE_KEY, apiKeyInput.value.trim());
+      localStorage.setItem(STORAGE_MODEL, chatModelSelect.value);
+      addSystemMsg('API key saved to this browser.');
+    });
+    chatModelSelect.addEventListener('change', () => localStorage.setItem(STORAGE_MODEL, chatModelSelect.value));
+
+    clearChatBtn.addEventListener('click', () => {
+      history_ = [];
+      chatWindow.replaceChildren();
+      const empty = document.createElement('p'); empty.className = 'chat-empty'; empty.textContent = 'Ask about a department\'s status, paste an error log, or just say hi.';
+      chatWindow.append(empty);
+    });
+
+    let history_ = []; // [{ role: 'user'|'model', parts: [{text}] }]
+
+    function clearEmptyState() { const empty = chatWindow.querySelector('.chat-empty'); if (empty) empty.remove(); }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw new Error(`Request timed out after ${timeoutMs}ms: ${url}`);
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function normalizeKeyList(keys) {
+      const seen = new Set();
+      const list = [];
+      const values = Array.isArray(keys) ? keys : [keys];
+      values.forEach(value => {
+        if (typeof value !== 'string') return;
+        const trimmed = value.trim();
+        if (!trimmed || seen.has(trimmed)) return;
+        seen.add(trimmed);
+        list.push(trimmed);
+      });
+      return list;
+    }
+
+    async function loadGoogleKeyPool(currentKey = '') {
+      const savedPool = normalizeKeyList(JSON.parse(localStorage.getItem('campus_google_key_pool') || '[]'));
+      const keyPool = normalizeKeyList([currentKey, ...savedPool]);
+
+      try {
+        const response = await fetch('/swarm/campus-review-swarm.json', { cache: 'no-store' }).catch(() => null);
+        if (response && response.ok) {
+          const config = await response.json();
+          const configKeys = normalizeKeyList(config?.providers?.google?.apiKeys || config?.googleApiKey || []);
+          configKeys.forEach(key => keyPool.push(key));
+        }
+      } catch (error) {
+        console.warn('Could not load backup Google AI keys from swarm config.', error);
+      }
+
+      const resolvedPool = normalizeKeyList(keyPool);
+      if (resolvedPool.length) {
+        localStorage.setItem('campus_google_key_pool', JSON.stringify(resolvedPool));
+      }
+      return resolvedPool;
+    }
+
+    function isRetryableGeminiError(status, message) {
+      const text = String(message || '').toLowerCase();
+      return status === 429 || status === 500 || status === 503 || /(resource_exhausted|rate limit|quota|exceeded|temporarily unavailable|high demand|try again later|overloaded)/i.test(text);
+    }
+
+    function extractGeminiText(data) {
+      const payload = (data && typeof data === 'object') ? data : null;
+      if (!payload) return '';
+
+      const candidates = Array.isArray(payload.candidates) ? payload.candidates : [];
+      const candidate = candidates.find(item => Array.isArray(item?.content?.parts) && item.content.parts.some(part => typeof part?.text === 'string' && part.text.trim().length > 0));
+      if (!candidate) {
+        return '';
+      }
+
+      return candidate.content.parts
+        .filter(part => typeof part?.text === 'string')
+        .map(part => part.text)
+        .join('')
+        .trim();
+    }
+
+    function isTokenLimitError(status, message) {
+      const text = String(message || '').toLowerCase();
+      return status === 400 || /(maximum context|prompt is too long|input too long|token limit|maximum tokens|too many tokens|too many input tokens|context length)/i.test(text);
+    }
+
+    function trimGeminiPrompt(promptText, maxLength = 12000) {
+      if (!promptText || promptText.length <= maxLength) return promptText;
+      const ellipsis = '\n\n[...content trimmed to avoid Gemini token and context limits...]';
+      return `${promptText.slice(0, Math.max(4000, maxLength - ellipsis.length))}${ellipsis}`;
+    }
+
+    async function callGeminiReview(promptText, apiKey, model, keyPoolOverride = []) {
+      const keyPool = normalizeKeyList([...(keyPoolOverride || []), apiKey]);
+      const initialPrompt = trimGeminiPrompt(promptText, 18000);
+      let currentPrompt = initialPrompt;
+      let lastError = null;
+
+      for (let attempt = 0; attempt < Math.max(keyPool.length * 4, 4); attempt++) {
+        const key = keyPool[attempt % keyPool.length] || apiKey;
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+          const response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: currentPrompt }] }] })
+          }, 30000);
+
+          const data = await response.json().catch(() => null);
+          if (!response.ok) {
+            const message = data?.error?.message || `HTTP ${response.status}`;
+            if (isTokenLimitError(response.status, message)) {
+              currentPrompt = trimGeminiPrompt(currentPrompt, 12000);
+              lastError = new Error(message);
+              continue;
+            }
+
+            if (isRetryableGeminiError(response.status, message)) {
+              lastError = new Error(message);
+              const backoffMs = 750 * Math.pow(2, attempt % 3);
+              await new Promise(resolve => setTimeout(resolve, backoffMs));
+              continue;
+            }
+
+            throw new Error(message);
+          }
+
+          const replyText = extractGeminiText(data);
+          if (!replyText) {
+            const promptFeedback = data?.promptFeedback || null;
+            const reason = promptFeedback?.blockReason || 'empty Gemini response';
+            throw new Error(`Gemini returned no usable content (${reason}).`);
+          }
+
+          return replyText;
+        } catch (error) {
+          const message = error?.message || String(error);
+          lastError = error;
+
+          if (isTokenLimitError(400, message)) {
+            currentPrompt = trimGeminiPrompt(currentPrompt, 12000);
+            continue;
+          }
+
+          if (isRetryableGeminiError(error?.status || 429, message)) {
+            const backoffMs = 800 * Math.pow(2, attempt % 3);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+            continue;
+          }
+
+          throw error;
+        }
+      }
+
+      throw lastError || new Error('Gemini request failed after retries.');
+    }
+
+    function addMsg(text, cls) {
+      clearEmptyState();
+      const bubble = document.createElement('div');
+      bubble.className = `msg ${cls}`;
+      bubble.textContent = text;
+      chatWindow.append(bubble);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      return bubble;
+    }
+    function addSystemMsg(text) { addMsg(text, 'system'); }
+
+    async function generateCampusReport() {
+      const key = apiKeyInput.value.trim();
+      if (!key) {
+        addSystemMsg('Enter and save your Google AI Studio API key above first.');
+        return;
+      }
+
+      generateReportBtn.disabled = true;
+      downloadReportBtn.disabled = true;
+      reportPreview.textContent = 'Loading context and health data...';
+      reportBox.style.display = 'block';
+
+      try {
+        const contextResponse = await fetchWithTimeout('/api/ai-context', { cache: 'no-store' }, 12000);
+        if (!contextResponse.ok) {
+          throw new Error(`Context endpoint failed: ${contextResponse.status}`);
+        }
+
+        const contextData = await contextResponse.json();
+        let healthData = null;
+        try {
+          const healthResponse = await fetchWithTimeout('/api/health?build=true', { cache: 'no-store' }, 7000);
+          if (healthResponse.ok) {
+            healthData = await healthResponse.json();
+          }
+        } catch (healthError) {
+          console.warn('Health fetch timed out or failed; continuing without health data.', healthError);
+        }
+
+        const loadedCount = contextData.filter(entry => entry && entry.content !== null && entry.content !== undefined).length;
+        const missingCount = contextData.length - loadedCount;
+
+        const prompt = `You are generating a status report for a multi-department system. You will be given each department's AI-context file and, if present, a current health/error report. Produce a single well-formed Markdown document with these sections, in this order:\n  # Campus System Report\n  ## Summary (2-4 sentences, overall state)\n  ## Departments (one subsection per department: ownership/purpose, current structural notes from its context file, and any known errors from the health report)\n  ## Cross-Department Notes (shared services, shared risks, inconsistencies you notice between departments' context files)\n  ## Open Items / Recommendations (bullet list, non-prescriptive — flag things for a human to review, do not claim to have fixed anything)\nDo not invent data not present in the provided files. Do not include code changes, commands to run, or instructions to modify any file. This is a report only.`;
+
+        const sourceText = contextData.map(entry => {
+          const content = entry && entry.content ? entry.content : `Context unavailable: ${entry?.error || 'Unknown error'}`;
+          return `### ${entry.name}\nPath: ${entry.path}\n\n${content}`;
+        }).join('\n\n---\n\n');
+
+        const healthText = healthData ? JSON.stringify(healthData, null, 2) : 'Current health report unavailable.';
+        const model = normalizeModelName(chatModelSelect.value);
+        const reportPrompt = `${prompt}\n\n## AI Context Files\n${sourceText}\n\n## Health Report\n${healthText}`;
+        const keyPool = await loadGoogleKeyPool(key);
+        campusReportMarkdown = await callGeminiReview(reportPrompt, key, model, keyPool) || 'No markdown report returned.';
+        reportPreview.textContent = campusReportMarkdown;
+        reportSources.textContent = `Sources: ${contextData.length} files loaded (${missingCount} missing)`;
+        downloadReportBtn.disabled = false;
+      }
+      catch (error) {
+        reportPreview.textContent = `Unable to generate campus report: ${error.message}`;
+        reportSources.textContent = 'Sources: unavailable';
+        downloadReportBtn.disabled = true;
+      }
+      finally {
+        generateReportBtn.disabled = false;
+      }
+    }
+
+    downloadReportBtn.addEventListener('click', () => {
+      if (!campusReportMarkdown) {
+        return;
+      }
+      const blob = new Blob([campusReportMarkdown], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'campus-system-report.md';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    generateReportBtn.addEventListener('click', generateCampusReport);
+
+    chatForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+      const key = apiKeyInput.value.trim();
+      if (!key) { addSystemMsg('Enter and save your Google AI Studio API key above first.'); return; }
+
+      addMsg(text, 'user');
+      history_.push({ role: 'user', parts: [{ text }] });
+      chatInput.value = '';
+      sendBtn.disabled = true;
+      const thinking = addMsg('Thinking…', 'model');
+
+      const model = normalizeModelName(chatModelSelect.value);
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: history_ })
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.error?.message || `HTTP ${response.status}`);
+
+        const reply = extractGeminiText(data) || '(empty response)';
+        thinking.textContent = reply;
+        thinking.classList.remove('model'); thinking.classList.add('model');
+        history_.push({ role: 'model', parts: [{ text: reply }] });
+      } catch (error) {
+        thinking.remove();
+        addMsg(`Error: ${error.message}`, 'error');
+        history_.pop();
+        history_.push({ role: 'user', parts: [{ text }] });
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    chatInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); chatForm.requestSubmit(); }
+    });
+  </script>
+</body>
+</html>

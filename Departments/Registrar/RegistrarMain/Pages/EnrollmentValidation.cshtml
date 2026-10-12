@@ -1,0 +1,242 @@
+@page
+@model RegistrarMain.Pages.EnrollmentValidationModel
+@{
+    ViewData["Title"] = "Enrollment & Validation Management";
+    ViewData["ActivePage"] = "EnrollmentValidation";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">📝 Enrollment &amp; Validation Engine</h1>
+    <p class="dash-subheading">Review matriculation applications, process add/drop changes, and approve unit overloads.</p>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav">
+  <a href="/EnrollmentValidation?tab=registration" class="tab-link @(Model.ActiveTab == "registration" ? "active" : "")">
+    <span>⏳ Pending Enrollments (@Model.PendingList.Count)</span>
+  </a>
+  <a href="/EnrollmentValidation?tab=adddrop" class="tab-link @(Model.ActiveTab == "adddrop" ? "active" : "")">
+    <span>🔄 Add / Drop Petitions (@Model.PendingAddDrop.Count)</span>
+  </a>
+  <a href="/EnrollmentValidation?tab=overload" class="tab-link @(Model.ActiveTab == "overload" ? "active" : "")">
+    <span>⚡ Overload &amp; Waivers (@Model.PendingOverloads.Count)</span>
+  </a>
+  <a href="/EnrollmentValidation?tab=active_list" class="tab-link @(Model.ActiveTab == "active_list" ? "active" : "")">
+    <span>✅ Officially Enrolled Roster (@Model.ActiveList.Count)</span>
+  </a>
+</div>
+
+<!-- TAB 1: PENDING REGISTRATION APPROVAL -->
+@if (Model.ActiveTab == "registration")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Pending Registration Assessment Queue</h2>
+    </div>
+    @if (!Model.PendingList.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">🎉 All student registration assessments have been processed!</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student Details</th>
+              <th>Program &amp; Year</th>
+              <th>Type</th>
+              <th>Enrolled Load</th>
+              <th>Academic Status</th>
+              <th>Finance Clearance</th>
+              <th>Submitted</th>
+              <th style="text-align:right;">Validation Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var enr in Model.PendingList)
+            {
+              <tr>
+                <td>
+                  <strong>@enr.Name</strong>
+                  <div style="font-size:11px;color:#64748b;">@(string.IsNullOrEmpty(enr.StudentIdNumber) ? "NO-ID" : enr.StudentIdNumber) &middot; @enr.Email</div>
+                </td>
+                <td>
+                  <div>@enr.Program</div>
+                  <div style="font-size:11px;color:#64748b;">@enr.YearLevel</div>
+                </td>
+                <td><span class="badge badge-open">@enr.EnrollmentType</span></td>
+                <td>
+                  <strong>@enr.TotalUnits units</strong>
+                  <div style="font-size:11px;color:#64748b;">@enr.SubjectsCount subjects</div>
+                </td>
+                <td><span class="badge badge-@(enr.AcademicStatus.ToLower().Replace(" ", "_"))">@enr.AcademicStatus</span></td>
+                <td>
+                  <span class="badge badge-@(enr.FinanceClearanceStatus.ToLower() == "cleared" ? "active" : "pending")">
+                    @(enr.FinanceClearanceStatus.ToLower() == "cleared" ? "✓ Cleared" : "⚠️ " + enr.FinanceClearanceStatus)
+                  </span>
+                </td>
+                <td>@enr.EnrolledAt.ToString("MMM dd, yyyy hh:mm tt")</td>
+                <td style="text-align:right;">
+                  <form method="post" asp-page-handler="EnrollmentAction" style="display:inline-flex;gap:6px;">
+                    <input type="hidden" name="enrollment_id" value="@enr.Id">
+                    <button type="submit" name="action" value="approve_enrollment" class="btn-small" style="background:var(--success);color:#fff;border-color:var(--success);">Approve &amp; Validate</button>
+                    <button type="submit" name="action" value="reject_enrollment" class="btn-small danger" onclick="return confirm('Reject this student enrollment application?')">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 2: ADD / DROP PETITIONS -->
+@if (Model.ActiveTab == "adddrop")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Add / Drop / Change Subject Petitions</h2>
+    </div>
+    @if (!Model.PendingAddDrop.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No pending Add/Drop petitions at this time.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Type</th>
+              <th>Subject to Drop</th>
+              <th>Subject to Add</th>
+              <th>Reason</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var ad in Model.PendingAddDrop)
+            {
+              <tr>
+                <td>
+                  <strong>@ad.Name</strong>
+                  <div style="font-size:11px;color:#64748b;">@ad.StudentIdNumber</div>
+                </td>
+                <td><span class="badge badge-pending">@ad.RequestType.ToUpper()</span></td>
+                <td>@(string.IsNullOrEmpty(ad.FromCode) ? "—" : $"{ad.FromCode} - {ad.FromName}")</td>
+                <td>@(string.IsNullOrEmpty(ad.ToCode) ? "—" : $"{ad.ToCode} - {ad.ToName}")</td>
+                <td style="font-size:12px;max-width:240px;color:#475569;">@ad.Reason</td>
+                <td>
+                  <form method="post" asp-page-handler="AddDropAction" style="display:flex;gap:6px;">
+                    <input type="hidden" name="request_id" value="@ad.Id">
+                    <button type="submit" name="action" value="approve_adddrop" class="btn-small primary">Approve</button>
+                    <button type="submit" name="action" value="reject_adddrop" class="btn-small danger">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 3: OVERLOAD / WAIVER REQUESTS -->
+@if (Model.ActiveTab == "overload")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Unit Overload &amp; Prerequisite Waiver Petitions</h2>
+    </div>
+    @if (!Model.PendingOverloads.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No pending overload or waiver petitions.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student Details</th>
+              <th>Petition Type</th>
+              <th>Requested Units</th>
+              <th>GWA</th>
+              <th>Justification</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var ov in Model.PendingOverloads)
+            {
+              <tr>
+                <td>
+                  <strong>@ov.Name</strong>
+                  <div style="font-size:11px;color:#64748b;">@ov.Program &middot; @ov.YearLevel</div>
+                </td>
+                <td><span class="badge badge-open">@ov.RequestType.ToUpper()</span></td>
+                <td><strong>@ov.RequestedUnits units</strong></td>
+                <td>@(ov.AverageGrade.HasValue ? ov.AverageGrade.Value.ToString("F2") : "N/A")</td>
+                <td style="font-size:12px;max-width:280px;color:#475569;">@ov.Reason</td>
+                <td>
+                  <form method="post" asp-page-handler="OverloadAction" style="display:flex;gap:6px;">
+                    <input type="hidden" name="request_id" value="@ov.Id">
+                    <button type="submit" name="action" value="approve_overload" class="btn-small primary">Approve</button>
+                    <button type="submit" name="action" value="reject_overload" class="btn-small danger">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 4: ACTIVE VALIDATED ENROLLEES -->
+@if (Model.ActiveTab == "active_list")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Officially Validated Students (AY @Model.CurrentSchoolYear @Model.CurrentSemester)</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>Program</th>
+            <th>Year Level</th>
+            <th>Total Units</th>
+            <th>Matriculation Type</th>
+            <th>Validated At</th>
+            <th class="no-print">Certificate of Matriculation</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var row in Model.ActiveList)
+          {
+            <tr>
+              <td><strong style="color:var(--accent);">@row.StudentIdNumber</strong></td>
+              <td><strong>@row.Name</strong></td>
+              <td>@row.Program</td>
+              <td>@row.YearLevel</td>
+              <td>@row.TotalUnits units</td>
+              <td><span class="badge badge-open">@row.EnrollmentType</span></td>
+              <td>@row.EnrolledAt.ToString("MMM dd, yyyy")</td>
+              <td class="no-print">
+                <a href="/StudentRecords?id=@row.StudentId" class="btn-small">View Record &amp; COR ›</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

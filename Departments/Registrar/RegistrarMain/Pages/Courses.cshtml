@@ -1,0 +1,8 @@
+@page
+@{ ViewData["Title"] = "Course Catalog"; }
+<div class="registrar-page" data-page="courses">
+<section class="page-heading"><div><span class="eyebrow">Registrar workspace</span><h1>Course catalog</h1><p class="page-intro">Find the right course for your next term.</p></div><span class="status-pill" data-api-status>Checking API</span></section>
+<section class="catalog-toolbar"><label class="search-field"><span>Search catalog</span><input id="course-search" type="search" placeholder="Search by code or title" autocomplete="off" /></label><span class="result-count" id="course-count">Loading catalog...</span></section>
+<section id="course-list" class="course-grid" aria-live="polite"><div class="loading-state">Loading courses<span class="loading-dots">...</span></div></section>
+<div class="alert alert-danger d-none" data-error role="alert"></div>
+</div>

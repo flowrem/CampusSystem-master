@@ -1,0 +1,243 @@
+@page
+@model StudentPortalMain.Pages.DocumentRequestsModel
+@{
+    ViewData["Title"] = "Official Documents & 201 Vault";
+    ViewData["ActivePage"] = "DocumentRequests";
+    var studentName = Model.Student?.Name ?? "Student";
+    var studentIdNum = Model.Student?.StudentIdNumber ?? "";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div style="font-size:12px; font-weight:700; color:var(--nu-blue); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+            Registrar Academic Records &amp; Credentials
+        </div>
+        <h1 class="portal-page-title">Document Requests &amp; 201 File Vault</h1>
+        <p class="portal-page-subtitle">
+            Request Official TOR, Certificates, and track credential compliance with the Registrar's Office.
+        </p>
+    </div>
+</div>
+
+<div class="row" style="display:flex; flex-wrap:wrap; gap:24px; margin:0 -12px;">
+    <!-- ─── Request Form (Left Column) ────────────────────────────────────── -->
+    <div style="flex: 1 1 420px; min-width:320px;">
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📄</span> File New Document Request
+                </h3>
+            </div>
+            <div class="portal-card-body">
+                <form method="post" asp-page-handler="RequestDocument">
+                    <div class="form-group">
+                        <label class="form-label">Select Document to Request:</label>
+                        <select name="documentType" class="form-select" required>
+                            <option value="">-- Choose official document --</option>
+                            <option value="Official Transcript of Records (TOR)">Official Transcript of Records (TOR)</option>
+                            <option value="Certificate of Enrollment (COE)">Certificate of Enrollment (COE)</option>
+                            <option value="Certificate of Good Moral Character">Certificate of Good Moral Character</option>
+                            <option value="Certified True Copy of Grades">Certified True Copy of Grades</option>
+                            <option value="Certificate of Graduation">Certificate of Graduation</option>
+                            <option value="Course Description & Syllabus">Course Description &amp; Syllabus</option>
+                            <option value="Certificate of Medium of Instruction">Certificate of Medium of Instruction</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Purpose of Request:</label>
+                        <select name="purpose" class="form-select" required>
+                            <option value="Employment Requirement">Employment / Job Application</option>
+                            <option value="Scholarship / Financial Grant">Scholarship / Financial Grant</option>
+                            <option value="Board Examination / PRC">Board Examination / PRC Licensing</option>
+                            <option value="Transfer / Cross-Enrollment">Transfer to Another Institution</option>
+                            <option value="Visa / International Travel">Visa / Passport / Overseas Requirement</option>
+                            <option value="Personal Copy">Personal Reference Copy</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Number of Copies:</label>
+                        <input type="number" name="copies" min="1" max="5" value="1" class="form-control" required />
+                        <span style="font-size:11.5px; color:var(--nu-text-muted);">Standard processing: 3-5 working days upon Registrar approval.</span>
+                    </div>
+
+                    <div style="background:var(--nu-surface-alt); border:1px solid var(--nu-border); border-radius:var(--nu-radius-sm); padding:12px; margin-bottom:18px; font-size:12px; color:var(--nu-text-muted);">
+                        <strong>Security Token Generation:</strong> A unique cryptographic tracking token (e.g. <code>MSU-TOR-2026-XXXX</code>) will be generated for authenticity verification.
+                    </div>
+
+                    <button type="submit" class="btn-nu btn-nu-gold" style="width:100%; font-size:14px; padding:10px;">
+                        Submit Request to Registrar Queue
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Tracking Queue (Right Column) ─────────────────────────────────── -->
+    <div style="flex: 2 1 600px; min-width:320px;">
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3 class="portal-card-title">
+                    <span>📡</span> Live Document Request Tracker
+                </h3>
+                <span style="font-size:12px; color:var(--nu-text-muted);">Synchronized with Registrar Document Processing</span>
+            </div>
+            <div class="portal-card-body" style="padding:0;">
+                @if (Model.Requests.Any())
+                {
+                    <div class="portal-table-responsive">
+                        <table class="portal-table">
+                            <thead>
+                                <tr>
+                                    <th>Tracking Token</th>
+                                    <th>Document</th>
+                                    <th>Purpose</th>
+                                    <th>Copies</th>
+                                    <th>Status</th>
+                                    <th>Date Filed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Model.Requests)
+                                {
+                                    <tr>
+                                        <td>
+                                            <code style="font-weight:700; color:var(--nu-blue-dark); background:#eef2ff; padding:2px 6px; border-radius:4px;">
+                                                @r.QrCodeToken
+                                            </code>
+                                        </td>
+                                        <td>
+                                            <div style="font-weight:700;">@r.DocumentType</div>
+                                            @if (!string.IsNullOrEmpty(r.Remarks))
+                                            {
+                                                <div style="font-size:11px; color:#15803d;">Note: @r.Remarks</div>
+                                            }
+                                        </td>
+                                        <td style="font-size:12px; color:var(--nu-text-muted);">@r.Purpose</td>
+                                        <td><strong>@r.Copies</strong></td>
+                                        <td>
+                                            @if (r.Status == "ready" || r.Status == "released")
+                                            {
+                                                <span class="badge-status badge-success">✓ @r.Status.ToUpper()</span>
+                                            }
+                                            else if (r.Status == "processing")
+                                            {
+                                                <span class="badge-status badge-info">⚙ @r.Status.ToUpper()</span>
+                                            }
+                                            else if (r.Status == "rejected")
+                                            {
+                                                <span class="badge-status badge-danger">✕ REJECTED</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge-status badge-warning">⏳ PENDING</span>
+                                            }
+                                        </td>
+                                        <td style="font-size:12px;">@r.RequestedAt.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding:48px 24px; text-align:center; color:var(--nu-text-muted);">
+                        <p style="margin:0;">You have no active document requests in queue.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── 201 File Credential Vault ────────────────────────────────────────── -->
+<div class="portal-card" id="vault" style="margin-top:12px;">
+    <div class="portal-card-header">
+        <div>
+            <h3 class="portal-card-title">
+                <span>🗂️</span> Official 201 File Credential Vault
+            </h3>
+            <div style="font-size:12px; color:var(--nu-text-muted); margin-top:2px;">
+                Required student admission credentials monitored by the University Registrar.
+            </div>
+        </div>
+        @{
+            var verifiedCount = Model.Vault.Count(v => v.Status == "Verified");
+            var totalVault = Model.Vault.Count;
+        }
+        <div>
+            <span class="badge-status @(verifiedCount == totalVault ? "badge-success" : "badge-info")" style="font-size:13px; padding:6px 12px;">
+                @verifiedCount / @totalVault Verified
+            </span>
+        </div>
+    </div>
+    <div class="portal-card-body" style="padding:0;">
+        <div class="portal-table-responsive">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Credential Document</th>
+                        <th>Required Type</th>
+                        <th>Compliance Status</th>
+                        <th>Remarks / Evaluation</th>
+                        <th>Date Submitted</th>
+                        <th>Date Verified</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doc in Model.Vault)
+                    {
+                        <tr>
+                            <td>
+                                <strong style="color:var(--nu-blue-dark);">@doc.DocumentType</strong>
+                            </td>
+                            <td style="font-size:12px; color:var(--nu-text-muted);">Mandatory 201 File</td>
+                            <td>
+                                @if (doc.Status == "Verified")
+                                {
+                                    <span class="badge-status badge-success">✓ Verified</span>
+                                }
+                                else if (doc.Status == "Submitted")
+                                {
+                                    <span class="badge-status badge-info">Submitted &bull; Pending Review</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-warning">Missing / Required</span>
+                                }
+                            </td>
+                            <td style="font-size:12px; color:var(--nu-text-muted);">
+                                @(string.IsNullOrEmpty(doc.Remarks) ? "Official requirement" : doc.Remarks)
+                            </td>
+                            <td style="font-size:12px;">
+                                @(doc.SubmittedAt.HasValue ? doc.SubmittedAt.Value.ToString("MMM dd, yyyy") : "—")
+                            </td>
+                            <td style="font-size:12px;">
+                                @(doc.VerifiedAt.HasValue ? doc.VerifiedAt.Value.ToString("MMM dd, yyyy") : "—")
+                            </td>
+                            <td>
+                                @if (doc.Status == "Missing")
+                                {
+                                    <form method="post" asp-page-handler="SubmitVaultDoc" style="margin:0;">
+                                        <input type="hidden" name="credentialId" value="@doc.Id" />
+                                        <input type="hidden" name="documentName" value="@doc.DocumentType" />
+                                        <button type="submit" class="btn-nu btn-nu-primary btn-sm">
+                                            Upload File
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span style="font-size:12px; color:#15803d;">✓ In Order</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

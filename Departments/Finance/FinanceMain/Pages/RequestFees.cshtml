@@ -1,0 +1,134 @@
+@page
+@model FinanceMain.Pages.RequestFeesModel
+@{
+    ViewData["Title"] = "Document Requests";
+    Layout = "_FinanceStudentLayout";
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Official Document Request &amp; Fee Payment</h1>
+        <p class="fin-subtitle">Official transcripts, certifications, clearances &middot; Office of the University Registrar and Finance</p>
+    </div>
+    <span class="fin-status-open">
+        <span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--fin-green);display:inline-block;"></span>
+        Request Window: OPEN
+    </span>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div style="background:var(--fin-green-bg);border:1px solid var(--fin-green-border);border-radius:8px;padding:12px 16px;margin-bottom:18px;color:var(--fin-green);font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;">
+        <span>✓</span> @Model.StatusMessage
+    </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div style="background:var(--fin-red-bg);border:1px solid var(--fin-red-border);border-radius:8px;padding:12px 16px;margin-bottom:18px;color:var(--fin-red);font-weight:600;font-size:13px;">
+        ⚠️ @Model.ErrorMessage
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Form Card -->
+    <div class="col-lg-5">
+        <form method="post" class="fin-card" style="padding:22px;">
+            <div style="font-size:16px;font-weight:800;color:var(--fin-navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                📄 Request Official Document
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div>
+                    <label class="fin-label">Document Type</label>
+                    <select asp-for="SelectedDocumentFeeTypeId" class="fin-select" style="width:100%;">
+                        @foreach (var doc in Model.DocumentTypes)
+                        {
+                            <option value="@doc.Id">@doc.Name — @doc.Amount.ToString("₱#,##0.00")</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="fin-label">Number of Copies</label>
+                    <input asp-for="Copies" type="number" min="1" class="fin-input" style="width:100px;" />
+                </div>
+
+                <div>
+                    <label class="fin-label">Purpose / Intended Use</label>
+                    <input asp-for="Purpose" type="text" class="fin-input" placeholder="e.g. Employment, Graduate Studies, Scholarship, Personal" />
+                </div>
+
+                <div class="fin-fee-summary">
+                    <div class="fin-stat-label" style="margin-bottom:10px;">Fee Summary Breakdown</div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+                        <span style="color:var(--fin-muted);">Document Base Fee</span>
+                        <span style="font-weight:600;">@Model.SelectedDocumentFee.ToString("₱#,##0.00")</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;">
+                        <span style="color:var(--fin-muted);">Registrar Processing Fee</span>
+                        <span style="font-weight:600;">@FinanceMain.Pages.RequestFeesModel.BaseProcessingFee.ToString("₱#,##0.00")</span>
+                    </div>
+                    <div style="border-top:1px solid var(--fin-border);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:800;color:var(--fin-navy);">Total Fee</span>
+                        <span style="font-size:18px;font-weight:900;color:var(--fin-green);">@Model.TotalFeePreview.ToString("₱#,##0.00")</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-fin-gold" style="width:100%;padding:12px;font-size:14px;justify-content:center;">
+                    Submit Request &amp; Pay @Model.TotalFeePreview.ToString("₱#,##0.00")
+                </button>
+                <div style="font-size:11.5px;color:var(--fin-muted);text-align:center;">
+                    Receipt will be automatically issued and credited to Registrar 201 records.
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Requests History Table -->
+    <div class="col-lg-7">
+        <div class="fin-card h-100">
+            <div class="fin-card-head">
+                <span class="fin-card-head-title">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8v12l-2-1-2 1-2-1-2 1V2z"/><path d="M6 5h4M6 8h4"/></svg>
+                    My Document Request History
+                </span>
+                <span class="fin-card-badge">@Model.Requests.Count Requests</span>
+            </div>
+            <div class="table-responsive">
+                <table class="fin-table">
+                    <thead>
+                        <tr>
+                            <th>Request #</th>
+                            <th>Document Title</th>
+                            <th style="text-align:right;">Fee</th>
+                            <th style="text-align:center;">Payment</th>
+                            <th style="text-align:center;">Processing Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var req in Model.Requests)
+                        {
+                            <tr>
+                                <td class="fin-mono">@req.RequestNumber</td>
+                                <td>
+                                    <div style="font-weight:700;">@req.Document</div>
+                                </td>
+                                <td style="text-align:right;font-weight:600;">@req.Fee.ToString("₱#,##0.00")</td>
+                                <td style="text-align:center;">
+                                    <span class="@FinanceMain.Pages.RequestFeesModel.PaymentBadgeClass(req.PaymentStatus)">@req.PaymentStatus</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="@FinanceMain.Pages.RequestFeesModel.RequestBadgeClass(req.RequestStatus)">@req.RequestStatus</span>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Requests.Any())
+                        {
+                            <tr><td colspan="5" style="text-align:center;color:var(--fin-muted);padding:36px;">No document requests submitted yet.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

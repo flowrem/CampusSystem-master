@@ -1,0 +1,100 @@
+@{
+    var activePage = ViewData["ActivePage"]?.ToString() ?? "";
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Faculty Portal";
+
+    var facultyName = User.Identity?.Name ?? "Faculty";
+    var facultyNumber = User.FindFirst("IdNumber")?.Value ?? "";
+    var facultyDept = User.IsInRole("admin") ? "Administrator" : "Faculty";
+    var facultyInitials = string.Concat(facultyName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetter(w[0])).Take(2).Select(w => w[0]));
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@pageTitle - National University Lipa Faculty Portal</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+</head>
+<body class="portal-body">
+
+    <!-- Sidebar Navigation -->
+    <aside class="portal-sidebar">
+        <div class="portal-brand">
+            <img src="~/img/logo3.png" alt="National University Logo" class="brand-crest" />
+            <div class="brand-title-wrap">
+                <div class="brand-main-title">FACULTY PORTAL</div>
+                <div class="brand-sub-title">National University Lipa</div>
+            </div>
+        </div>
+
+        <div class="student-card-mini">
+            <div class="student-avatar">@facultyInitials</div>
+            <div class="student-details">
+                <div class="student-name" title="@facultyName">@facultyName</div>
+                <div class="student-id-num">@facultyNumber</div>
+                <div class="student-prog" title="@facultyDept">@facultyDept</div>
+            </div>
+        </div>
+
+        <nav class="portal-nav">
+            <div class="nav-category">Teaching</div>
+            <a href="/" class="@(activePage == "Dashboard" ? "active" : "")">
+                <span class="nav-ic">🏠</span> Dashboard
+            </a>
+            <a href="/Roster" class="@(activePage == "Roster" ? "active" : "")">
+                <span class="nav-ic">👥</span> Class Roster
+            </a>
+            <a href="/Assignments" class="@(activePage == "Assignments" ? "active" : "")">
+                <span class="nav-ic">📝</span> Assignments
+            </a>
+            <a href="/Gradebook" class="@(activePage == "Gradebook" ? "active" : "")">
+                <span class="nav-ic">📊</span> Gradebook
+            </a>
+            <a href="/Attendance" class="@(activePage == "Attendance" ? "active" : "")">
+                <span class="nav-ic">✅</span> Attendance
+            </a>
+            <a href="/Schedule" class="@(activePage == "Schedule" ? "active" : "")">
+                <span class="nav-ic">📅</span> My Schedule
+            </a>
+
+            <div class="nav-category nav-category-spaced">Finance &amp; Clearance</div>
+            <a href="http://localhost:5124/FacultyClearance" class="@(activePage == "FacultyClearance" ? "active" : "")">
+                <span class="nav-ic">🛡️</span> Student Clearance
+            </a>
+
+            <div class="nav-category nav-category-spaced">Account</div>
+            <a href="/Privacy" class="@(activePage == "Privacy" ? "active" : "")">
+                <span class="nav-ic">🛡️</span> Privacy
+            </a>
+        </nav>
+
+        <div class="portal-sidebar-footer">
+            <div>NU Lipa Collegiate System</div>
+            <div class="sidebar-term">AY 2026-2027 &middot; 1st Semester</div>
+        </div>
+    </aside>
+
+    <!-- Main View Shell -->
+    <div class="portal-main">
+        <header class="portal-topbar">
+            <div class="topbar-left">
+                <span class="term-pill">📅 AY 2026-2027 &middot; 1st Semester</span>
+                <span class="conn-status-pill">
+                    <span class="pulse-dot" style="background:var(--nu-gold);"></span> Finance System Live
+                </span>
+            </div>
+            <div class="topbar-right">
+                <a href="http://localhost:5124/FacultyClearance" class="topbar-user" title="View clearance in Finance System">🛡️ Student Clearance</a>
+                <a href="/ChangePassword" class="topbar-user">Password</a>
+                <a href="/Logout" class="topbar-user">Sign out</a>
+            </div>
+        </header>
+
+        <div class="portal-content">
+            @RenderBody()
+        </div>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

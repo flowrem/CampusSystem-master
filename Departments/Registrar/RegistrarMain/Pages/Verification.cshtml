@@ -1,0 +1,7 @@
+@page
+@{ ViewData["Title"] = "Enrollment Verification"; }
+<div class="registrar-page" data-page="verification">
+<section class="page-heading"><div><span class="eyebrow">Records services</span><h1>Enrollment verification</h1><p class="page-intro">Request proof of your current enrollment for an organization or application.</p></div></section>
+<section class="request-layout"><div class="surface request-form"><span class="eyebrow">New request</span><h2>Request an official letter</h2><p>Your request will be created with a Pending status for registrar processing.</p><button type="button" class="btn btn-primary" id="verification-submit">Submit request</button></div><div class="surface request-history"><div class="panel-heading"><div><span class="eyebrow">History</span><h2>Your requests</h2></div></div><div id="verification-list" class="stack-list"><div class="loading-state">Loading requests<span class="loading-dots">...</span></div></div></div></section>
+<div class="alert alert-danger d-none" data-error role="alert"></div><div class="alert alert-success d-none" data-success role="status"></div>
+</div>

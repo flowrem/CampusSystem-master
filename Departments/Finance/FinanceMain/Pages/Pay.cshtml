@@ -1,0 +1,116 @@
+@page
+@model FinanceMain.Pages.PayModel
+@{
+    ViewData["Title"] = "Make a Payment";
+    Layout = "_FinanceStudentLayout";
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Make a Payment</h1>
+        <p class="fin-subtitle">Official payment processing &middot; Automated official receipt generation &middot; National University Lipa</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <a href="/StudentAccount" class="btn-fin-outline">&larr; My Account</a>
+        <a href="/Billing" class="btn-fin-outline">Billing Ledger</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div style="background:var(--fin-red-bg);border:1px solid var(--fin-red-border);border-radius:8px;padding:12px 16px;margin-bottom:18px;color:var(--fin-red);font-weight:600;font-size:13px;">
+        ⚠️ @Model.ErrorMessage
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Assessment Summary Card -->
+    <div class="col-lg-5">
+        @if (Model.Assessment != null)
+        {
+            <div class="fin-card">
+                <div class="fin-card-head">
+                    <span class="fin-card-head-title">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8v12l-2-1-2 1-2-1-2 1V2z"/><path d="M6 5h4M6 8h4"/></svg>
+                        @Model.Assessment.AssessmentNumber
+                    </span>
+                    <a href="/OAO?id=@Model.Assessment.Id" target="_blank" class="btn-fin-outline" style="font-size:11px;padding:3px 9px;">🖨️ View OAO</a>
+                </div>
+                <div style="padding:22px;">
+                    <div style="margin-bottom:16px;">
+                        <div style="font-weight:800;font-size:16px;color:var(--fin-navy);">@Model.Assessment.StudentDisplayName</div>
+                        <div style="font-size:12px;color:var(--fin-muted);margin-top:2px;">
+                            ID: @Model.Assessment.StudentNumber &middot; @Model.Assessment.Program
+                        </div>
+                    </div>
+                    <div style="border-top:1px solid var(--fin-border);padding-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px;">
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--fin-muted);">Total Assessment</span>
+                            <span style="font-weight:600;">@Model.Assessment.TotalAmount.ToString("₱#,##0.00")</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:var(--fin-muted);">Total Paid to Date</span>
+                            <span style="font-weight:700;color:var(--fin-green);">@Model.Assessment.TotalPaid.ToString("₱#,##0.00")</span>
+                        </div>
+                        <div style="border-top:2px solid var(--fin-border);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:800;color:var(--fin-navy);">Outstanding Balance</span>
+                            <span style="font-size:20px;font-weight:900;" class="@(Model.Assessment.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                                @Model.Assessment.Balance.ToString("₱#,##0.00")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="fin-card" style="padding:36px;text-align:center;color:var(--fin-muted);">
+                No fee assessment on file for the current term.
+            </div>
+        }
+    </div>
+
+    <!-- Payment Input Form -->
+    <div class="col-lg-7">
+        <form method="post" class="fin-card" style="padding:24px;">
+            <input type="hidden" asp-for="AssessmentId" />
+            <div style="font-size:16px;font-weight:800;color:var(--fin-navy);margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+                💳 Record Payment Transaction
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div>
+                    <label class="fin-label">Payment Amount (₱)</label>
+                    <input asp-for="AmountPaid" type="number" step="0.01" min="0.01" class="fin-input" style="font-size:16px;font-weight:700;" />
+                    <div style="font-size:11px;color:var(--fin-muted);margin-top:4px;">Enter the exact amount received or remitted.</div>
+                </div>
+
+                <div>
+                    <label class="fin-label">Payment Channel / Method</label>
+                    <select asp-for="PaymentMethod" class="fin-select" style="width:100%;">
+                        <option value="Over-the-counter">Over-the-counter (Cashier Cash/Check)</option>
+                        <option value="GCash">GCash Payment Gateway</option>
+                        <option value="Maya">Maya (PayMaya)</option>
+                        <option value="Bank Transfer">Bank Transfer (BDO / BPI / UnionBank)</option>
+                        <option value="Credit / Debit Card">Credit / Debit Card</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="fin-label">Bank / Gateway Reference Number (Optional)</label>
+                    <input asp-for="ReferenceNumber" type="text" class="fin-input" placeholder="e.g. GCash Ref # or Deposit Slip Ref #" />
+                </div>
+
+                <div style="background:#f8fafc;border:1px solid var(--fin-border);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--fin-muted);">
+                    🔒 <strong>Real-Time Sync:</strong> Payment will immediately post to the shared datastore, update Student Portal ledger, and issue an official printable receipt.
+                </div>
+
+                <div style="margin-top:4px;">
+                    <button type="submit" class="btn-fin-gold" style="width:100%;padding:12px;font-size:14px;justify-content:center;" @(Model.Assessment == null ? "disabled" : "")>
+                        Submit Payment &amp; Generate Official Receipt
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

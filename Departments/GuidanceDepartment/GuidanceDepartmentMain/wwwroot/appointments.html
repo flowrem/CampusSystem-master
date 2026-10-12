@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Appointments - National University Lipa Guidance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">GUIDANCE SYSTEM</div>
+        <div class="brand-sub">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE GUIDANCE MODULES</div>
+      <a href="/index.html">
+        <span class="ic">🏠</span> Overview
+      </a>
+      <a href="/dashboard.html">
+        <span class="ic">📊</span> Counselor Dashboard
+      </a>
+      <a href="/students.html">
+        <span class="ic">🗂️</span> Student Records
+      </a>
+      <a href="/triage.html">
+        <span class="ic">⚖️</span> Triage Queue
+      </a>
+      <a href="/appointments.html" class="active">
+        <span class="ic">📅</span> Appointments
+      </a>
+      <a href="/case-notes.html">
+        <span class="ic">🔒</span> Case Notes
+      </a>
+      <a href="/monitoring.html">
+        <span class="ic">👁️</span> Student Monitoring
+      </a>
+
+      <div class="nav-section-title">STUDENT SERVICES</div>
+      <a href="/request.html">
+        <span class="ic">📝</span> Submit Request
+      </a>
+      <a href="/resources.html">
+        <span class="ic">📚</span> Support Resources
+      </a>
+
+      <div class="nav-section-title">ADMINISTRATION</div>
+      <a href="/admin.html">
+        <span class="ic">⚙️</span> Department Settings
+      </a>
+      <a href="/openapi/v1.json" target="_blank">
+        <span class="ic">🔌</span> API Documentation
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">MC</div>
+        <div class="user-info">
+          <div class="user-name">Ms. Maya Chen</div>
+          <div class="user-role">Guidance Counselor</div>
+        </div>
+      </div>
+      <a class="guidance-logout" href="/Logout">Log out</a>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY 2026-2027 · 1st Semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/openapi/v1.json" target="_blank" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> Maya Chen (Counselor)</span>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-heading-row">
+        <div>
+          <h1 class="dash-heading">Counseling Appointment Calendar</h1>
+          <p class="dash-subheading">Schedule and manage one-on-one student consultations and academic advising sessions</p>
+        </div>
+        <button type="button" class="btn-primary" data-show-appointment><span class="ic">+</span> Add Consultation Slot</button>
+      </div>
+
+      <div class="dash-panel calendar-panel">
+        <form class="surface-form" data-appointment-form hidden style="margin-bottom:16px;">
+          <div class="form-group"><label class="form-label">Student ID</label><input class="form-control" data-student-id type="number" required></div>
+          <div class="form-group"><label class="form-label">Appointment time</label><input class="form-control" data-appointment-at type="datetime-local" required></div>
+          <div class="form-group"><label class="form-label">Purpose</label><input class="form-control" data-purpose required placeholder="General counseling"></div>
+          <button class="btn-primary primary" type="submit">Save appointment</button> <span data-form-status></span>
+        </form>
+        <div class="calendar-toolbar">
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn-secondary">&larr; Previous</button>
+            <button type="button" class="btn-secondary">Next &rarr;</button>
+          </div>
+          <h2 style="font-size:16px;font-weight:700;color:var(--primary);margin:0;">September 2026</h2>
+          <span class="term-pill">Week 2 · 1st Sem</span>
+        </div>
+
+        <div class="calendar-grid">
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+          <span>Sun</span>
+          <div class="calendar-empty">No appointment slots loaded for this date.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/guidance-app.js"></script>
+</body>
+</html>

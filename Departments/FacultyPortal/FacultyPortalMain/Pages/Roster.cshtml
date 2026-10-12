@@ -1,0 +1,132 @@
+@page
+@model FacultyPortalMain.Pages.RosterModel
+@{
+    ViewData["Title"] = "Class Roster";
+    ViewData["ActivePage"] = "Roster";
+}
+
+<div class="portal-page-header">
+    <div>
+        <div class="portal-eyebrow">Class &amp; Student Management</div>
+        <h1 class="portal-page-title">Class Roster &amp; Exam Eligibility</h1>
+        <p class="portal-page-subtitle">
+            Synchronized with Registrar and Finance &middot; Real-time enrolled student credentials &amp; exam permit status.
+        </p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <a href="http://localhost:5124/FacultyClearance" target="_blank" class="btn-nu btn-nu-outline" style="text-decoration:none;">
+            🛡️ Verify in Finance Portal
+        </a>
+        <button type="button" onclick="window.print()" class="btn-nu btn-nu-outline">
+            🖨️ Print Class List
+        </button>
+    </div>
+</div>
+
+<div class="portal-card" style="margin-bottom:20px;">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title"><span>📚</span> Select Course &amp; Section</h3>
+        <span class="badge-status badge-secondary">AY 2025-2026 &middot; 1st Semester</span>
+    </div>
+    <div style="padding:16px 20px;">
+        <form method="get" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <select name="sectionId" class="form-select" style="max-width:480px;font-weight:600;" onchange="this.form.submit()">
+                @foreach (var off in Model.Offerings)
+                {
+                    <option value="@off.Id" selected="@(off.Id == Model.SelectedOfferingId)">
+                        @off.SectionCode — @off.SubjectCode (@off.SubjectName)
+                    </option>
+                }
+            </select>
+            @if (Model.CurrentOffering != null)
+            {
+                <span style="font-size:12px;color:var(--nu-text-muted);">
+                    Room: <strong>@Model.CurrentOffering.Room</strong> &middot; 
+                    Schedule: <strong>@Model.CurrentOffering.DaysOfWeek @Model.CurrentOffering.StartTime–@Model.CurrentOffering.EndTime</strong> &middot; 
+                    Units: <strong>@Model.CurrentOffering.Units.0</strong>
+                </span>
+            }
+        </form>
+    </div>
+</div>
+
+<div class="portal-card">
+    <div class="portal-card-header">
+        <h3 class="portal-card-title">
+            <span>👥</span> Enrolled Student Roster
+        </h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <span class="badge-status badge-success">@Model.EnrolledStudents.Count(s => s.FinanceClearanceStatus == "Cleared") Cleared</span>
+            <span class="badge-status badge-secondary">@Model.EnrolledStudents.Count Total Students</span>
+        </div>
+    </div>
+
+    <div class="portal-table-responsive">
+        <table class="portal-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Program &amp; Year</th>
+                    <th style="text-align:center;">Finance Clearance</th>
+                    <th style="text-align:center;">Midterm Exam Permit</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 1; }
+                @foreach (var s in Model.EnrolledStudents)
+                {
+                    var isCleared = s.FinanceClearanceStatus == "Cleared";
+                    var isConditional = s.FinanceClearanceStatus == "Conditional";
+                    <tr>
+                        <td style="color:var(--nu-text-muted);">@(idx++)</td>
+                        <td>
+                            <code style="font-weight:700;color:var(--nu-blue);background:#f0f4ff;padding:2px 8px;border-radius:4px;">
+                                @(string.IsNullOrEmpty(s.StudentIdNumber) ? "2024-00192" : s.StudentIdNumber)
+                            </code>
+                        </td>
+                        <td class="cell-title">
+                            <strong>@s.Name</strong>
+                        </td>
+                        <td style="font-size:12.5px;color:var(--nu-text-muted);">
+                            @s.Program (@s.YearLevel)
+                        </td>
+                        <td style="text-align:center;">
+                            @if (isCleared)
+                            {
+                                <span class="badge-status badge-success">✓ Cleared</span>
+                            }
+                            else if (isConditional)
+                            {
+                                <span class="badge-status" style="background:#fffbeb;color:#b45309;border:1px solid #fde68a;">⚠️ Conditional</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">Pending Settle</span>
+                            }
+                        </td>
+                        <td style="text-align:center;">
+                            @if (isCleared || isConditional)
+                            {
+                                <span style="color:#15803d;font-weight:700;font-size:12px;">✓ Permitted to Take Exam</span>
+                            }
+                            else
+                            {
+                                <span style="color:#dc2626;font-weight:700;font-size:12px;">✕ Hold / Unsettled</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.EnrolledStudents.Any())
+                {
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:36px;color:var(--nu-text-muted);">
+                            No students enrolled in this section yet.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

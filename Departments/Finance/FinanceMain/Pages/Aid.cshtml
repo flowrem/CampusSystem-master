@@ -1,0 +1,134 @@
+@page
+@model FinanceMain.Pages.AidModel
+@{
+    ViewData["Title"] = "Financial Aid";
+    Layout = "_FinanceAdminLayout";
+}
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div style="background:var(--fin-green-bg);border:1px solid var(--fin-green-border);border-radius:8px;padding:12px 16px;margin-bottom:18px;color:var(--fin-green);font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;">
+        <span>✓</span> @Model.StatusMessage
+    </div>
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Scholarships &amp; Financial Aid</h1>
+        <p class="fin-subtitle">Institutional subsidies, athletic grants &middot; Tuition discounts ledger &middot; AY @FinanceMain.Pages.AidModel.AcademicYear @FinanceMain.Pages.AidModel.Semester</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button type="button" onclick="window.print()" class="btn-fin-outline">🖨️ Export Ledger</button>
+        <button type="button" class="btn-fin-gold" data-bs-toggle="modal" data-bs-target="#grantModal">+ Grant Scholarship</button>
+    </div>
+</div>
+
+<!-- Modal: Grant Scholarship -->
+<div class="modal fade" id="grantModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" asp-page-handler="GrantScholarship" class="modal-content" style="border-radius:14px;border:none;box-shadow:var(--fin-shadow-md);">
+            <div class="modal-header" style="border-bottom:1px solid var(--fin-border);padding:18px 22px;">
+                <h6 class="modal-title" style="font-weight:800;color:var(--fin-navy);">🎓 Award Institutional Scholarship</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;display:flex;flex-direction:column;gap:14px;">
+                <div>
+                    <label class="fin-label">Student ID Number</label>
+                    <input type="text" name="studentNumber" class="fin-input" required placeholder="e.g. 2024-00192" />
+                </div>
+                <div>
+                    <label class="fin-label">Scholarship Category</label>
+                    <select name="scholarshipName" class="fin-select" style="width:100%;">
+                        @foreach (var program in Model.Programs)
+                        {
+                            <option value="@program.Name">@program.Name (@program.Coverage)</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="fin-label">Grant / Discount Amount (₱)</label>
+                    <input type="number" step="0.01" min="100" name="discountAmount" class="fin-input" required value="16250.00" />
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--fin-border);padding:14px 22px;gap:8px;">
+                <button type="button" class="btn-fin-outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn-fin-gold">Confirm &amp; Award Grant</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-label">Active Scholars</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);font-size:22px;">@Model.ActiveScholarCount Students</div>
+            <div class="fin-stat-sub">Verified academic &amp; athletic grantees</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-label">Total Aid Disbursed</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);font-size:22px;">@Model.TotalScholarshipDisbursed.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Tuition discounts credited</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-gold">
+            <div class="fin-stat-label">Active Schemes</div>
+            <div class="fin-stat-value" style="color:var(--fin-navy);font-size:22px;">@Model.Programs.Count Categories</div>
+            <div class="fin-stat-sub">Presidential, honors &amp; athletic</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="fin-stat-card accent-purple">
+            <div class="fin-stat-label">Allocation Utilization</div>
+            <div class="fin-stat-value" style="color:var(--fin-purple);font-size:22px;">94.2%</div>
+            <div class="fin-stat-sub">Of approved semestral budget</div>
+        </div>
+    </div>
+</div>
+
+<!-- Current Student Beneficiary Roster -->
+<div class="fin-card">
+    <div class="fin-card-head">
+        <span class="fin-card-head-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="6" r="3.5"/><path d="M6 9l-1.5 5L8 12l3.5 2L10 9"/></svg>
+            Student Scholarship Recipient Ledger
+        </span>
+        <span class="fin-card-badge">@Model.Grantees.Count Enrolled Scholars</span>
+    </div>
+    <div class="table-responsive">
+        <table class="fin-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Academic Program</th>
+                    <th>Scholarship / Grant Award</th>
+                    <th style="text-align:right;">Tuition Credit Applied</th>
+                    <th style="text-align:center;">Grant Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model.Grantees)
+                {
+                    <tr>
+                        <td>
+                            <div style="font-weight:700;">@g.StudentName</div>
+                            <div style="font-size:11px;color:var(--fin-muted);">@g.StudentNumber</div>
+                        </td>
+                        <td style="color:var(--fin-muted);font-size:12.5px;">@g.Program</td>
+                        <td style="font-weight:600;color:var(--fin-navy);">@g.ScholarshipName</td>
+                        <td style="text-align:right;color:var(--fin-green);font-weight:700;">
+                            –@g.DiscountAmount.ToString("₱#,##0.00")
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="badge-status badge-status-paid">@g.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

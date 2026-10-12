@@ -1,0 +1,300 @@
+@page
+@model RegistrarMain.Pages.GovernmentComplianceModel
+@{
+    ViewData["Title"] = "Government Regulatory Compliance";
+    ViewData["ActivePage"] = "GovernmentCompliance";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">🏛️ Government Regulatory Compliance (CHED / DND)</h1>
+    <p class="dash-subheading">Manage Special Orders (S.O.), official NSTP/ROTC serial registries, and generate official CHED Electronic Enrolment Lists.</p>
+  </div>
+  <div>
+    @if (Model.ActiveTab == "so")
+    {
+      <button class="btn btn-primary" onclick="document.getElementById('soModal').style.display='block'">➕ Register Special Order (S.O.)</button>
+    }
+    @if (Model.ActiveTab == "nstp")
+    {
+      <button class="btn btn-primary" onclick="document.getElementById('nstpModal').style.display='block'">➕ Issue NSTP Serial</button>
+    }
+    @if (Model.ActiveTab == "masterlist")
+    {
+      <a href="/GovernmentCompliance?export=csv" class="btn btn-secondary">📥 Export CHED CSV Masterlist</a>
+    }
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav no-print">
+  <a href="/GovernmentCompliance?tab=so" class="tab-link @(Model.ActiveTab == "so" ? "active" : "")">
+    <span>📜 CHED Special Orders (@Model.SoRecords.Count)</span>
+  </a>
+  <a href="/GovernmentCompliance?tab=nstp" class="tab-link @(Model.ActiveTab == "nstp" ? "active" : "")">
+    <span>🎖️ NSTP / ROTC Serial Numbers (@Model.NstpRecords.Count)</span>
+  </a>
+  <a href="/GovernmentCompliance?tab=masterlist" class="tab-link @(Model.ActiveTab == "masterlist" ? "active" : "")">
+    <span>📑 CHED Electronic Enrolment List (@Model.EnrolledMasterlist.Count)</span>
+  </a>
+</div>
+
+<!-- TAB 1: CHED SPECIAL ORDERS -->
+@if (Model.ActiveTab == "so")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>CHED Special Orders (S.O.) Registry</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">
+      Mandatory government authority issued by the Commission on Higher Education certifying degree eligibility for college graduates.
+    </p>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>S.O. Number</th>
+            <th>Series</th>
+            <th>Graduate Name</th>
+            <th>Degree Program</th>
+            <th>Date Applied</th>
+            <th>Date Issued</th>
+            <th>Status</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var so in Model.SoRecords)
+          {
+            <tr>
+              <td><strong style="color:var(--accent);font-size:13px;">@so.SoNumber</strong></td>
+              <td>@so.SeriesYear</td>
+              <td>
+                <strong>@so.StudentName</strong>
+                <div style="font-size:11px;color:#64748b;">@so.StudentIdNumber</div>
+              </td>
+              <td>@so.Program</td>
+              <td>@so.DateApplied.ToString("MMM dd, yyyy")</td>
+              <td>@(so.DateIssued.HasValue ? so.DateIssued.Value.ToString("MMM dd, yyyy") : "Pending Approval")</td>
+              <td><span class="badge badge-@so.Status.ToLower().Replace(" ", "_")">@so.Status</span></td>
+              <td style="font-size:12px;color:#475569;">@(string.IsNullOrEmpty(so.Remarks) ? "—" : so.Remarks)</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+<!-- TAB 2: NSTP SERIAL NUMBERS -->
+@if (Model.ActiveTab == "nstp")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>National Service Training Program (NSTP/ROTC) Serial Number Registry</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">
+      Official DND/CHED certified completion serial numbers for Republic Act 9163 compliance.
+    </p>
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Official Serial Number</th>
+            <th>Component</th>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Degree Program</th>
+            <th>Date Issued</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var nr in Model.NstpRecords)
+          {
+            <tr>
+              <td><strong class="token-chip" style="color:var(--primary);">@nr.SerialNumber</strong></td>
+              <td><span class="badge badge-open">@nr.NstpComponent</span></td>
+              <td><strong>@nr.StudentName</strong></td>
+              <td>@nr.StudentIdNumber</td>
+              <td>@nr.Program</td>
+              <td>@nr.DateIssued.ToString("MMM dd, yyyy")</td>
+              <td style="font-size:12px;color:#475569;">@(string.IsNullOrEmpty(nr.Remarks) ? "Official completion verified" : nr.Remarks)</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+<!-- TAB 3: CHED ELECTRONIC ENROLMENT LIST -->
+@if (Model.ActiveTab == "masterlist")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>CHED Electronic Enrolment List (EEL) — AY @Model.CurrentSchoolYear @Model.CurrentSemester</h2>
+      <div class="no-print">
+        <button onclick="window.print()" class="btn btn-secondary">🖨️ Print Formatted Report</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#475569;margin-bottom:16px;">
+      <strong>Institution:</strong> @Model.SchoolName &middot; <strong>Code:</strong> @Model.SchoolCode
+    </div>
+
+    <div class="table-responsive">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Student ID Number</th>
+            <th>Full Legal Name</th>
+            <th>Sex</th>
+            <th>Program</th>
+            <th>Year</th>
+            <th>Enrolled Units</th>
+            <th>Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (var idx = 0; idx < Model.EnrolledMasterlist.Count; idx++)
+          {
+            var m = Model.EnrolledMasterlist[idx];
+            <tr>
+              <td>@(idx + 1)</td>
+              <td><strong style="color:var(--accent);">@m.StudentIdNumber</strong></td>
+              <td><strong>@m.Name</strong></td>
+              <td>@m.Gender</td>
+              <td>@m.Program</td>
+              <td>@m.YearLevel</td>
+              <td><strong>@m.TotalUnits units</strong></td>
+              <td>@(char.ToUpper(m.EnrollmentType[0]) + m.EnrollmentType.Substring(1))</td>
+              <td><span class="badge badge-active">Officially Enrolled</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- Modal: Record CHED S.O. -->
+<div id="soModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:540px;background:#fff;border-radius:12px;margin:50px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Register CHED Special Order (S.O.)</h2>
+      <button onclick="document.getElementById('soModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="RecordSo">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Select Candidate Student *</label>
+        <select name="student_id" required class="form-control">
+          <option value="">-- Choose Candidate --</option>
+          @foreach (var s in Model.GraduatingStudents)
+          {
+            <option value="@s.Id">@($"{s.Name} ({s.StudentIdNumber}) — {s.Program}")</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Special Order (S.O.) Number *</label>
+          <input type="text" name="so_number" placeholder="e.g. SO (B) No. 04-2025-10495" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Series Year *</label>
+          <input type="text" name="series_year" value="@DateTime.Now.Year" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Degree Program</label>
+          <input type="text" name="program" value="BS Information Technology" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>CHED Processing Status</label>
+          <select name="status" class="form-control">
+            <option value="Applied">Applied</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Issued">Issued / Approved</option>
+            <option value="Pending Requirements">Pending Requirements</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date Applied</label>
+          <input type="date" name="date_applied" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Date Issued (if already released)</label>
+          <input type="date" name="date_issued" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>CHED Endorsement Remarks</label>
+        <textarea name="remarks" rows="2" placeholder="e.g. Endorsed by CHED NCR Higher Education Division" class="form-control"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('soModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Special Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Record NSTP Serial -->
+<div id="nstpModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:540px;background:#fff;border-radius:12px;margin:50px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Register Official NSTP/ROTC Serial Number</h2>
+      <button onclick="document.getElementById('nstpModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="RecordNstp">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Select Student *</label>
+        <select name="student_id" required class="form-control">
+          <option value="">-- Choose Student --</option>
+          @foreach (var s in Model.GraduatingStudents)
+          {
+            <option value="@s.Id">@($"{s.Name} ({s.StudentIdNumber})")</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>NSTP Component *</label>
+          <select name="nstp_component" class="form-control">
+            <option value="CWTS">CWTS (Civic Welfare Training)</option>
+            <option value="ROTC">ROTC (Reserve Officers' Training)</option>
+            <option value="LTS">LTS (Literacy Training Service)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Official Serial Number *</label>
+          <input type="text" name="serial_number" placeholder="e.g. NSTP-CWTS-2024-NCR-11500" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Date Issued</label>
+        <input type="date" name="date_issued" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control">
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Remarks</label>
+        <input type="text" name="remarks" placeholder="e.g. Certified by University NSTP Directorate" class="form-control">
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('nstpModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Serial Number</button>
+      </div>
+    </form>
+  </div>
+</div>

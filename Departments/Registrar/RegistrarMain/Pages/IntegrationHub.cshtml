@@ -1,0 +1,187 @@
+@page
+@model RegistrarMain.Pages.IntegrationHubModel
+@{
+    ViewData["Title"] = "Integration Hub";
+    ViewData["ActivePage"] = "IntegrationHub";
+    var defaultStudentId = Model.Students.FirstOrDefault()?.Id ?? 5;
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">🔌 Integration Hub</h1>
+    <p class="dash-subheading">Which department apps are running, what the shared datastore holds, and the real endpoints each department exposes.</p>
+  </div>
+</div>
+
+<!-- Department status. Filled in by the Ping handler. -->
+<div class="dash-stats" id="departmentCards">
+  @foreach (var department in Model.Departments)
+  {
+    <div class="dash-stat-card" data-department="@department.Name">
+      <div class="dash-stat-top">
+        <div class="dash-stat-label">@department.Name</div>
+      </div>
+      <div class="dash-stat-value status-value" style="font-size:18px;color:#64748b;">Checking…</div>
+      <div class="dash-stat-sub">@department.Url</div>
+    </div>
+  }
+  @if (!Model.Departments.Any())
+  {
+    <div class="dash-stat-card"><div class="dash-stat-sub">No department URLs are set under <code>CampusSystem</code> in appsettings.json.</div></div>
+  }
+</div>
+
+<!-- Real endpoint console -->
+<div class="dash-panel">
+  <div class="dash-panel-header"><h2>⚡ Endpoint console</h2></div>
+  <p style="font-size:13px;color:#64748b;margin-top:0;">
+    Calls run on the server. Registrar actions read the shared datastore directly; Finance and Guidance actions call that department's running app.
+  </p>
+
+  <div class="form-grid" style="align-items:flex-end;">
+    <div class="form-group">
+      <label>System</label>
+      <select id="apiSystemSelect">
+        <option value="registrar">Registrar API (/api/courses, /api/registrations, …)</option>
+        <option value="finance">Finance API (/api/finance)</option>
+        <option value="guidance">Guidance API (/api/guidance)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Action</label>
+      <select id="apiActionSelect"></select>
+    </div>
+    <div class="form-group">
+      <label id="paramLabel">Student id (users.id)</label>
+      <input type="text" id="apiParamInput" value="@defaultStudentId" list="studentList" />
+      <datalist id="studentList">
+        @foreach (var student in Model.Students)
+        {
+          <option value="@student.Id">@student.Name (@student.Number)</option>
+        }
+      </datalist>
+    </div>
+    <div>
+      <button type="button" class="btn btn-primary" onclick="runProbe()" style="height:38px;">🚀 Send</button>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <pre id="apiConsoleOutput" class="code-block" style="min-height:160px;max-height:360px;">// Choose an action and press Send.</pre>
+  </div>
+</div>
+
+<div class="dash-grid-equal">
+  <div class="dash-panel">
+    <div class="dash-panel-header"><h2>🗄️ Shared datastore</h2></div>
+    <p style="font-size:12.5px;color:#475569;margin-top:0;">
+      <code>@Model.FilePath</code><br />Schema version @Model.SchemaVersion
+    </p>
+    <div class="table-responsive" style="max-height:340px;overflow:auto;">
+      <table class="table-simple">
+        <thead><tr><th>Collection</th><th style="text-align:right;">Rows</th></tr></thead>
+        <tbody>
+          @foreach (var collection in Model.Collections)
+          {
+            <tr><td><code>@collection.Name</code></td><td style="text-align:right;">@collection.Count</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="dash-panel">
+    <div class="dash-panel-header"><h2>🕒 Recent activity</h2></div>
+    <div class="table-responsive" style="max-height:380px;overflow:auto;">
+      <table class="table-simple">
+        <thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
+        <tbody>
+          @if (Model.Activity.Count == 0)
+          {
+            <tr><td colspan="3" style="text-align:center;color:#64748b;padding:16px;">Nothing has been logged yet.</td></tr>
+          }
+          @foreach (var item in Model.Activity)
+          {
+            <tr>
+              <td style="white-space:nowrap;font-size:12px;">@item.At</td>
+              <td style="font-size:12px;">@item.Who</td>
+              <td style="font-size:12.5px;">@item.Message</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  const actionsMap = {
+    registrar: [
+      { value: 'courses', text: 'courses (catalog; param filters by text)', param: 'Search text (optional)' },
+      { value: 'registrations', text: 'registrations (a student\'s subjects)', param: 'Student id (users.id)' },
+      { value: 'transcript', text: 'transcript (verified grades)', param: 'Student id (users.id)' },
+      { value: 'records', text: 'records (document requests)', param: 'Student id (users.id)' },
+      { value: 'verifications', text: 'verifications (enrollment verification)', param: 'Student id (users.id)' }
+    ],
+    finance: [
+      { value: 'assessment', text: 'assessment (fee assessment)', param: 'Student number, e.g. 2023-01045' },
+      { value: 'clearance', text: 'clearance (Finance sign-off)', param: 'Student number, e.g. 2023-01045' }
+    ],
+    guidance: [
+      { value: 'students', text: 'students (student list)', param: 'Not used' }
+    ]
+  };
+
+  function currentAction() {
+    const system = document.getElementById('apiSystemSelect').value;
+    const action = document.getElementById('apiActionSelect').value;
+    return actionsMap[system].find(a => a.value === action) || actionsMap[system][0];
+  }
+
+  function updateActionOptions() {
+    const system = document.getElementById('apiSystemSelect').value;
+    const select = document.getElementById('apiActionSelect');
+    select.innerHTML = '';
+    actionsMap[system].forEach(a => { const o = document.createElement('option'); o.value = a.value; o.text = a.text; select.appendChild(o); });
+    updateParamLabel();
+  }
+
+  function updateParamLabel() { document.getElementById('paramLabel').innerText = currentAction().param; }
+
+  async function runProbe() {
+    const output = document.getElementById('apiConsoleOutput');
+    const system = document.getElementById('apiSystemSelect').value;
+    const action = document.getElementById('apiActionSelect').value;
+    const param = document.getElementById('apiParamInput').value;
+    output.innerText = 'Loading…';
+    try {
+      const response = await fetch(`?handler=Probe&system=${encodeURIComponent(system)}&action=${encodeURIComponent(action)}&param=${encodeURIComponent(param)}`, { cache: 'no-store' });
+      const text = await response.text();
+      let shown = text;
+      try { shown = JSON.stringify(JSON.parse(text), null, 2); } catch { }
+      output.innerText = (response.ok ? '' : `// HTTP ${response.status}\n`) + shown;
+    } catch (error) {
+      output.innerText = 'Error: ' + error.message;
+    }
+  }
+
+  async function pingDepartments() {
+    try {
+      const results = await (await fetch('?handler=Ping', { cache: 'no-store' })).json();
+      results.forEach(r => {
+        const card = document.querySelector(`[data-department="${r.name}"] .status-value`);
+        if (!card) return;
+        card.innerText = r.up ? `Running (${r.ms} ms)` : 'Not reachable';
+        card.style.color = r.up ? 'var(--success)' : '#b91c1c';
+      });
+    } catch { }
+  }
+
+  document.getElementById('apiSystemSelect').addEventListener('change', updateActionOptions);
+  document.getElementById('apiActionSelect').addEventListener('change', updateParamLabel);
+  updateActionOptions();
+  pingDepartments();
+  setInterval(pingDepartments, 15000);
+</script>
+}

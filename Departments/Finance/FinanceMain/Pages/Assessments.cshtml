@@ -1,0 +1,133 @@
+@page
+@model FinanceMain.Pages.AssessmentsModel
+@{
+    ViewData["Title"] = "Fee Assessments";
+    Layout = "_FinanceAdminLayout";
+    var totalAssessed = Model.Assessments.Sum(a => a.Total);
+    var totalBalance = Model.Assessments.Sum(a => a.Balance);
+    var totalCollected = totalAssessed - totalBalance;
+}
+
+<div class="fin-header">
+    <div>
+        <h1 class="fin-title">Fee Assessments</h1>
+        <p class="fin-subtitle">Generated from enrollment validations &middot; Registrar handoff &middot; AY @FinanceMain.Pages.AssessmentsModel.AcademicYear @FinanceMain.Pages.AssessmentsModel.Semester</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="fin-status-open">
+            <span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--fin-green);display:inline-block;"></span>
+            Assessment Period: OPEN
+        </span>
+        <a href="/OAO" target="_blank" class="btn-fin-outline">
+            🖨️ View Sample OAO
+        </a>
+    </div>
+</div>
+
+<!-- Mini Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+        <div class="fin-stat-card accent-blue">
+            <div class="fin-stat-label">Total Assessment Value</div>
+            <div class="fin-stat-value" style="color:var(--fin-blue);font-size:22px;">@totalAssessed.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Across all @Model.TotalCount active student accounts</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="fin-stat-card accent-green">
+            <div class="fin-stat-label">Total Collections Recorded</div>
+            <div class="fin-stat-value" style="color:var(--fin-green);font-size:22px;">@totalCollected.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Settled via OTC, GCash, Maya &amp; Bank</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="fin-stat-card accent-red">
+            <div class="fin-stat-label">Outstanding Receivables</div>
+            <div class="fin-stat-value" style="color:var(--fin-red);font-size:22px;">@totalBalance.ToString("₱#,##0.00")</div>
+            <div class="fin-stat-sub">Due before midterm examination permits</div>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="fin-filters">
+    <div class="fin-pill" style="padding:8px 14px;">
+        📅 Term: @FinanceMain.Pages.AssessmentsModel.Semester @FinanceMain.Pages.AssessmentsModel.AcademicYear
+    </div>
+    <select name="status" class="fin-select" onchange="this.form.submit()">
+        <option value="">Status: All Records</option>
+        <option value="Unpaid">Unpaid Accounts</option>
+        <option value="Partial">Partial Payments</option>
+        <option value="Paid">Fully Paid Accounts</option>
+    </select>
+    <div class="flex-grow-1"></div>
+    <input type="search" name="search" class="fin-search" placeholder="Search student name or ID..." />
+    <button type="submit" class="btn-fin-navy">Filter</button>
+</form>
+
+<div class="fin-card">
+    <div class="fin-card-head">
+        <span class="fin-card-head-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13V8M8 13V3M13 13V6"/></svg>
+            Official Assessment Sheet
+        </span>
+        <span class="fin-card-badge">@Model.TotalCount Accounts Registered</span>
+    </div>
+    <div class="table-responsive">
+        <table class="fin-table">
+            <thead>
+                <tr>
+                    <th>Assessment #</th>
+                    <th>Student Name</th>
+                    <th>Academic Program</th>
+                    <th style="text-align:right;">Total Assessed</th>
+                    <th style="text-align:right;">Current Balance</th>
+                    <th style="text-align:center;">Status</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Assessments)
+                {
+                    <tr>
+                        <td class="fin-mono">
+                            <a href="/Invoice/@row.Id" class="fin-link">@row.AssessmentNumber</a>
+                        </td>
+                        <td>
+                            <div style="font-weight:700;">@row.StudentName</div>
+                        </td>
+                        <td style="color:var(--fin-muted);font-size:12.5px;">@row.Program</td>
+                        <td style="text-align:right;font-weight:600;">@row.Total.ToString("₱#,##0.00")</td>
+                        <td style="text-align:right;" class="@(row.Balance == 0 ? "fin-balance-ok" : "fin-balance-due")">
+                            @row.Balance.ToString("₱#,##0.00")
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="@FinanceMain.Pages.AssessmentsModel.StatusBadgeClass(row.Status)">@row.Status</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:inline-flex;gap:6px;">
+                                <a href="/Invoice/@row.Id" class="btn-fin-outline" style="padding:4px 10px;font-size:11.5px;" title="View Breakdown">
+                                    Invoice
+                                </a>
+                                @if (row.Balance > 0)
+                                {
+                                    <a href="/Pay?assessmentId=@row.Id" class="btn-fin-gold" style="padding:4px 10px;font-size:11.5px;" title="Record Payment">
+                                        Pay
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Assessments.Any())
+                {
+                    <tr><td colspan="7" style="text-align:center;color:var(--fin-muted);padding:36px;">No assessments found matching the criteria.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mt-3 fin-pagination">
+    <span>Showing @Model.Assessments.Count of @Model.TotalCount total records</span>
+    <span>National University Lipa &middot; Office of Student Accounting</span>
+</div>

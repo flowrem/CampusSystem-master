@@ -1,0 +1,73 @@
+@page
+@model HistoryModel
+@{
+    ViewData["Title"] = Model.IsStudent ? "My loans" : "Loans";
+}
+
+<div class="page-heading"><div><span class="eyebrow">Circulation</span><h1>@(Model.IsStudent ? "My checkout history" : "Loans and check-in")</h1></div></div>
+
+<partial name="_Flash" model="Model" />
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select class="form-select" name="filter" onchange="this.form.submit()">
+            <option value="">All loans</option>
+            <option value="open" selected="@(Model.Filter == "open")">On loan</option>
+            <option value="overdue" selected="@(Model.Filter == "overdue")">Overdue</option>
+            <option value="returned" selected="@(Model.Filter == "returned")">Returned</option>
+        </select>
+    </div>
+    <div class="col-md-7"><input class="form-control" name="q" value="@Model.Q" placeholder="@(Model.IsStaff ? "Search by book, student name or ID" : "Search by book")" /></div>
+    <div class="col-md-2"><button class="btn btn-dark w-100">Search</button></div>
+</form>
+
+<div class="surface p-0">
+    <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    @if (Model.IsStaff) { <th>Student</th> }
+                    <th>Borrowed</th><th>Due</th><th>Returned</th><th>Status</th><th class="text-end">Fine</th>
+                    @if (Model.IsStaff) { <th></th> }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var loan in Model.Loans)
+                {
+                    <tr>
+                        <td><a asp-page="/Resource" asp-route-id="@loan.BookId">@loan.BookTitle</a></td>
+                        @if (Model.IsStaff) { <td>@loan.StudentName<div class="small text-muted">@loan.StudentNumber</div></td> }
+                        <td>@loan.BorrowDate.ToString("MMM d, yyyy")</td>
+                        <td>@loan.DueDate.ToString("MMM d, yyyy")</td>
+                        <td>@(loan.ReturnDate is { } returned ? returned.ToString("MMM d, yyyy") : "—")</td>
+                        <td>
+                            <span class="badge @(loan.Status switch { "Overdue" => "text-bg-danger", "Borrowed" => "text-bg-primary", "Returned" => "text-bg-success", _ => "text-bg-warning" })">@loan.Status</span>
+                            @if (loan.OverdueDays > 0) { <div class="small text-danger">@loan.OverdueDays day(s) late</div> }
+                        </td>
+                        <td class="text-end">@(loan.AccruedFine > 0 ? "₱" + loan.AccruedFine.ToString("N2") : "—")</td>
+                        @if (Model.IsStaff)
+                        {
+                            <td class="text-end">
+                                @if (loan.ReturnDate is null)
+                                {
+                                    <form method="post" asp-page-handler="CheckIn" class="d-flex gap-1 justify-content-end">
+                                        <input type="hidden" name="loanId" value="@loan.Id" />
+                                        <select name="condition" class="form-select form-select-sm" style="width:110px;">
+                                            @foreach (var condition in new[] { "Good", "Damaged", "Lost" }) { <option>@condition</option> }
+                                        </select>
+                                        <button class="btn btn-sm btn-dark">Check in</button>
+                                    </form>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+                @if (Model.Loans.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted p-4">No loans to show.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,129 @@
+@inject RegistrarMain.Services.SettingsService Settings
+@inject RegistrarMain.Services.DatabaseService Db
+@{
+    var activePage = ViewData["ActivePage"]?.ToString() ?? "";
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Registrar Portal";
+    var schoolYear = await Settings.GetSchoolYearAsync();
+    var semester = await Settings.GetSemesterAsync();
+    var userName = Db.CurrentUserName;
+    var userRole = Db.CurrentUserRole;
+    var flashMessage = TempData["FlashMessage"]?.ToString();
+    var flashType = TempData["FlashType"]?.ToString() ?? "success";
+}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>@pageTitle - National University Lipa</title>
+  <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true">
+</head>
+<body class="dashboard-body">
+
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <img src="~/img/logo3.png" alt="NU Lipa Logo" class="brand-crest-img" />
+      <div class="brand-text">
+        <div class="brand-title">REGISTRAR SYSTEM</div>
+        <div class="brand-sub" style="color:var(--nu-gold, #f2b807);font-weight:700;font-size:12px;">National University Lipa</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav">
+      <div class="nav-section-title">CORE REGISTRAR MODULES</div>
+      <a href="/Dashboard" class="@(activePage == "Dashboard" ? "active" : "")">
+        <span class="ic">🏠</span> Dashboard
+      </a>
+      <a href="/StudentRecords" class="@(activePage == "StudentRecords" ? "active" : "")">
+        <span class="ic">🗂️</span> Student Records (201)
+      </a>
+      <a href="/EnrollmentValidation" class="@(activePage == "EnrollmentValidation" ? "active" : "")">
+        <span class="ic">📝</span> Enrollment &amp; Validation
+      </a>
+      <a href="/ClassScheduling" class="@(activePage == "ClassScheduling" ? "active" : "")">
+        <span class="ic">🏫</span> Class Scheduling
+      </a>
+      <a href="/GradeControl" class="@(activePage == "GradeControl" ? "active" : "")">
+        <span class="ic">📊</span> Grade Control
+      </a>
+      <a href="/CurriculumEvaluation" class="@(activePage == "CurriculumEvaluation" ? "active" : "")">
+        <span class="ic">🧭</span> Curriculum Evaluation
+      </a>
+      <a href="/GraduationAudit" class="@(activePage == "GraduationAudit" ? "active" : "")">
+        <span class="ic">🎓</span> Graduation &amp; Honors
+      </a>
+      <a href="/DocumentProcessing" class="@(activePage == "DocumentProcessing" ? "active" : "")">
+        <span class="ic">📄</span> Document Processing
+      </a>
+      <a href="/GovernmentCompliance" class="@(activePage == "GovernmentCompliance" ? "active" : "")">
+        <span class="ic">🏛️</span> Gov't Compliance (CHED)
+      </a>
+      <a href="/IntegrationHub" class="@(activePage == "IntegrationHub" ? "active" : "")">
+        <span class="ic">🔌</span> API &amp; Integration Hub
+      </a>
+
+      <div class="nav-section-title" style="margin-top:14px;">STUDENT ADMISSION</div>
+      <a href="/EnrollmentApplication" target="_blank" class="@(activePage == "EnrollmentApplication" ? "active" : "")">
+        <span class="ic">📋</span> New / Transferee Form
+      </a>
+    </nav>
+
+    <div class="dash-sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar-circle">👤</div>
+        <div class="user-info">
+          <div class="user-name">@userName</div>
+          <div class="user-role">@(char.ToUpper(userRole[0]) + userRole.Substring(1))</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <span class="term-pill">📅 AY @schoolYear &middot; @semester</span>
+        <span class="system-status-indicator"><span class="pulse-dot"></span> System Live</span>
+      </div>
+      <div class="dash-right">
+        <a href="/IntegrationHub" class="topbar-btn" title="API Status"><span class="ic">🔌</span> API Active</a>
+        <span class="user-badge"><span class="avatar-sm">👤</span> @userName (@(char.ToUpper(userRole[0]) + userRole.Substring(1)))</span>
+        <a href="/ChangePassword" class="user-badge" style="text-decoration:none;">Password</a>
+        <a href="/Logout" class="user-badge" style="text-decoration:none;">Sign out</a>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      @if (!string.IsNullOrEmpty(flashMessage))
+      {
+        <div id="systemFlashMessage" class="alert-banner alert-@flashType" style="display:flex;justify-content:space-between;align-items:center;transition:opacity 0.6s ease, transform 0.6s ease;">
+          <span>@flashMessage</span>
+          <button type="button" onclick="dismissFlashMessage()" style="background:none;border:none;color:inherit;font-size:18px;font-weight:bold;cursor:pointer;padding:0 4px;margin-left:12px;line-height:1;" title="Dismiss">&times;</button>
+        </div>
+      }
+
+      @RenderBody()
+    </div>
+  </div>
+
+  <script>
+    function dismissFlashMessage() {
+      const banner = document.getElementById('systemFlashMessage');
+      if (banner) {
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-10px)';
+        setTimeout(() => banner.remove(), 600);
+      }
+    }
+    // Auto-dismiss after 4 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+      const banner = document.getElementById('systemFlashMessage');
+      if (banner) {
+        setTimeout(dismissFlashMessage, 4000);
+      }
+    });
+  </script>
+
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

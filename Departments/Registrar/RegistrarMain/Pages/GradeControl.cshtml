@@ -1,0 +1,299 @@
+@page
+@model RegistrarMain.Pages.GradeControlModel
+@{
+    ViewData["Title"] = "Grade Control & Completion";
+    ViewData["ActivePage"] = "GradeControl";
+}
+
+<div class="dash-heading-row">
+  <div>
+    <h1 class="dash-heading">📊 Grade Control &amp; Verification Vault</h1>
+    <p class="dash-subheading">Manage grade encoding periods, review instructor submissions, lock semester marks, and process INC completions.</p>
+  </div>
+  <div>
+    <button class="btn btn-secondary" onclick="document.getElementById('windowModal').style.display='block'">⏰ Encoding Window: @(Model.EncodingOpen ? "🟢 OPEN" : "🔴 CLOSED")</button>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav">
+  <a href="/GradeControl?tab=encoding" class="tab-link @(Model.ActiveTab == "encoding" ? "active" : "")">
+    <span>✏️ Section Grade Sheet Encoding</span>
+  </a>
+  <a href="/GradeControl?tab=verification" class="tab-link @(Model.ActiveTab == "verification" ? "active" : "")">
+    <span>🔒 Grade Verification &amp; Final Locking</span>
+  </a>
+  <a href="/GradeControl?tab=revisions" class="tab-link @(Model.ActiveTab == "revisions" ? "active" : "")">
+    <span>📝 INC Completion &amp; Revisions (@Model.PendingRevisions.Count)</span>
+  </a>
+</div>
+
+<!-- TAB 1: SECTION GRADE ENCODING -->
+@if (Model.ActiveTab == "encoding")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Section Grade Encoding Sheet</h2>
+      @if (!Model.EncodingOpen)
+      {
+        <span class="badge badge-missing">Encoding Window Closed</span>
+      }
+      else
+      {
+        <span class="badge badge-active">Deadline: @Model.EncodingDeadline</span>
+      }
+    </div>
+
+    <form method="get" style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+      <input type="hidden" name="tab" value="encoding">
+      <label style="font-weight:700;font-size:13px;">Class Offering Section:</label>
+      <select name="offering_id" onchange="this.form.submit()" style="max-width:400px;" class="form-control">
+        @foreach (var o in Model.OfferingsList)
+        {
+          <option value="@o.Id" selected="@(Model.SelectedOfferingId == o.Id)">
+            @($"{o.SectionCode} — {o.SubjectCode}: {o.SubjectName}")
+          </option>
+        }
+      </select>
+    </form>
+
+    @if (Model.SelectedOffering != null)
+    {
+      <div class="stat-mini-row" style="margin-bottom:16px;">
+        <div class="stat-mini"><div class="label">Section</div><div class="value">@Model.SelectedOffering.SectionCode</div></div>
+        <div class="stat-mini"><div class="label">Course</div><div class="value">@Model.SelectedOffering.SubjectCode</div></div>
+        <div class="stat-mini"><div class="label">Units</div><div class="value">@Model.SelectedOffering.Units.ToString("F1")</div></div>
+        <div class="stat-mini"><div class="label">Instructor</div><div class="value" style="font-size:13px;">@Model.SelectedOffering.InstructorName</div></div>
+      </div>
+
+      @if (!Model.GradeSheet.Any())
+      {
+        <p style="text-align:center;padding:30px;color:#64748b;">No students currently enrolled in this section.</p>
+      }
+      else
+      {
+        <form method="post" asp-page-handler="BatchSaveGrades">
+          <input type="hidden" name="offering_id" value="@Model.SelectedOffering.Id">
+
+          <div class="table-responsive">
+            <table class="table-simple">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Student ID</th>
+                  <th>Student Full Name</th>
+                  <th>Program</th>
+                  <th>Grade (1.00 - 5.00)</th>
+                  <th>Incomplete (INC)?</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (var idx = 0; idx < Model.GradeSheet.Count; idx++)
+                {
+                  var row = Model.GradeSheet[idx];
+                  var isLocked = row.GradeStatus == "locked";
+                  <tr>
+                    <td>@(idx + 1)</td>
+                    <td><strong style="color:var(--accent);">@row.StudentIdNumber</strong></td>
+                    <td><strong>@row.Name</strong></td>
+                    <td>@row.Program</td>
+                    <td style="width:140px;">
+                      @if (isLocked)
+                      {
+                        <strong>@(row.IsInc ? "INC" : (row.Grade.HasValue ? row.Grade.Value.ToString("F2") : "—"))</strong>
+                      }
+                      else
+                      {
+                        <input type="number" step="0.25" min="1.00" max="5.00" 
+                               name="grades[@row.EnrolledSubId]" 
+                               value="@(row.Grade.HasValue ? row.Grade.Value.ToString("F2") : "")"
+                               placeholder="1.00 - 5.00" 
+                               style="width:110px;"
+                               class="form-control"
+                               disabled="@(!Model.EncodingOpen)">
+                      }
+                    </td>
+                    <td style="width:120px;text-align:center;">
+                      @if (isLocked)
+                      {
+                        <span>@(row.IsInc ? "✔️ INC" : "—")</span>
+                      }
+                      else
+                      {
+                        <label style="font-weight:normal;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
+                          <input type="checkbox" name="is_inc[@row.EnrolledSubId]" value="1" checked="@row.IsInc" disabled="@(!Model.EncodingOpen)"> INC
+                        </label>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge badge-@(string.IsNullOrEmpty(row.GradeStatus) ? "draft" : row.GradeStatus.ToLower())">
+                        @(string.IsNullOrEmpty(row.GradeStatus) ? "Unencoded" : char.ToUpper(row.GradeStatus[0]) + row.GradeStatus.Substring(1))
+                      </span>
+                    </td>
+                    <td style="font-size:12px;color:#64748b;">@(string.IsNullOrEmpty(row.Remarks) ? "—" : row.Remarks)</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (Model.EncodingOpen)
+          {
+            <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+              <button type="submit" class="btn btn-primary">💾 Save Draft Grades</button>
+            </div>
+          }
+        </form>
+      }
+    }
+  </div>
+}
+<!-- TAB 2: GRADE VERIFICATION & FINAL LOCKING -->
+@if (Model.ActiveTab == "verification")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>Registrar Grade Verification &amp; Final Locking</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">
+      Once verified and locked, grades become immutable scholastic records. Student General Weighted Averages (GWA) are immediately calculated and permanent transcripts are finalized.
+    </p>
+
+    <form method="get" style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+      <input type="hidden" name="tab" value="verification">
+      <label style="font-weight:700;font-size:13px;">Select Section:</label>
+      <select name="offering_id" onchange="this.form.submit()" style="max-width:400px;" class="form-control">
+        @foreach (var o in Model.OfferingsList)
+        {
+          <option value="@o.Id" selected="@(Model.SelectedOfferingId == o.Id)">
+            @($"{o.SectionCode} — {o.SubjectCode}: {o.SubjectName}")
+          </option>
+        }
+      </select>
+    </form>
+
+    @if (Model.GradeSheet.Any() && Model.SelectedOffering != null)
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Grade</th>
+              <th>Remarks</th>
+              <th>Lifecycle Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var row in Model.GradeSheet)
+            {
+              var gradeDisplay = row.IsInc ? "INC" : (row.Grade.HasValue ? row.Grade.Value.ToString("F2") : "No Grade");
+              <tr>
+                <td><strong>@row.StudentIdNumber</strong></td>
+                <td>@row.Name</td>
+                <td><strong>@gradeDisplay</strong></td>
+                <td>@(string.IsNullOrEmpty(row.Remarks) ? "In Progress" : row.Remarks)</td>
+                <td><span class="badge badge-@(string.IsNullOrEmpty(row.GradeStatus) ? "draft" : row.GradeStatus.ToLower())">@(string.IsNullOrEmpty(row.GradeStatus) ? "Draft" : char.ToUpper(row.GradeStatus[0]) + row.GradeStatus.Substring(1))</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:12px;">
+        <form method="post" asp-page-handler="VerifyOrLock" style="display:inline-flex;gap:10px;">
+          <input type="hidden" name="offering_id" value="@Model.SelectedOffering.Id">
+          <button type="submit" name="action" value="verify_section" class="btn btn-secondary">✔️ Verify All Draft Grades</button>
+          <button type="submit" name="action" value="lock_section" class="btn btn-primary" onclick="return confirm('Lock final section grades? Locked grades cannot be edited without formal board petition.')">🔒 Lock &amp; Calculate Final GWA</button>
+        </form>
+      </div>
+    }
+  </div>
+}
+<!-- TAB 3: INC COMPLETION & REVISION PETITIONS -->
+@if (Model.ActiveTab == "revisions")
+{
+  <div class="dash-panel">
+    <div class="dash-panel-header">
+      <h2>INC Removal &amp; Official Grade Revision Petitions</h2>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:0;">Students with Incomplete (INC) marks within the 1-year prescriptive period or faculty grading revisions.</p>
+
+    @if (!Model.PendingRevisions.Any())
+    {
+      <p style="text-align:center;padding:30px;color:#64748b;">No pending INC completion or revision petitions.</p>
+    }
+    else
+    {
+      <div class="table-responsive">
+        <table class="table-simple">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Course Subject</th>
+              <th>Current Mark</th>
+              <th>Completed / Target Grade</th>
+              <th>Faculty Justification</th>
+              <th>Submitted</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var pr in Model.PendingRevisions)
+            {
+              <tr>
+                <td>
+                  <strong>@pr.StudentName</strong>
+                  <div style="font-size:11px;color:#64748b;">@pr.StudentIdNumber</div>
+                </td>
+                <td><strong>@pr.SubjectCode</strong> - @pr.SubjectName</td>
+                <td><span class="badge badge-inc">@(pr.CurrentIsInc ? "INC" : (pr.CurrentGrade.HasValue ? pr.CurrentGrade.Value.ToString("F2") : "—"))</span></td>
+                <td><strong style="color:var(--success);font-size:14px;">@(pr.RequestedGrade.HasValue ? pr.RequestedGrade.Value.ToString("F2") : "—")</strong></td>
+                <td style="font-size:12px;max-width:260px;color:#475569;">@pr.Reason</td>
+                <td>@pr.RequestedAt.ToString("MMM dd, yyyy")</td>
+                <td style="text-align:right;">
+                  <form method="post" asp-page-handler="RevisionAction" style="display:inline-flex;gap:6px;">
+                    <input type="hidden" name="request_id" value="@pr.Id">
+                    <button type="submit" name="action" value="approve_revision" class="btn-small primary">Approve &amp; Finalize</button>
+                    <button type="submit" name="action" value="reject_revision" class="btn-small danger">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+
+<!-- Modal: Grade Encoding Window Settings -->
+<div id="windowModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:999;">
+  <div style="max-width:440px;background:#fff;border-radius:12px;margin:80px auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:18px;">Grade Encoding Period Control</h2>
+      <button onclick="document.getElementById('windowModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <form method="post" asp-page-handler="SaveWindow">
+      <div class="form-group" style="margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;">
+          <input type="checkbox" name="window_open" value="1" checked="@Model.EncodingOpen">
+          Open Grade Encoding Window
+        </label>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Encoding Deadline Date</label>
+        <input type="date" name="deadline" value="@Model.EncodingDeadline" class="form-control">
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('windowModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
