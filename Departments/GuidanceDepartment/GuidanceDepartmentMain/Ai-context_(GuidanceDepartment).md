@@ -1,5 +1,9 @@
 # Guidance Department current context
 
+## Shared UI
+
+Static Guidance pages import `Shared/CampusSystem.Ui`; new pages must use those shared tokens and components.
+
 Guidance is a static HTML counselor portal backed by the shared canonical JSON datastore.
 
 ## Current state

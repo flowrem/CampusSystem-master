@@ -3,13 +3,13 @@
    National University Lipa campus branding: Navy #0a1d4d + Gold #f2b807
    ══════════════════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('/_content/CampusSystem.Ui/css/campus-base.css');
 
 :root {
-  --primary: #0a1d4d;          /* NU Lipa Dark Navy */
-  --primary-light: #0f2a6b;    /* NU Lipa Blue */
-  --accent: #0f2a6b;           /* NU Lipa Blue Accent */
-  --accent-hover: #1e4bb8;
+  --primary: var(--campus-primary);          /* shared NU Lipa Dark Navy */
+  --primary-light: var(--campus-primary-light);
+  --accent: var(--campus-primary-light);
+  --accent-hover: var(--campus-accent);
   --accent-soft: #eff4ff;
   --nu-gold: #f2b807;          /* NU Lipa Gold */
   --nu-gold-hover: #ffd23f;

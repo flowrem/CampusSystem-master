@@ -44,6 +44,8 @@ The following Razor Pages are conceptual placeholders until a full testing workf
 
 ## Change Rules
 
+- Use `Shared/CampusSystem.Ui` for all new page shell and shared component styling; do not introduce local brand tokens.
+
 - Keep testing workflows presentation-first unless a clear contract is approved.
 - Do not add persistence or service calls without an approved design.
 - Protect sensitive test and defect data with appropriate access checks before backend wiring.

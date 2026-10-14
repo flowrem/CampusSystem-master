@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\CampusSystem.Data\CampusSystem.Data.csproj" />
+    <ProjectReference Include="..\..\..\Shared\CampusSystem.Ui\CampusSystem.Ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>

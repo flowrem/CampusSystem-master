@@ -47,7 +47,7 @@
                 @if (book.Available > 0)
                 {
                     <form method="post" asp-page-handler="Checkout" asp-route-id="@book.Id">
-                        <label class="form-label">Student ID number<input class="form-control" name="studentNumber" required placeholder="2023-01045" /></label>
+                        <label class="form-label">Student or faculty ID number<input class="form-control" name="studentNumber" required placeholder="2023-01045 or FAC-2024-003" /></label>
                         <label class="form-label">Loan days<input class="form-control" name="loanDays" type="number" min="1" max="30" value="7" /></label>
                         <button class="btn btn-dark w-100">Check out</button>
                     </form>

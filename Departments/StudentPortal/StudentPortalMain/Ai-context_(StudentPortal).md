@@ -1,5 +1,9 @@
 # StudentPortal AI Context V4
 
+## Shared UI
+
+New pages use `Shared/CampusSystem.Ui` tokens and components. Do not add a separate portal brand palette.
+
 ## Current state (read first)
 
 Data layer: this department reads and writes the shared JSON datastore (`campus_system_unified_data_schema.json`) through `CanonicalJsonStore`. There is no SQL, EF Core, MySQL, `DbContext`, migration or connection string. Rules and collection ownership: `Shared/CampusSystem.Data/Json/README.md`. This department's collections and code: the `*-Database-Tables.md` file in this folder. Sign-in: the shared `AuthStore` (see the root README for roles and demo accounts).

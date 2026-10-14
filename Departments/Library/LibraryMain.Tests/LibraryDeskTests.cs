@@ -14,6 +14,8 @@ public sealed class LibraryDeskTests : IDisposable
         "users": [
           { "id": 5, "student_id_number": "2023-01045", "name": "Alyssa Mendoza", "role": "student" },
           { "id": 6, "student_id_number": "2023-01088", "name": "Juan Dela Cruz", "role": "student" },
+          { "id": 7, "student_id_number": "FAC-2024-003", "name": "Prof. Santos", "role": "faculty" },
+          { "id": 10, "student_id_number": "ADM-1", "name": "Admin User", "role": "admin" },
           { "id": 11, "student_id_number": "LIB-1", "name": "Ms. Reyes", "role": "librarian" }
         ],
         "library_books": [
@@ -71,13 +73,58 @@ public sealed class LibraryDeskTests : IDisposable
     }
 
     [Fact]
-    public void Checkout_IsRefused_ForUnknownStudents_FacultyIds_AndNoCopies()
+    public void Checkout_IsRefused_ForUnknownNonBorrowers_AndNoCopies()
     {
         Assert.Throws<LibraryException>(() => _desk.Checkout("0000", 1, null, 11));
         Assert.Throws<LibraryException>(() => _desk.Checkout("LIB-1", 1, null, 11));
+        Assert.Throws<LibraryException>(() => _desk.Checkout("ADM-1", 1, null, 11));
         Assert.Throws<LibraryException>(() => _desk.Checkout("2023-01045", 2, null, 11));
         Assert.Equal(0, Count("book_loans"));
         Assert.Equal(0, Count("activity_log"));
+    }
+
+    [Fact]
+    public void CurrentBorrowers_OnlyShowsOpenLoans_OrdersOverdueFirst_AndRespectsTop()
+    {
+        var overdue = _desk.Checkout("2023-01045", 1, null, 11);
+        var current = _desk.Checkout("2023-01088", 3, null, 11);
+        _json.UpdateRoot(root =>
+        {
+            var loans = CanonicalJsonStore.GetArray(root, "book_loans").OfType<JsonObject>();
+            loans.First(l => l["id"]!.GetValue<int>() == overdue)["due_date"] = DateTime.UtcNow.AddDays(-2).ToString("O");
+            loans.First(l => l["id"]!.GetValue<int>() == current)["due_date"] = DateTime.UtcNow.AddDays(1).ToString("O");
+        });
+        _desk.CheckIn(current, "Good", 11);
+
+        var borrowers = _desk.CurrentBorrowers(1);
+
+        var borrower = Assert.Single(borrowers);
+        Assert.Equal((overdue, "Alyssa Mendoza", "student"), (borrower.LoanId, borrower.Name, borrower.Role));
+        Assert.True(borrower.OverdueDays > 0);
+    }
+
+    [Fact]
+    public void FacultyCanBorrow_AppearsAsFaculty_AndUnpaidFinesBlockBorrowing()
+    {
+        var loan = _desk.Checkout("FAC-2024-003", 1, null, 11);
+        var borrower = Assert.Single(_desk.CurrentBorrowers());
+        Assert.Equal(("Prof. Santos", "faculty"), (borrower.Name, borrower.Role));
+        _desk.CheckIn(loan, "Damaged", 11);
+
+        Assert.Throws<LibraryException>(() => _desk.Checkout("FAC-2024-003", 3, null, 11));
+    }
+
+    [Fact]
+    public void RecentReturns_AreNewestFirst()
+    {
+        var first = _desk.Checkout("2023-01045", 1, null, 11);
+        _desk.CheckIn(first, "Good", 11);
+        var second = _desk.Checkout("2023-01088", 3, null, 11);
+        _desk.CheckIn(second, "Good", 11);
+
+        var returns = _desk.RecentReturns();
+
+        Assert.Equal([second, first], returns.Select(r => r.LoanId));
     }
 
     [Fact]

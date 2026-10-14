@@ -1,0 +1,12 @@
+@* Consumers provide CampusDepartment, CampusHome, CampusNav (IEnumerable<(string Label, string Url)>), and CampusRole via ViewData. *@
+@using System.Collections.Generic
+@{
+    var department = ViewData["CampusDepartment"] as string ?? "NU Lipa";
+    var home = ViewData["CampusHome"] as string ?? "/";
+    var role = ViewData["CampusRole"] as string ?? "";
+    var nav = ViewData["CampusNav"] as IEnumerable<(string Label, string Url)> ?? [];
+}
+<div class="campus-shell">
+    <aside class="campus-sidebar"><a class="campus-brand" href="@home">NU Lipa<small>@department</small></a><nav aria-label="Primary"><ul class="campus-nav">@foreach (var item in nav) { <li><a href="@item.Url">@item.Label</a></li> }</ul></nav></aside>
+    <div class="campus-main"><header class="campus-topbar"><div class="campus-user"><strong>@User.Identity?.Name</strong>@role</div><a class="btn btn-sm btn-outline-primary" href="/Logout">Sign out</a></header><main class="campus-content" role="main">@RenderBody()</main></div>
+</div>

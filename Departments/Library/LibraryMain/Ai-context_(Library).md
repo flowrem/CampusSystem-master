@@ -4,9 +4,11 @@
 
 Data layer: this department reads and writes the shared JSON datastore (`campus_system_unified_data_schema.json`) through `CanonicalJsonStore`. There is no SQL, EF Core, MySQL, `DbContext`, migration or connection string. Rules and collection ownership: `Shared/CampusSystem.Data/Json/README.md`. This department's collections and code: the `*-Database-Tables.md` file in this folder. Sign-in: the shared `AuthStore` (see the root README for roles and demo accounts).
 
-The Library app is live: Catalog, Resource (check out for staff, reserve for students), History (loans and check-in), Fines (record payment, waive) and Reservations. Librarians and admins run the desk; students see their own records. The lending rules are `CampusSystem.Data.Json.LibraryCirculation`, shared with Student Portal. App code: `Services/LibraryDesk.cs`, `Services/LibraryPageModel.cs`. Tests: `dotnet test ..\LibraryMain.Tests`. The older "interface-only" rules below are out of date.
+The Library app is live: Catalog, Resource (staff check-out to students or faculty, student reservations), History (loans and check-in), Fines (record payment, waive) and Reservations. Librarians and admins run the desk; students see only their own records. The home page shows staff a current-borrowers list (overdue first) and recent returns; those lists must never be populated or rendered for students. The lending rules are `CampusSystem.Data.Json.LibraryCirculation`, shared with Student Portal. App code: `Services/LibraryDesk.cs`, `Services/LibraryPageModel.cs`. Tests: `dotnet test ..\LibraryMain.Tests`. The older "interface-only" rules below are out of date.
 
 ## Ownership
+
+Shared UI: this app uses `Shared/CampusSystem.Ui`; new pages use its shared shell and component classes rather than adding local brand tokens.
 
 Library owns catalog, circulation, fines, and reservation interfaces in this project. Keep changes local to `LibraryMain` unless a shared contract or platform change is required.
 

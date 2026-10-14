@@ -6,10 +6,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    --fin-navy:          #0d1b3d;
-    --fin-navy-2:        #132247;
-    --fin-navy-3:        #1a2d5a;
-    --fin-navy-border:   #1e3366;
+    --fin-navy:          var(--campus-primary);
+    --fin-navy-2:        var(--campus-primary-light);
+    --fin-navy-3:        var(--campus-sidebar-hover);
+    --fin-navy-border:   var(--campus-primary-light);
     --fin-gold:          #eab308;
     --fin-gold-dark:     #ca9a08;
     --fin-gold-light:    #fef9c3;

@@ -1,7 +1,7 @@
 /* dashboard.css — Modern Institutional Registrar Management System */
 :root {
-  --primary: #0a1d4d;       /* NU Lipa Dark Navy */
-  --primary-light: #0f2a6b; /* NU Lipa Blue */
+  --primary: var(--campus-primary);       /* shared NU Lipa Dark Navy */
+  --primary-light: var(--campus-primary-light); /* shared NU Lipa Blue */
   --accent: #0f2a6b;        /* NU Lipa Blue */
   --accent-hover: #1e4bb8;
   --accent-soft: #eff4ff;

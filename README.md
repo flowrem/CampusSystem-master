@@ -192,3 +192,7 @@ The project moved from per-department SQL databases to the single JSON datastore
 A zip of the files Phase 5 deleted or rewrote is in `BackupFolder\before-phase5.zip`.
 
 After the migration the remaining stubs were replaced: shared sign-in, the Faculty-to-Guidance referral, add/drop fee recalculation, Faculty coursework, the Library app, and the Integration Hub (the old PHP/XAMPP fallback is gone; it now pings the department apps and probes their real endpoints).
+
+## Shared UI
+
+All department interfaces use `Shared/CampusSystem.Ui` for campus tokens and common components. New pages must link the shared stylesheet and use its shell, heading, surface, alert, and empty-state classes. Run `powershell -ExecutionPolicy Bypass -File scripts/verify-ui-alignment.ps1` to detect missing links or hard-coded brand token definitions.

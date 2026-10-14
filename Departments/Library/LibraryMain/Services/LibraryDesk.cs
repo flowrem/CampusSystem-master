@@ -12,7 +12,11 @@ public sealed class LibraryDesk(CanonicalJsonStore store)
 {
     public sealed record BookRow(int Id, string Isbn, string Title, string Author, string Category, string CallNumber, string Shelf, int Total, int Available, int Reservations);
     public sealed record LoanRow(int Id, int StudentId, string StudentName, string StudentNumber, int BookId, string BookTitle,
-        DateTime BorrowDate, DateTime DueDate, DateTime? ReturnDate, string Status, int OverdueDays, decimal AccruedFine, string Condition);
+        DateTime BorrowDate, DateTime DueDate, DateTime? ReturnDate, string Status, int OverdueDays, decimal AccruedFine, string Condition, string Role);
+    public sealed record BorrowerRow(int LoanId, int UserId, string Name, string IdNumber, string Role,
+        int BookId, string BookTitle, DateTime BorrowDate, DateTime DueDate, int OverdueDays);
+    public sealed record RecentReturnRow(int LoanId, int UserId, string Name, string IdNumber, string Role,
+        int BookId, string BookTitle, DateTime BorrowDate, DateTime DueDate, DateTime ReturnDate);
     public sealed record FineRow(int Id, int LoanId, int StudentId, string StudentName, string StudentNumber, string BookTitle, decimal Amount,
         string Reason, string Status, DateTime? AssessedAt, string Note);
     public sealed record ReservationRow(int Id, int StudentId, string StudentName, int BookId, string BookTitle, string BookAuthor,
@@ -86,7 +90,7 @@ public sealed class LibraryDesk(CanonicalJsonStore store)
                 var open = LibraryCirculation.IsOpen(l);
                 return new LoanRow(Int(l, "id"), Int(l, "student_id"), Str(user, "name"), Str(user, "student_id_number"), Int(l, "book_id"), Str(book, "title"),
                     Date(l, "borrow_date") ?? default, Date(l, "due_date") ?? default, Date(l, "return_date"),
-                    open ? (overdue > 0 ? "Overdue" : "Borrowed") : Str(l, "status"), overdue, overdue * rate, Str(l, "condition_on_return"));
+                    open ? (overdue > 0 ? "Overdue" : "Borrowed") : Str(l, "status"), overdue, overdue * rate, Str(l, "condition_on_return"), Str(user, "role"));
             })
             .Where(l => filter switch
             {
@@ -98,6 +102,47 @@ public sealed class LibraryDesk(CanonicalJsonStore store)
             .Where(l => term.Length == 0 || l.BookTitle.Contains(term, StringComparison.OrdinalIgnoreCase)
                         || l.StudentName.Contains(term, StringComparison.OrdinalIgnoreCase) || l.StudentNumber.Contains(term, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(l => l.BorrowDate)
+            .ToList();
+    }
+
+    public IReadOnlyList<BorrowerRow> CurrentBorrowers(int top = 10)
+    {
+        var root = store.ReadRoot();
+        var now = DateTime.UtcNow;
+        var users = Rows(root, "users").ToList();
+        var books = Rows(root, "library_books").ToList();
+        return Rows(root, "book_loans")
+            .Where(LibraryCirculation.IsOpen)
+            .Select(loan =>
+            {
+                var user = users.FirstOrDefault(u => Int(u, "id") == Int(loan, "student_id"));
+                var book = books.FirstOrDefault(b => Int(b, "id") == Int(loan, "book_id"));
+                return new BorrowerRow(Int(loan, "id"), Int(loan, "student_id"), Str(user, "name"), Str(user, "student_id_number"), Str(user, "role"),
+                    Int(loan, "book_id"), Str(book, "title"), Date(loan, "borrow_date") ?? default, Date(loan, "due_date") ?? default, LibraryCirculation.OverdueDays(loan, now));
+            })
+            .OrderByDescending(row => row.OverdueDays > 0)
+            .ThenByDescending(row => row.OverdueDays)
+            .ThenBy(row => row.DueDate)
+            .Take(Math.Max(0, top))
+            .ToList();
+    }
+
+    public IReadOnlyList<RecentReturnRow> RecentReturns(int top = 5)
+    {
+        var root = store.ReadRoot();
+        var users = Rows(root, "users").ToList();
+        var books = Rows(root, "library_books").ToList();
+        return Rows(root, "book_loans")
+            .Where(loan => !LibraryCirculation.IsOpen(loan) && Date(loan, "return_date") is not null)
+            .Select(loan =>
+            {
+                var user = users.FirstOrDefault(u => Int(u, "id") == Int(loan, "student_id"));
+                var book = books.FirstOrDefault(b => Int(b, "id") == Int(loan, "book_id"));
+                return new RecentReturnRow(Int(loan, "id"), Int(loan, "student_id"), Str(user, "name"), Str(user, "student_id_number"), Str(user, "role"),
+                    Int(loan, "book_id"), Str(book, "title"), Date(loan, "borrow_date") ?? default, Date(loan, "due_date") ?? default, Date(loan, "return_date")!.Value);
+            })
+            .OrderByDescending(row => row.ReturnDate)
+            .Take(Math.Max(0, top))
             .ToList();
     }
 
@@ -149,14 +194,14 @@ public sealed class LibraryDesk(CanonicalJsonStore store)
 
     // ── Doing ───────────────────────────────────────────────────────────────
 
-    /// <summary>Librarian checks a book out to the student with this ID number. Returns the new loan id.</summary>
+    /// <summary>Librarian checks a book out to a student or faculty borrower with this ID number. Returns the new loan id.</summary>
     public int Checkout(string studentNumber, int bookId, int? loanDays, int staffId)
     {
         var loanId = 0;
         store.UpdateRoot(root =>
         {
-            var student = Rows(root, "users").FirstOrDefault(u => Same(Str(u, "student_id_number"), (studentNumber ?? "").Trim()) && Same(Str(u, "role"), "student"))
-                          ?? throw new LibraryException($"No student has the ID number {(studentNumber ?? "").Trim()}.");
+            var student = Rows(root, "users").FirstOrDefault(u => Same(Str(u, "student_id_number"), (studentNumber ?? "").Trim()) && IsBorrower(Str(u, "role")))
+                          ?? throw new LibraryException($"No student or faculty member has the ID number {(studentNumber ?? "").Trim()}.");
             loanId = LibraryCirculation.Borrow(root, Int(student, "id"), bookId, DateTime.UtcNow, loanDays, "Library desk");
             Log(root, staffId, $"Checked out book #{bookId} to {Str(student, "name")} (loan #{loanId})");
         });
@@ -237,6 +282,8 @@ public sealed class LibraryDesk(CanonicalJsonStore store)
         (root["unified_seed_data"]?[collection] as JsonArray ?? new JsonArray()).OfType<JsonObject>();
 
     private static bool Same(string? a, string? b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsBorrower(string? role) => Same(role, "student") || Same(role, "faculty");
 
     private static DateTime? Date(JsonObject? o, string key) =>
         DateTimeOffset.TryParse(Str(o, key), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var d) ? d.UtcDateTime : null;

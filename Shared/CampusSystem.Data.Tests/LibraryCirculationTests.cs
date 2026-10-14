@@ -20,7 +20,8 @@ public sealed class LibraryCirculationTests : IDisposable
         "users": [
           { "id": 5, "name": "Alyssa", "role": "student" },
           { "id": 6, "name": "Juan", "role": "student" },
-          { "id": 3, "name": "Prof", "role": "faculty" }
+          { "id": 3, "name": "Prof", "role": "faculty" },
+          { "id": 4, "name": "Admin", "role": "admin" }
         ],
         "library_books": [
           { "id": 1, "title": "Clean Code", "author": "Martin", "total_copies": 2, "available_copies": 1 },
@@ -80,19 +81,20 @@ public sealed class LibraryCirculationTests : IDisposable
     }
 
     [Fact]
-    public void Borrow_IsRefused_ForNoCopy_UnknownPeople_Titles_Duplicates_AndTheLoanLimit()
+    public void Borrow_IsRefused_ForNoCopy_UnknownNonBorrowers_Titles_Duplicates_AndTheLoanLimit()
     {
         Assert.Throws<LibraryException>(() => Borrow(5, 2));        // no copy free
         Assert.Throws<LibraryException>(() => Borrow(99, 1));       // unknown
-        Assert.Throws<LibraryException>(() => Borrow(3, 1));        // faculty is not a student
+        Borrow(3, 1);                                               // faculty may borrow
+        Assert.Throws<LibraryException>(() => Borrow(4, 3));        // admin is not a borrower
         Assert.Throws<LibraryException>(() => Borrow(5, 99));       // unknown book
         Borrow(5, 3);
         Assert.Throws<LibraryException>(() => Borrow(5, 3));        // same title twice
         Borrow(5, 4);
         Assert.Throws<LibraryException>(() => Borrow(5, 1));        // limit of 2
 
-        Assert.Equal(2, CanonicalJsonStore.GetArray(_store.ReadRoot(), "book_loans").Count);
-        Assert.Equal(1, Copies(1));
+        Assert.Equal(3, CanonicalJsonStore.GetArray(_store.ReadRoot(), "book_loans").Count);
+        Assert.Equal(0, Copies(1));
     }
 
     [Fact]

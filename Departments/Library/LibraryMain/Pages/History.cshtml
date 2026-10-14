@@ -27,7 +27,7 @@
             <thead>
                 <tr>
                     <th>Book</th>
-                    @if (Model.IsStaff) { <th>Student</th> }
+                    @if (Model.IsStaff) { <th>Borrower</th> }
                     <th>Borrowed</th><th>Due</th><th>Returned</th><th>Status</th><th class="text-end">Fine</th>
                     @if (Model.IsStaff) { <th></th> }
                 </tr>
@@ -37,7 +37,7 @@
                 {
                     <tr>
                         <td><a asp-page="/Resource" asp-route-id="@loan.BookId">@loan.BookTitle</a></td>
-                        @if (Model.IsStaff) { <td>@loan.StudentName<div class="small text-muted">@loan.StudentNumber</div></td> }
+                        @if (Model.IsStaff) { <td>@loan.StudentName <span class="badge @(loan.Role == "faculty" ? "text-bg-info" : "text-bg-secondary")">@(loan.Role == "faculty" ? "Faculty" : "Student")</span><div class="small text-muted">@loan.StudentNumber</div></td> }
                         <td>@loan.BorrowDate.ToString("MMM d, yyyy")</td>
                         <td>@loan.DueDate.ToString("MMM d, yyyy")</td>
                         <td>@(loan.ReturnDate is { } returned ? returned.ToString("MMM d, yyyy") : "—")</td>
@@ -65,7 +65,7 @@
                 }
                 @if (Model.Loans.Count == 0)
                 {
-                    <tr><td colspan="8" class="text-center text-muted p-4">No loans to show.</td></tr>
+                    <tr><td colspan="8" class="campus-empty">No loans match the selected filters.</td></tr>
                 }
             </tbody>
         </table>

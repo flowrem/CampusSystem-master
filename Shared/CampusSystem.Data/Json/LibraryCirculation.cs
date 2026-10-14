@@ -32,13 +32,13 @@ public static class LibraryCirculation
     // ── Lending ─────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Checks a book out. Refused when no copy is free, the student has unpaid fines or an overdue book, already holds
-    /// this title, or is at the loan limit. A matching active reservation by the student is marked fulfilled.
+    /// Checks a book out. Refused when no copy is free, the borrower has unpaid fines or an overdue book, already holds
+    /// this title, or is at the loan limit. A matching active reservation by the borrower is marked fulfilled.
     /// </summary>
     public static int Borrow(JsonObject root, int studentId, int bookId, DateTime now, int? loanDays = null, string source = "Library desk")
     {
-        var student = Rows(root, "users").FirstOrDefault(u => Int(u, "id") == studentId && Same(Str(u, "role"), "student"))
-                      ?? throw new LibraryException("That student does not exist.");
+        var student = Rows(root, "users").FirstOrDefault(u => Int(u, "id") == studentId && IsBorrower(Str(u, "role")))
+                      ?? throw new LibraryException("That borrower does not exist.");
         var book = Rows(root, "library_books").FirstOrDefault(b => Int(b, "id") == bookId)
                    ?? throw new LibraryException("That book is not in the catalog.");
         if (Int(book, "available_copies") <= 0) throw new LibraryException("No copy of this book is available right now.");
@@ -48,8 +48,8 @@ public static class LibraryCirculation
             throw new LibraryException($"{Str(student, "name")} has ₱{outstanding:N2} in unpaid library fines. Fines must be settled before borrowing.");
 
         var open = Rows(root, "book_loans").Where(l => Int(l, "student_id") == studentId && IsOpen(l)).ToList();
-        if (open.Any(l => Int(l, "book_id") == bookId)) throw new LibraryException("This student already has this book on loan.");
-        if (open.Count >= MaxLoans(root)) throw new LibraryException($"This student is at the limit of {MaxLoans(root)} books on loan.");
+        if (open.Any(l => Int(l, "book_id") == bookId)) throw new LibraryException("This borrower already has this book on loan.");
+        if (open.Count >= MaxLoans(root)) throw new LibraryException($"This borrower is at the limit of {MaxLoans(root)} books on loan.");
 
         var loans = CanonicalJsonStore.GetOrCreateArray(root, "book_loans");
         var loanId = CanonicalJsonStore.NextId(loans);
@@ -290,6 +290,8 @@ public static class LibraryCirculation
         (root["unified_seed_data"]?[collection] as JsonArray ?? new JsonArray()).OfType<JsonObject>();
 
     private static bool Same(string? a, string? b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsBorrower(string? role) => Same(role, "student") || Same(role, "faculty");
 
     private static int Int(JsonObject? o, string key) =>
         o?[key] is not JsonValue v ? 0

@@ -4,10 +4,10 @@
    ========================================================================== */
 
 :root {
-  --nu-blue: #344495;
-  --nu-blue-dark: #232f6b;
-  --nu-blue-deep: #161e47;
-  --nu-blue-light: #4c5eb8;
+  --nu-blue: var(--campus-primary);
+  --nu-blue-dark: var(--campus-primary-light);
+  --nu-blue-deep: var(--campus-sidebar);
+  --nu-blue-light: var(--campus-accent);
   --nu-gold: #f2b807;
   --nu-gold-dark: #d19e00;
   --nu-gold-light: #fff2bf;

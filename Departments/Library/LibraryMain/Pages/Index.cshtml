@@ -26,14 +26,41 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Titles</div><h2 class="mb-0">@Model.Stats.Titles</h2></div></div>
         <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Copies on shelf</div><h2 class="mb-0">@Model.Stats.CopiesOnShelf</h2></div></div>
-        <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Books on loan</div><h2 class="mb-0">@Model.Stats.OpenLoans</h2></div></div>
-        <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Overdue</div><h2 class="mb-0">@Model.Stats.OverdueLoans</h2></div></div>
+        <div class="col-6 col-md-3"><a class="surface p-3 h-100 d-block text-reset text-decoration-none" asp-page="/History" asp-route-filter="open"><div class="eyebrow">Books on loan</div><h2 class="mb-0">@Model.Stats.OpenLoans</h2></a></div>
+        <div class="col-6 col-md-3"><a class="surface p-3 h-100 d-block text-reset text-decoration-none" asp-page="/History" asp-route-filter="overdue"><div class="eyebrow">Overdue</div><h2 class="mb-0">@Model.Stats.OverdueLoans</h2></a></div>
         @if (Model.IsStaff)
         {
             <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Unpaid fines</div><h2 class="mb-0">₱@Model.Stats.PendingFines.ToString("N2")</h2></div></div>
             <div class="col-6 col-md-3"><div class="surface p-3 h-100"><div class="eyebrow">Active reservations</div><h2 class="mb-0">@Model.Stats.ActiveReservations</h2></div></div>
         }
     </div>
+
+    @if (Model.IsStaff)
+    {
+        <div class="surface p-0 mb-3">
+            <div class="p-3 d-flex justify-content-between align-items-baseline"><div><div class="eyebrow">Circulation</div><h2 class="h4 mb-0">Who has books right now</h2></div><span class="text-muted small">Showing @Model.CurrentBorrowers.Count of @Model.Stats.OpenLoans</span></div>
+            @if (Model.CurrentBorrowers.Count == 0)
+            {
+                <p class="text-muted p-3 pt-0 mb-0">No books are currently on loan.</p>
+            }
+            else
+            {
+                <div class="table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>Borrower</th><th>Book</th><th>Borrowed</th><th>Due</th><th>Status</th></tr></thead><tbody>
+                @foreach (var borrower in Model.CurrentBorrowers)
+                {
+                    <tr><td>@borrower.Name<div class="small text-muted">@borrower.IdNumber <span class="badge @(borrower.Role == "faculty" ? "text-bg-info" : "text-bg-secondary")">@(borrower.Role == "faculty" ? "Faculty" : "Student")</span></div></td><td><a asp-page="/Resource" asp-route-id="@borrower.BookId">@borrower.BookTitle</a></td><td>@borrower.BorrowDate.ToString("MMM d, yyyy")</td><td>@borrower.DueDate.ToString("MMM d, yyyy")</td><td>@if (borrower.OverdueDays > 0) { <span class="badge text-bg-danger">Overdue</span><div class="small text-danger">@borrower.OverdueDays day(s) late</div> } else { <span class="badge text-bg-primary">Borrowed</span> }</td></tr>
+                }
+                </tbody></table></div>
+            }
+            <div class="p-3"><a asp-page="/History" asp-route-filter="open">View all loans</a></div>
+        </div>
+
+        <div class="surface p-0 mb-3">
+            <div class="p-3"><div class="eyebrow">Circulation</div><h2 class="h5 mb-0">Recently returned</h2></div>
+            @if (Model.RecentReturns.Count == 0) { <p class="text-muted p-3 pt-0 mb-0">No returned books yet.</p> }
+            else { <div class="table-responsive"><table class="table mb-0 align-middle"><thead><tr><th>Borrower</th><th>Book</th><th>Returned</th></tr></thead><tbody>@foreach (var returned in Model.RecentReturns) { <tr><td>@returned.Name <span class="badge @(returned.Role == "faculty" ? "text-bg-info" : "text-bg-secondary")">@(returned.Role == "faculty" ? "Faculty" : "Student")</span><div class="small text-muted">@returned.IdNumber</div></td><td><a asp-page="/Resource" asp-route-id="@returned.BookId">@returned.BookTitle</a></td><td>@returned.ReturnDate.ToString("MMM d, yyyy")</td></tr> }</tbody></table></div> }
+        </div>
+    }
 
     <div class="row g-3">
         <div class="col-md-6">
